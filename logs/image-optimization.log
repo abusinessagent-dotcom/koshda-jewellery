@@ -1,0 +1,20 @@
+[2026-06-20 14:54:41] [INFO] Scanning directory: C:\Users\ramni\Documents\jewellery-platformvps\jewellery-platform\images
+[2026-06-20 14:54:41] [INFO] Found 2 total files, identified 2 candidate images for conversion.
+[2026-06-20 14:54:41] [INFO] Starting optimization pool with concurrency limit: 10
+[2026-06-20 14:54:41] [INFO] Successfully optimized: test1.jpg -> test1.webp (1207B -> 376B, saved 68.8%)
+[2026-06-20 14:54:41] [INFO] Successfully optimized: test2.png -> test2.webp (5697B -> 604B, saved 89.4%)
+[2026-06-20 14:54:41] [INFO] --- OPTIMIZATION RUN COMPLETED ---
+[2026-06-20 14:54:41] [INFO] Processed in 0.03s | Success: 2 | Skipped: 0 | Errors: 0
+[2026-06-20 14:54:41] [INFO] Total Storage Saved: 0.01 MB
+[2026-06-20 14:55:02] [INFO] Scanning directory: C:\Users\ramni\Documents\jewellery-platformvps\jewellery-platform\images
+[2026-06-20 14:55:02] [INFO] Found 2 total files, identified 2 candidate images for conversion.
+[2026-06-20 14:55:02] [INFO] Starting optimization pool with concurrency limit: 10
+[2026-06-20 14:55:02] [INFO] --- OPTIMIZATION RUN COMPLETED ---
+[2026-06-20 14:55:02] [INFO] Processed in 0.00s | Success: 0 | Skipped: 2 | Errors: 0
+[2026-06-20 14:55:11] [INFO] Starting Image Watcher Daemon...
+[2026-06-20 14:55:11] [INFO] Monitoring folder: C:\Users\ramni\Documents\jewellery-platformvps\jewellery-platform\images
+[2026-06-20 14:55:11] [INFO] Outputting to: C:\Users\ramni\Documents\jewellery-platformvps\jewellery-platform\webp
+[2026-06-20 14:55:11] [INFO] Settings: Delete Original = false, Quality = 80
+[2026-06-20 14:55:21] [INFO] Watcher: [ADD] detected new/modified image: watch-test.jpg
+[2026-06-20 14:55:21] [INFO] Successfully optimized: watch-test.jpg -> watch-test.webp (810B -> 250B, saved 69.1%)
+[2026-06-20 14:55:21] [INFO] Watcher: Successfully optimized watch-test.jpg

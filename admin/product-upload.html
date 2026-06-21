@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload New Design — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Design Creation</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Catalogue</span><span>›</span><span class="current">Upload Design</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content" style="max-width:820px;">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Upload Design</h1>
+          <p class="page-subtitle">Add a new high-jewelry design with automated product code pattern builders and audits.</p>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="card">
+        <form id="upload-form" onsubmit="submitProduct(event)">
+          
+          <div class="form-group" style="background:var(--bg-secondary);padding:16px;border-radius:8px;border:1px solid var(--border-subtle);margin-bottom:20px;">
+            <label class="form-label" style="color:var(--gold-400)">Live Generated Product Code (GIA / BIS Compliant)</label>
+            <div style="font-size:16px;font-family:monospace;font-weight:700;color:var(--text-primary);letter-spacing:1px;" id="live-code-preview">22K-0001-RING-BRD-HRTG-26</div>
+            <span class="text-xs" style="color:var(--text-muted);display:block;margin-top:6px;">This code is auto-assembled dynamically based on your attributes selection.</span>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label" for="product-name">Design Title</label>
+              <input type="text" id="product-name" class="form-input" placeholder="e.g. Maharani Royal Jhumkas" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="product-collection">Target Collection</label>
+              <select id="product-collection" class="form-select" required>
+                <!-- Loaded via JS -->
+              </select>
+            </div>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr 1fr;" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="purity-select">Purity (BIS Grade)</label>
+              <select id="purity-select" class="form-select" onchange="updateCodeBuilder()" required>
+                <option value="22K">22K Gold (916)</option>
+                <option value="18K">18K Gold (750)</option>
+                <option value="14K">14K Gold (585)</option>
+                <option value="SIL">Silver (925)</option>
+                <option value="PLAT">Platinum (950)</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="category-select">Product Category</label>
+              <select id="category-select" class="form-select" onchange="updateCodeBuilder()" required>
+                <option value="RING">Ring</option>
+                <option value="EARR">Earrings</option>
+                <option value="NECK">Necklace</option>
+                <option value="BANG">Bangle</option>
+                <option value="PEND">Pendant</option>
+                <option value="BRAC">Bracelet</option>
+                <option value="ANKL">Anklet</option>
+                <option value="MAAG">Maang Tikka</option>
+                <option value="NOSE">Nose Ring</option>
+                <option value="SETT">Full Sets</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="weight-input">Net Weight (g)</label>
+              <input type="text" id="weight-input" class="form-input" placeholder="e.g. 14.5g" required>
+            </div>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr 1fr;" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="usage-select">Usage Pattern</label>
+              <select id="usage-select" class="form-select" onchange="updateCodeBuilder()" required>
+                <option value="BRD">Bridal Wear</option>
+                <option value="DLY">Everyday Wear</option>
+                <option value="FST">Festive Wear</option>
+                <option value="GFT">Gifting</option>
+                <option value="OFFC">Office / Work</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="style-select">Design Style</label>
+              <select id="style-select" class="form-select" onchange="updateCodeBuilder()" required>
+                <option value="HRTG">Heritage Antique</option>
+                <option value="TMPL">Temple Traditional</option>
+                <option value="CTMP">Contemporary Modern</option>
+                <option value="FUSE">Indo-Western Fusion</option>
+                <option value="MNML">Minimalist Clean</option>
+                <option value="STAT">Statement Cocktail</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="year-input">Design Year (YY)</label>
+              <input type="text" id="year-input" class="form-input" value="26" maxlength="2" oninput="updateCodeBuilder()" required>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="image-url">CAD Render / Primary Image URL</label>
+            <input type="url" id="image-url" class="form-input" placeholder="https://example.com/image.jpg" required>
+            <div style="margin: 8px 0; text-align: center; font-size: 11px; color: var(--text-muted); font-weight: 600;">— OR —</div>
+            <label class="form-label" for="image-file">Choose Local Image File</label>
+            <input type="file" id="image-file" class="form-input" accept="image/*,image/webp">
+            <div style="margin-top:8px;text-align:center;">
+              <img id="image-preview" src="" alt="Preview" style="max-height:160px;object-fit:cover;border-radius:6px;border:1px solid var(--border-subtle);display:none;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="product-desc">Short Description</label>
+            <textarea id="product-desc" class="form-input" style="height:60px;resize:none;" placeholder="Summary details..." required></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="product-ai-desc">AI Generated Description / Material Disclosures</label>
+            <textarea id="product-ai-desc" class="form-input" style="height:100px;resize:none;" placeholder="Craftsmanship details, metal purity, diamond setting information, standard size guidelines..."></textarea>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="product-occasions">Occasions (Semicolon separated)</label>
+              <input type="text" id="product-occasions" class="form-input" placeholder="Wedding; Anniversary; Puja">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="product-keywords">Search Keywords (Comma separated)</label>
+              <input type="text" id="product-keywords" class="form-input" placeholder="antique gold, royal temple, kundan">
+            </div>
+          </div>
+
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border-subtle);padding-top:16px;">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='catalogue.html'">Cancel</button>
+            <button type="submit" class="btn btn-primary">🚀 Publish to Catalogue</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'catalogue_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Populate Collections Dropdown
+  const collections = SG.dal.safeGet('collections') || [];
+  const colSelect = document.getElementById('product-collection');
+  collections.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.name;
+    colSelect.appendChild(opt);
+  });
+
+  // Init Code Preview
+  updateCodeBuilder();
+
+  // Image Preview handler
+  document.getElementById('image-url').addEventListener('input', (e) => {
+    const preview = document.getElementById('image-preview');
+    if (e.target.value) {
+      preview.src = e.target.value;
+      preview.style.display = 'inline-block';
+    } else {
+      preview.style.display = 'none';
+    }
+  });
+
+  // Local File Upload reader
+  document.getElementById('image-file').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      document.getElementById('image-url').value = ev.target.result;
+      document.getElementById('image-preview').src = ev.target.result;
+      document.getElementById('image-preview').style.display = 'inline-block';
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+function getNextSerial() {
+  SG.dal._allowRawAccess = true;
+  let products = [];
+  try {
+    products = SG.dal.safeGet('products') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  const category = document.getElementById('category-select').value;
+  const count = products.filter(p => p.code?.includes(`-${category}-`)).length + 1;
+  return String(count).padStart(4, '0');
+}
+
+function updateCodeBuilder() {
+  const purity = document.getElementById('purity-select').value;
+  const serial = getNextSerial();
+  const category = document.getElementById('category-select').value;
+  const usage = document.getElementById('usage-select').value;
+  const style = document.getElementById('style-select').value;
+  const year = document.getElementById('year-input').value.trim() || '26';
+
+  const code = `${purity}-${serial}-${category}-${usage}-${style}-${year}`;
+  document.getElementById('live-code-preview').textContent = code;
+}
+
+function submitProduct(e) {
+  e.preventDefault();
+  const code = document.getElementById('live-code-preview').textContent;
+  const name = document.getElementById('product-name').value.trim();
+  const collectionId = document.getElementById('product-collection').value;
+  const collectionName = document.getElementById('product-collection').options[document.getElementById('product-collection').selectedIndex].text;
+  const weight = document.getElementById('weight-input').value.trim();
+  const image = document.getElementById('image-url').value.trim();
+  const description = document.getElementById('product-desc').value.trim();
+  const aiDescription = document.getElementById('product-ai-desc').value.trim();
+  const occasionsRaw = document.getElementById('product-occasions').value;
+  const keywordsRaw = document.getElementById('product-keywords').value;
+
+  // Validate Code just in case
+  if (!SG.str.productCode.validate(code)) {
+    SG.toast.error('Audit Failure', 'The assembled product code failed structural verification rules.');
+    return;
+  }
+
+  const purityVal = document.getElementById('purity-select').value;
+  const purity = purityVal === '22K' ? '22 Karat' : purityVal === '18K' ? '18 Karat' : purityVal === '14K' ? '14 Karat' : purityVal;
+  const material = purityVal === '22K' || purityVal === '18K' || purityVal === '14K' ? 'Gold' : purityVal === 'SIL' ? 'Silver' : 'Platinum';
+
+  const occasions = occasionsRaw.split(';').map(o => o.trim()).filter(Boolean);
+  const searchKeywords = keywordsRaw.split(',').map(k => k.trim()).filter(Boolean);
+
+  SG.dal._allowRawAccess = true;
+  try {
+    const products = SG.dal.safeGet('products') || [];
+    const newId = 'prd-' + SG.uid.short();
+    
+    products.unshift({
+      id: newId,
+      code,
+      name,
+      collectionId,
+      collectionName,
+      weight,
+      purity,
+      material,
+      description,
+      aiDescription,
+      occasions,
+      searchKeywords,
+      images: [image],
+      status: 'active',
+      uploadedAt: SG.time.now()
+    });
+
+    SG.store.set('products', products);
+    SG.toast.success('Design Published', `"${name}" is now live in the catalogue.`);
+    SG.audit('PRODUCT_UPLOADED', newId, `${code} — ${name}`);
+
+    setTimeout(() => {
+      window.location.href = 'catalogue.html';
+    }, 1500);
+
+  } catch(err) {
+    SG.toast.error('DB Insert Refused', err.message);
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+}
+</script>
+</body>
+</html>
+

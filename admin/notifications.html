@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications Inbox — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    .notif-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-3);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .notif-card:hover {
+      border-color: var(--border-subtle);
+      background: rgba(255, 255, 255, 0.02);
+    }
+    .notif-card.unread {
+      border-left: 4px solid var(--gold-500);
+      background: rgba(212, 175, 55, 0.02);
+    }
+    .notif-card.unread:hover {
+      background: rgba(212, 175, 55, 0.04);
+    }
+    .notif-icon-circle {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--bg-tertiary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Notifications Inbox</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Notifications</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      
+      <!-- Page Header -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-6);flex-wrap:wrap;gap:var(--space-4);">
+        <div>
+          <h1 class="page-title">Notification Centre</h1>
+          <p class="page-subtitle">Track administrative updates, pending queues, and security warnings directed to your profile</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary btn-sm" onclick="markAllRead()">✓ Mark All Read</button>
+          <button class="btn btn-ghost btn-sm" onclick="clearAllNotifications()" style="color:var(--red-400)">🗑️ Clear Inbox</button>
+        </div>
+      </div>
+
+      <!-- Tab filter -->
+      <div class="tabs" style="border-bottom:1px solid var(--border-subtle);margin-bottom:var(--space-6);">
+        <button class="tab-btn active" onclick="switchFilterTab('all', this)">All Notifications</button>
+        <button class="tab-btn" onclick="switchFilterTab('new_registration', this)">📝 Registrations</button>
+        <button class="tab-btn" onclick="switchFilterTab('new_booking', this)">📦 Bookings</button>
+        <button class="tab-btn" onclick="switchFilterTab('security_alert', this)">🛡️ Security</button>
+        <button class="tab-btn" onclick="switchFilterTab('system', this)">⚙️ System</button>
+      </div>
+
+      <!-- Notifications List Container -->
+      <div id="notifications-list-wrapper" style="max-width:860px;">
+        <!-- Javascript populated items -->
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession;
+  let allNotifs = [];
+  let currentFilter = 'all';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth Check
+    if (!SG.auth.requireAdmin()) return;
+    adminSession = SG.auth.current();
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    SG.components.loadAll();
+    loadNotifications();
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadNotifications();
+    });
+  });
+
+  function loadNotifications() {
+    const raw = SG.store.get('notifications') || [];
+    // Filter matching active administrator session
+    allNotifs = raw.filter(n => n.userId === adminSession.id);
+    renderNotificationsList();
+  }
+
+  function renderNotificationsList() {
+    const container = document.getElementById('notifications-list-wrapper');
+
+    let filtered = allNotifs;
+    if (currentFilter !== 'all') {
+      filtered = filtered.filter(n => n.type === currentFilter);
+    }
+
+    if (!filtered.length) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:60px;text-align:center;background:var(--bg-secondary);border:1px solid var(--border-default);border-radius:var(--radius-lg);">
+          <div class="empty-state-icon" style="font-size:32px;">🔔</div>
+          <h3>Notification Inbox Empty</h3>
+          <p>You have no notifications under this category tag.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const icons = {
+      new_registration: '📝',
+      new_booking: '📦',
+      security_alert: '🚨',
+      system: '⚙️'
+    };
+
+    container.innerHTML = filtered.map(n => {
+      const icon = icons[n.type] || '??';
+      const unreadClass = n.read ? '' : 'unread';
+      const actionBtnHtml = n.link ? `
+        <button class="btn btn-secondary btn-sm" style="font-size:11px;padding:4px 10px;pointer-events:none;">
+          Resolve ?
+        </button>
+      ` : '';
+
+      return `
+        <div class="notif-card ${unreadClass}" onclick="handleNotifClick('${n.id}', '${n.link || ''}')">
+          <div style="display:flex;align-items:center;gap:16px;flex:1;">
+            <div class="notif-icon-circle">${icon}</div>
+            <div style="flex:1;">
+              <div style="font-weight:600;color:var(--text-primary);font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+                <span>${sanitizeHTML(n.title)}</span>
+                <span style="font-size:11px;color:var(--text-muted);font-weight:normal;margin-right:12px;">${SG.time.relative(n.at)}</span>
+              </div>
+              <p style="font-size:12px;color:var(--text-secondary);margin-top:2px;line-height:1.4;">${sanitizeHTML(n.body)}</p>
+            </div>
+          </div>
+          <div class="flex gap-2 items-center" style="margin-left:12px;">
+            ${actionBtnHtml}
+            <button class="btn btn-sm btn-ghost" onclick="clearSingleNotif('${n.id}', event)" style="padding:6px;font-size:12px;" title="Clear">
+              ?
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function switchFilterTab(category, btnEl) {
+    // Reset active button class
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btnEl.classList.add('active');
+    
+    currentFilter = category;
+    renderNotificationsList();
+  }
+
+  function handleNotifClick(notifId, link) {
+    const raw = SG.store.get('notifications') || [];
+    const idx = raw.findIndex(n => n.id === notifId);
+    if (idx >= 0) {
+      raw[idx].read = true;
+      SG.store.set('notifications', raw);
+    }
+    
+    SG.updateNotifBadge();
+    
+    if (link) {
+      window.location.href = link;
+    } else {
+      loadNotifications();
+    }
+  }
+
+  function clearSingleNotif(notifId, event) {
+    event.stopPropagation(); // Stop row click trigger
+    
+    const raw = SG.store.get('notifications') || [];
+    const filtered = raw.filter(n => n.id !== notifId);
+    SG.store.set('notifications', filtered);
+    
+    SG.toast.info('Cleared', 'Notification removed.');
+    loadNotifications();
+  }
+
+  function markAllRead() {
+    const raw = SG.store.get('notifications') || [];
+    raw.forEach(n => {
+      if (n.userId === adminSession.id) {
+        n.read = true;
+      }
+    });
+    
+    SG.store.set('notifications', raw);
+    SG.toast.success('Inbox Read', 'All notifications marked as read.');
+    loadNotifications();
+  }
+
+  function clearAllNotifications() {
+    SG.modal.confirm(
+      'Clear Entire Inbox',
+      'Are you sure you want to delete all notifications? This action is irreversible.',
+      () => {
+        const raw = SG.store.get('notifications') || [];
+        const filtered = raw.filter(n => n.userId !== adminSession.id);
+        
+        SG.store.set('notifications', filtered);
+        SG.toast.info('Inbox Cleared', 'All notifications deleted.');
+        loadNotifications();
+      },
+      true
+    );
+  }
+</script>
+</body>
+</html>
+

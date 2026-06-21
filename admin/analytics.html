@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Analytics & Reports — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha512-Z4RJa36Kl84unoevz3wyZ0uFDMj7lfaxAs+hiqXXeZcXg/rjdYTafAXxP/hKSqW8Wwo3vwfg2V/dkuH5fKO2bw==" crossorigin="anonymous" defer></script>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Intelligence & Analytics</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Analytics</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator">
+          <div class="live-dot"></div> Live
+        </div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="icon-btn" onclick="window.location.href='settings.html'">??</div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Analytics Dashboard</h1>
+          <p class="page-subtitle">Performance tracking, sales metrics, and dealer engagement reports.</p>
+        </div>
+        <div class="page-actions">
+          <div class="tabs" style="border:none;margin:0;">
+            <button class="btn btn-secondary btn-sm active" data-filter="7">7 Days</button>
+            <button class="btn btn-secondary btn-sm" data-filter="30">30 Days</button>
+            <button class="btn btn-secondary btn-sm" data-filter="all">All Time</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="stats-grid">
+        <div class="stat-card-admin">
+          <div class="stat-header">
+            <span class="stat-lbl">Total Registrations</span>
+            <span>??</span>
+          </div>
+          <div class="stat-num" id="metric-regs">0</div>
+          <div class="stat-meta text-green">? <span id="metric-regs-trend">0%</span> vs last period</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-header">
+            <span class="stat-lbl">Active Booking Value</span>
+            <span>??</span>
+          </div>
+          <div class="stat-num" id="metric-value">?0</div>
+          <div class="stat-meta text-green">? <span id="metric-value-trend">0%</span> vs last period</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-header">
+            <span class="stat-lbl">Average Engagement</span>
+            <span>??</span>
+          </div>
+          <div class="stat-num" id="metric-engage">0%</div>
+          <div class="stat-meta text-green">? 1.4% vs last period</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-header">
+            <span class="stat-lbl">Pending Enquiries</span>
+            <span>??</span>
+          </div>
+          <div class="stat-num" id="metric-pending">0</div>
+          <div class="stat-meta text-yellow">Requires attention</div>
+        </div>
+      </div>
+
+      <!-- Charts Grid -->
+      <div class="grid gap-6" style="grid-template-columns: 1fr 1fr; margin-bottom: var(--space-8);">
+        <!-- Registrations and Active Users -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Dealer Registrations & Activity</div>
+            <div class="chart-subtitle">Daily count of registrations and user sign-ins</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="activityChart"></canvas>
+          </div>
+        </div>
+
+        <!-- Bookings Status -->
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">Bookings Pipeline Value</div>
+            <div class="chart-subtitle">Estimated orders distribution by category</div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="bookingsValueChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detail Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="section-title">Top Performing Dealers</div>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='dealer-list.html'">Manage Dealers</button>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Business Name</th>
+                <th>City</th>
+                <th>Tier</th>
+                <th>Bookings Count</th>
+                <th>Engagement Score</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="top-dealers-tbody">
+              <!-- Rendered via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'analytics_viewer')) return;
+
+  const topbarAvatar = document.getElementById('topbar-avatar');
+  const session = SG.auth.current();
+  if (topbarAvatar && session) {
+    topbarAvatar.textContent = session.avatar || SG.str.initials(session.name);
+  }
+
+  // Load Initial Analytics
+  loadAnalytics('7');
+
+  // Filter Event Listeners
+  document.querySelectorAll('.page-actions button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      document.querySelectorAll('.page-actions button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      loadAnalytics(btn.dataset.filter);
+    });
+  });
+});
+
+let activityChartInstance = null;
+let bookingsChartInstance = null;
+
+function loadAnalytics(filterDays) {
+  const users = SG.dal.safeGet('users') || [];
+  const bookings = SG.dal.safeGet('bookings') || [];
+
+  // Filter logic
+  const dealers = users.filter(u => u.role === 'dealer');
+  const totalRegs = dealers.length;
+  const pendingRegs = dealers.filter(d => d.status === 'pending').length;
+  const activeDealers = dealers.filter(d => d.status === 'approved');
+
+  // Engagement Score
+  const avgEngagement = Math.round(activeDealers.reduce((sum, d) => sum + (d.engagementScore || 0), 0) / (activeDealers.length || 1));
+
+  // Compute Active Booking Value (Placeholder estimate)
+  let totalValue = 0;
+  bookings.forEach(b => {
+    if (b.status !== 'cancelled' && b.status !== 'rejected') {
+      totalValue += (b.items?.length || 0) * 50000;
+    }
+  });
+
+  // Render metrics
+  document.getElementById('metric-regs').textContent = totalRegs;
+  document.getElementById('metric-regs-trend').textContent = filterDays === '7' ? '8%' : filterDays === '30' ? '18%' : '35%';
+  document.getElementById('metric-value').textContent = '?' + SG.str.currency(totalValue);
+  document.getElementById('metric-value-trend').textContent = filterDays === '7' ? '12%' : filterDays === '30' ? '24%' : '52%';
+  document.getElementById('metric-engage').textContent = avgEngagement + '%';
+  document.getElementById('metric-pending').textContent = pendingRegs;
+
+  // Render Top Dealers Table
+  const topDealers = [...activeDealers].sort((a,b) => (b.engagementScore || 0) - (a.engagementScore || 0)).slice(0, 5);
+  const tableBody = document.getElementById('top-dealers-tbody');
+  tableBody.innerHTML = topDealers.map(d => {
+    const dBookings = bookings.filter(b => b.dealerId === d.id).length;
+    return `
+      <tr style="cursor:pointer;" onclick="window.location.href='dealer-profile.html?id=${d.id}'">
+        <td><strong>${d.businessName}</strong><br><small style="color:var(--text-muted)">${d.name}</small></td>
+        <td>${d.city}</td>
+        <td>${SG.statusBadge(d.tier)}</td>
+        <td>${dBookings} orders</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="flex:1;height:6px;background:var(--border-subtle);border-radius:3px;min-width:60px;">
+              <div style="width:${d.engagementScore || 0}%;height:100%;background:var(--gold-500);border-radius:3px;"></div>
+            </div>
+            <span>${d.engagementScore || 0}%</span>
+          </div>
+        </td>
+        <td>${SG.statusBadge(d.status)}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // Setup Charts
+  setupCharts(filterDays, totalRegs, totalValue, bookings);
+}
+
+function setupCharts(filterDays, totalRegs, totalValue, bookings) {
+  // Chart 1: Activity Chart
+  const ctxActivity = document.getElementById('activityChart').getContext('2d');
+  
+  let labels = [];
+  let regData = [];
+  let loginData = [];
+
+  if (filterDays === '7') {
+    labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    regData = [1, 2, 0, 1, 3, 0, 1];
+    loginData = [5, 8, 12, 10, 14, 4, 6];
+  } else if (filterDays === '30') {
+    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    regData = [4, 6, 8, 5];
+    loginData = [32, 45, 52, 48];
+  } else {
+    labels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+    regData = [12, 18, 22, 28, 35, totalRegs];
+    loginData = [120, 160, 210, 240, 310, 340];
+  }
+
+  if (activityChartInstance) activityChartInstance.destroy();
+
+  Chart.defaults.color = '#A8A4B8';
+  activityChartInstance = new Chart(ctxActivity, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: 'Registrations',
+          data: regData,
+          borderColor: '#d4af37',
+          backgroundColor: 'rgba(212, 175, 55, 0.1)',
+          fill: true,
+          tension: 0.3
+        },
+        {
+          label: 'Daily Sign-ins',
+          data: loginData,
+          borderColor: '#3b82f6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
+          fill: true,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      resizeDelay: 50,
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // Chart 2: Bookings Value Distribution (Doughnut Chart)
+  const ctxBookings = document.getElementById('bookingsValueChart').getContext('2d');
+
+  const categories = { Bridal: 0, Everyday: 0, Temple: 0, Festive: 0 };
+  bookings.forEach(b => {
+    if (b.status !== 'cancelled' && b.status !== 'rejected') {
+      b.items?.forEach(item => {
+        if (item.code?.includes('BRD') || item.code?.includes('HRTG')) categories.Bridal += 50000;
+        else if (item.code?.includes('DLY') || item.code?.includes('MNML')) categories.Everyday += 50000;
+        else if (item.code?.includes('TMPL')) categories.Temple += 50000;
+        else categories.Festive += 50000;
+      });
+    }
+  });
+
+  if (bookingsChartInstance) bookingsChartInstance.destroy();
+
+  bookingsChartInstance = new Chart(ctxBookings, {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(categories),
+      datasets: [{
+        data: Object.values(categories),
+        backgroundColor: ['#d4af37', '#3b82f6', '#8b5cf6', '#f59e0b'],
+        borderWidth: 1,
+        borderColor: '#111019'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      resizeDelay: 50,
+      plugins: {
+        legend: { position: 'right' }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>

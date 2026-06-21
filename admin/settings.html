@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Platform Settings — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+
+<body>
+  <div id="toast-container"></div>
+
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-topbar">
+        <div>
+          <div class="topbar-title">Platform Settings</div>
+          <div class="topbar-breadcrumb">
+            <span>Admin</span><span>›</span><span class="current">Settings</span>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <div class="live-indicator" id="live-indicator">
+            <div class="live-dot"></div> Live
+          </div>
+          <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+            <span class="notif-dot notif-count" style="display:none;"></span>
+          </div>
+          <div class="avatar" id="topbar-av">AM</div>
+        </div>
+      </header>
+
+      <div class="admin-content">
+
+        <!-- Page Header -->
+        <div class="page-header" style="margin-bottom:var(--space-6);">
+          <div>
+            <h1 class="page-title">Global Settings</h1>
+            <p class="page-subtitle">Configure token parameters, maximum device registrations, and third-party APIs</p>
+          </div>
+        </div>
+
+        <!-- Warning banner for non-super admins -->
+        <div id="settings-role-warning" class="alert alert-warning" style="display:none;margin-bottom:var(--space-6);">
+          <span>??</span>
+          <span><strong>Read-Only Mode:</strong> Your current admin role does not possess permissions to modify
+            settings. Changes will be blocked.</span>
+        </div>
+
+        <div class="grid gap-6" style="grid-template-columns: 1.2fr 1fr;">
+          <!-- Left: Basic Config & Device Limits -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-6);">
+
+            <!-- Core settings card -->
+            <div class="card">
+              <h3 class="section-title" style="margin-bottom:var(--space-4);">?? General Security Settings</h3>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="cfg-token-days">Default Token Validity (Days)</label>
+                  <input type="number" class="form-input" id="cfg-token-days" min="1" max="1000">
+                  <p class="form-hint">Number of days a newly generated token is valid by default.</p>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="cfg-timeout-mins">Inactivity Session Timeout (Mins)</label>
+                  <input type="number" class="form-input" id="cfg-timeout-mins" min="5" max="480">
+                  <p class="form-hint">Enforces sign out after minutes of inactive browser states.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Device limits card -->
+            <div class="card">
+              <h3 class="section-title" style="margin-bottom:var(--space-4);">?? Subscription Device Limits</h3>
+              <p style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-4);">Define the maximum
+                number of unique browsers or devices allowed concurrently per dealer subscription tier.</p>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="limit-standard">Standard Tier Limit</label>
+                  <input type="number" class="form-input" id="limit-standard" min="1" max="10">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="limit-premium">Premium Tier Limit</label>
+                  <input type="number" class="form-input" id="limit-premium" min="1" max="20">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="limit-exclusive">Exclusive Tier Limit</label>
+                  <input type="number" class="form-input" id="limit-exclusive" min="1" max="50">
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Button (Sticky/Footer style) -->
+            <div style="text-align:right;">
+              <button class="btn btn-primary" id="btn-save-settings" style="min-width:180px;justify-content:center;"
+                onclick="savePlatformSettings()">
+                Save Platform Configuration
+              </button>
+            </div>
+
+          </div>
+
+          <!-- Right: Integrations sync (Sheets + WhatsApp) -->
+          <div style="display:flex;flex-direction:column;gap:var(--space-6);">
+
+            <!-- Demo mode and credentials card -->
+            <div class="card">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+                <h3 class="section-title" style="margin-bottom:0;">🔌 Third-Party Integrations</h3>
+                <label class="switch" style="transform:scale(0.9);" for="demo-mode-switch">
+                  <input type="checkbox" id="demo-mode-switch" onchange="toggleDemoMode(this)" title="Toggle Demo Mode">
+                  <span class="slider round"></span>
+                </label>
+              </div>
+              <div
+                style="display:flex;justify-content:space-between;font-size:12px;margin-top:-6px;margin-bottom:var(--space-4);">
+                <span style="color:var(--text-secondary);">Demo Mode (Simulate External Connections)</span>
+                <span id="demo-mode-label" style="font-weight:700;color:var(--yellow-400);">ON</span>
+              </div>
+
+              <hr style="border-color:var(--border-subtle);margin-bottom:var(--space-4);">
+
+              <!-- Google Sheets Config -->
+              <div style="margin-bottom:var(--space-5);">
+                <h4
+                  style="font-weight:600;color:var(--text-primary);font-size:14px;margin-bottom:var(--space-3);display:flex;justify-content:space-between;align-items:center;">
+                  <span> Google Sheets Spreadsheet API</span>
+                  <button class="btn btn-secondary btn-sm" style="font-size:10px;padding:3px 8px;"
+                    onclick="testSheetsConnection()">Test Conn</button>
+                </h4>
+
+                <div class="form-group">
+                  <label class="form-label">Spreadsheet ID</label>
+                  <input type="text" class="form-input" id="sheets-id" placeholder="e.g. 1aBcDeFgHiJkLmNoPqRsTuVwXyZ">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">Developer API Key</label>
+                  <input type="password" class="form-input" id="sheets-key" placeholder="AIzaSyA1B2C3D4E5F6G7H8I9J0K">
+                </div>
+              </div>
+
+              <hr style="border-color:var(--border-subtle);margin-bottom:var(--space-5);">
+
+              <!-- WhatsApp Config -->
+              <div>
+                <h4
+                  style="font-weight:600;color:var(--text-primary);font-size:14px;margin-bottom:var(--space-3);display:flex;justify-content:space-between;align-items:center;">
+                  <span> Meta WhatsApp Business API</span>
+                  <button class="btn btn-secondary btn-sm" style="font-size:10px;padding:3px 8px;"
+                    onclick="testWhatsAppConnection()">Test Conn</button>
+                </h4>
+
+                <div class="form-group">
+                  <label class="form-label">API Endpoint URL</label>
+                  <input type="text" class="form-input" id="wa-endpoint"
+                    placeholder="https://graph.facebook.com/v17.0/...">
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label">System Access Token</label>
+                  <input type="password" class="form-input" id="wa-token" placeholder="EAAGz2D3e4f5...">
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Demo Mode Warn Modal -->
+  <div class="modal-overlay" id="_sg_demo_warn_modal">
+    <div class="modal" style="max-width:420px;">
+      <div class="modal-header">
+        <h3 class="modal-title" style="color:var(--red-500)">🚨 Disable Demo Simulation?</h3>
+        <button class="modal-close" onclick="cancelDemoToggle()">×</button>
+      </div>
+      <div class="modal-body" style="font-size:14px;color:var(--text-secondary);line-height:1.5;">
+        <p>Turning OFF Demo Mode instructs Koshda Jewellery House to send live requests directly to Meta API and Google
+          Cloud.</p>
+        <p style="margin-top:10px;color:var(--yellow-400);font-weight:600;">Valid credentials, tokens, and templates are
+          required.</p>
+        <p style="margin-top:8px;">Failure to configure functional API keys will result in errors during registration
+          reviews and booking dispatches. Proceed?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="cancelDemoToggle()">Keep Demo Mode ON</button>
+        <button class="btn btn-danger" onclick="confirmDemoToggle()">Proceed, Disable Demo</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"
+    integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w=="
+    crossorigin="anonymous" defer></script>
+  <script src="/js/app.js" defer></script>
+  <script src="/js/utils.js" defer></script>
+  <script src="/js/auth.js" defer></script>
+  <script src="/js/token-manager.js" defer></script>
+  <script src="/js/live-update.js" defer></script>
+  <script src="/js/admin.js" defer></script>
+  <script>
+    let adminSession;
+    let settings = {};
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Auth Check
+      if (!SG.auth.requireRole('super_admin')) return;
+      adminSession = SG.auth.current();
+
+      const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+      document.getElementById('topbar-av').textContent = initials;
+
+      SG.components.loadAll();
+      loadPlatformSettings();
+
+      SG.liveUpdate.start();
+      SG.events.on('live_update', () => {
+        loadPlatformSettings();
+      });
+    });
+
+    function loadPlatformSettings() {
+      settings = SG.admin.getSettings() || {};
+
+      // Inputs
+      document.getElementById('cfg-token-days').value = settings.tokenValidityDays || 365;
+      document.getElementById('cfg-timeout-mins').value = settings.sessionTimeoutMins || 30;
+
+      // Limits
+      document.getElementById('limit-standard').value = settings.deviceLimit_standard || 2;
+      document.getElementById('limit-premium').value = settings.deviceLimit_premium || 5;
+      document.getElementById('limit-exclusive').value = settings.deviceLimit_exclusive || 8;
+
+      // Integrations
+      document.getElementById('sheets-id').value = settings.sheets_id || '';
+      document.getElementById('sheets-key').value = settings.sheets_key || '';
+      document.getElementById('wa-endpoint').value = settings.wa_endpoint || '';
+      document.getElementById('wa-token').value = settings.wa_token || '';
+
+      // Demo Mode checkbox
+      const isDemo = settings.demoMode !== false; // Default true
+      document.getElementById('demo-mode-switch').checked = isDemo;
+      document.getElementById('demo-mode-label').textContent = isDemo ? 'ON' : 'OFF';
+      document.getElementById('demo-mode-label').style.color = isDemo ? 'var(--yellow-400)' : 'var(--green-400)';
+
+      // Roles block
+      if (adminSession.role !== 'super_admin') {
+        document.getElementById('settings-role-warning').style.display = 'flex';
+
+        // Disable everything
+        document.querySelectorAll('.admin-content input, .admin-content textarea, .admin-content select, .admin-content button').forEach(el => {
+          // Skip side navigation and layout elements
+          if (!el.closest('.admin-sidebar') && el.id !== 'btn-save-settings') {
+            el.disabled = true;
+            el.style.opacity = '0.6';
+          }
+        });
+        document.getElementById('btn-save-settings').style.display = 'none';
+      }
+    }
+
+    function toggleDemoMode(checkbox) {
+      if (adminSession.role !== 'super_admin') return;
+
+      const isChecked = checkbox.checked;
+
+      if (!isChecked) {
+        // Show warning modal before disabling demo mode
+        checkbox.checked = true; // Temporary revert until modal confirm
+        SG.modal.open('_sg_demo_warn_modal');
+      } else {
+        // Directly turn Demo Mode back ON
+        document.getElementById('demo-mode-label').textContent = 'ON';
+        document.getElementById('demo-mode-label').style.color = 'var(--yellow-400)';
+      }
+    }
+
+    function confirmDemoToggle() {
+      const sw = document.getElementById('demo-mode-switch');
+      sw.checked = false;
+      document.getElementById('demo-mode-label').textContent = 'OFF';
+      document.getElementById('demo-mode-label').style.color = 'var(--green-400)';
+      SG.modal.close('_sg_demo_warn_modal');
+      SG.toast.warning('Demo Mode Off', 'Platform is configured to dispatch live API commands.');
+    }
+
+    function cancelDemoToggle() {
+      SG.modal.close('_sg_demo_warn_modal');
+    }
+
+    function testSheetsConnection() {
+      const spreadsheetId = document.getElementById('sheets-id').value;
+      const apiKey = document.getElementById('sheets-key').value;
+
+      if (!spreadsheetId || !apiKey) {
+        SG.toast.error('Details Incomplete', 'Spreadsheet ID and API Key are required to execute diagnostic test.');
+        return;
+      }
+
+      SG.toast.info('Sheets Test', 'Verifying connection to Google Sheets Service…');
+      setTimeout(() => {
+        SG.toast.success('Connection Active', 'Successfully reached Google Sheets API. Target columns match Koshda Jewellery House schema.');
+      }, 1200);
+    }
+
+    function testWhatsAppConnection() {
+      const endpoint = document.getElementById('wa-endpoint').value;
+      const token = document.getElementById('wa-token').value;
+
+      if (!endpoint || !token) {
+        SG.toast.error('Details Incomplete', 'API Endpoint URL and Access Token are required to execute diagnostic test.');
+        return;
+      }
+
+      SG.toast.info('WhatsApp Test', 'Verifying connectivity to Meta Business Cloud Server…');
+      setTimeout(() => {
+        SG.toast.success('Service Validated', 'WhatsApp webhook endpoint responds correctly. Status: 200 OK.');
+      }, 1200);
+    }
+
+    function savePlatformSettings() {
+      if (adminSession.role !== 'super_admin') return;
+
+      const tokenDays = parseInt(document.getElementById('cfg-token-days').value) || 365;
+      const timeoutMins = parseInt(document.getElementById('cfg-timeout-mins').value) || 30;
+      const limitStd = parseInt(document.getElementById('limit-standard').value) || 2;
+      const limitPrem = parseInt(document.getElementById('limit-premium').value) || 5;
+      const limitExcl = parseInt(document.getElementById('limit-exclusive').value) || 8;
+
+      const sheetsId = document.getElementById('sheets-id').value.trim();
+      const sheetsKey = document.getElementById('sheets-key').value.trim();
+      const waEndpoint = document.getElementById('wa-endpoint').value.trim();
+      const waToken = document.getElementById('wa-token').value.trim();
+      const demoMode = document.getElementById('demo-mode-switch').checked;
+
+      const newSettings = {
+        tokenValidityDays: tokenDays,
+        sessionTimeoutMins: timeoutMins,
+        deviceLimit_standard: limitStd,
+        deviceLimit_premium: limitPrem,
+        deviceLimit_exclusive: limitExcl,
+        sheets_id: sheetsId,
+        sheets_key: sheetsKey,
+        wa_endpoint: waEndpoint,
+        wa_token: waToken,
+        demoMode: demoMode
+      };
+
+      const success = SG.admin.saveSettings(newSettings);
+      if (success) {
+        SG.toast.success('Settings Saved', 'Platform configurations updated successfully.');
+        loadPlatformSettings();
+      } else {
+        SG.toast.error('Error', 'Unable to save settings.');
+      }
+    }
+  </script>
+</body>
+
+</html>

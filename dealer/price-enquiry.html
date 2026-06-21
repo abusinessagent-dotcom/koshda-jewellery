@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wholesale Price Estimator — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title">Price Enquiry Calculator</div>
+        <div class="topbar-breadcrumb">
+          <span>Dealer Portal</span><span>›</span><span class="current">Price Enquiry</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Price Estimator Tool</h1>
+          <p class="page-subtitle">Input design dimensions to estimate pricing rules based on dynamic base bullion metal rates.</p>
+        </div>
+      </div>
+
+      <!-- Main Layout -->
+      <div class="grid gap-6 grid-cols-1-380">
+        <!-- Left: Form Input -->
+        <div class="card">
+          <div class="section-title mb-4">Estimate Custom Specs Value</div>
+          <form id="calculator-form" oninput="calculateEstimates()">
+            <div class="grid gap-4 grid-cols-2">
+              <div class="form-group">
+                <label class="form-label" for="enq-purity">Gold Purity Grade</label>
+                <select id="enq-purity" class="form-select" required>
+                  <option value="22K" data-rate="7200">22 Karat Gold (₹7,200/g)</option>
+                  <option value="18K" data-rate="5900">18 Karat Gold (₹5,900/g)</option>
+                  <option value="14K" data-rate="4600">14 Karat Gold (₹4,600/g)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="enq-weight">Estimated Gold Weight (g)</label>
+                <input type="number" step="0.01" id="enq-weight" class="form-input" value="10" required>
+              </div>
+            </div>
+
+            <div class="grid gap-4 grid-cols-2 mt-3-val">
+              <div class="form-group">
+                <label class="form-label" for="enq-category">Jewelry Category</label>
+                <select id="enq-category" class="form-select" required>
+                  <option value="NECK">Necklace</option>
+                  <option value="RING">Ring</option>
+                  <option value="EARR">Earrings</option>
+                  <option value="BANG">Bangle</option>
+                  <option value="PEND">Pendant</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="enq-making">Craftsmanship Work</label>
+                <select id="enq-making" class="form-select" required>
+                  <option value="standard" data-pct="0.08">Standard Machine Cast (8%)</option>
+                  <option value="handcrafted" data-pct="0.15">Premium Handcrafted (15%)</option>
+                  <option value="antique" data-pct="0.22">Opulent Heritage Antique (22%)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group mt-3-val">
+              <label class="form-label" for="enq-note">Additional Customization Details</label>
+              <textarea id="enq-note" class="form-input calc-form-textarea" placeholder="Enter diamond specifications, design references, custom ring sizes..."></textarea>
+            </div>
+
+            <div class="calc-form-footer">
+              <button type="button" class="btn btn-primary" onclick="submitEnquiryRequest()">
+                ✉️ Submit Official Quote Request
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Right: Results Card -->
+        <div class="card calc-results-card">
+          <div class="section-title text-gold calc-results-title">Wholesale Estimates</div>
+          
+          <div class="flex-col-gap-4-rem">
+            <div class="calc-result-row">
+              <span>Base Gold Metal Cost:</span>
+              <strong id="res-base">₹0</strong>
+            </div>
+
+            <div class="calc-result-row">
+              <span>Making Charges:</span>
+              <strong id="res-making">₹0</strong>
+            </div>
+
+            <div class="calc-result-row">
+              <span>Hallmarking & Levies (3%):</span>
+              <strong id="res-tax">₹0</strong>
+            </div>
+
+            <div class="calc-result-row-total">
+              <span>Total Estimated Value:</span>
+              <span id="res-total">₹0</span>
+            </div>
+
+            <div class="calc-disclaimer">
+              ⚠️ <strong>Disclaimer:</strong> Prices are estimates based on live wholesale base metal indexes. Final quotes are confirmed during CAD master approval.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/dealer.js" defer></script>
+<script>
+let session = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+
+  session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Trigger initial math calculation
+  calculateEstimates();
+});
+
+function calculateEstimates() {
+  const purityEl = document.getElementById('enq-purity');
+  const makingEl = document.getElementById('enq-making');
+  
+  const goldRate = parseFloat(purityEl.options[purityEl.selectedIndex].dataset.rate);
+  const weight = parseFloat(document.getElementById('enq-weight').value) || 0;
+  const makingPct = parseFloat(makingEl.options[makingEl.selectedIndex].dataset.pct);
+
+  const baseCost = goldRate * weight;
+  const makingCost = baseCost * makingPct;
+  const taxCost = (baseCost + makingCost) * 0.03;
+  const totalCost = baseCost + makingCost + taxCost;
+
+  document.getElementById('res-base').textContent = '₹' + SG.str.currency(baseCost);
+  document.getElementById('res-making').textContent = '₹' + SG.str.currency(makingCost);
+  document.getElementById('res-tax').textContent = '₹' + SG.str.currency(taxCost);
+  document.getElementById('res-total').textContent = '₹' + SG.str.currency(totalCost);
+}
+
+function submitEnquiryRequest() {
+  const purity = document.getElementById('enq-purity').value;
+  const weight = parseFloat(document.getElementById('enq-weight').value) || 0;
+  const category = document.getElementById('enq-category').value;
+  const makingType = document.getElementById('enq-making').value;
+  const note = document.getElementById('enq-note').value.trim();
+
+  if (weight <= 0) {
+    SG.toast.error('Invalid Weight', 'Please input a valid gold weight in grams.');
+    return;
+  }
+
+  const baseRate = parseFloat(document.getElementById('enq-purity').options[document.getElementById('enq-purity').selectedIndex].dataset.rate);
+  const baseCost = baseRate * weight;
+  const makingPct = parseFloat(document.getElementById('enq-making').options[document.getElementById('enq-making').selectedIndex].dataset.pct);
+  const makingCost = baseCost * makingPct;
+  const estimatedVal = (baseCost + makingCost) * 1.03;
+
+  const quoteRequest = {
+    id: 'enq-' + SG.uid.short(),
+    dealerId: session.id,
+    dealerName: session.name,
+    purity,
+    weight: weight + 'g',
+    category,
+    makingType,
+    estimatedVal,
+    details: note,
+    submittedAt: SG.time.now(),
+    status: 'pending'
+  };
+
+  const enquiries = SG.store.get('price_enquiries') || [];
+  enquiries.unshift(quoteRequest);
+  SG.store.set('price_enquiries', enquiries);
+
+  SG.audit('DEALER_PRICE_ENQUIRY', session.id, `${purity} gold custom, estimated: ₹${SG.str.currency(estimatedVal)}`);
+  SG.toast.success('Enquiry Submitted', 'Our logistics team will verify configurations and dispatch quotes.');
+
+  // Reset note
+  document.getElementById('enq-note').value = '';
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,1246 @@
+[
+  {
+    "id": "prd-dyn-rg-dm-p2-001",
+    "code": "RG-DM-P2-001",
+    "name": "Classic Diamond Solitaire Ring",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "category": "RING",
+    "categoryLabel": "Rings",
+    "material": "Diamond",
+    "purity": "Diamond",
+    "weight": "3.5g",
+    "price": 32000,
+    "priceRange": "20k-50k",
+    "description": "Elegant solitaire ring set with a brilliant round cut diamond.",
+    "images": [
+      "/uploads/rings/RG-DM-P2-001-1.webp",
+      "/uploads/rings/RG-DM-P2-001-2.webp"
+    ],
+    "status": "active",
+    "uploadedAt": "2026-06-17T08:07:58.333Z",
+    "searchKeywords": [
+      "classic diamond solitaire ring",
+      "rg-dm-p2-001",
+      "rings",
+      "diamond"
+    ]
+  },
+  {
+    "id": "prd-dyn-rg-dm-p2-002",
+    "code": "RG-DM-P2-002",
+    "name": "Diamond Eternity Halo Ring",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "category": "RING",
+    "categoryLabel": "Rings",
+    "material": "Diamond",
+    "purity": "Diamond",
+    "weight": "4.2g",
+    "price": 45000,
+    "priceRange": "20k-50k",
+    "description": "Stunning halo engagement ring with pavé diamond band.",
+    "images": [
+      "/uploads/rings/RG-DM-P2-002-1.webp"
+    ],
+    "status": "active",
+    "uploadedAt": "2026-06-17T08:07:58.333Z",
+    "searchKeywords": [
+      "diamond eternity halo ring",
+      "rg-dm-p2-002",
+      "rings",
+      "diamond"
+    ]
+  },
+  {
+    "id": "prd-dyn-nk-gd-p3-001",
+    "code": "NK-GD-P3-001",
+    "name": "Classic Gold Link Chain",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "category": "NECK",
+    "categoryLabel": "Necklaces",
+    "material": "Gold",
+    "purity": "22 Karat",
+    "weight": "15.4g",
+    "price": 75000,
+    "priceRange": "50k-1L",
+    "description": "Solid gold cuban link chain for daily elegance.",
+    "images": [
+      "/uploads/necklaces/NK-GD-P3-001-1.webp"
+    ],
+    "status": "active",
+    "uploadedAt": "2026-06-17T08:07:58.333Z",
+    "searchKeywords": [
+      "classic gold link chain",
+      "nk-gd-p3-001",
+      "necklaces",
+      "gold"
+    ]
+  },
+  {
+    "id": "prd-dyn-er-kd-p1-001",
+    "code": "ER-KD-P1-001",
+    "name": "Traditional Kundan Studs",
+    "collectionId": "col-003",
+    "collectionName": "Contemporary Daily",
+    "category": "EARR",
+    "categoryLabel": "Earrings",
+    "material": "Kundan",
+    "purity": "Kundan",
+    "weight": "6.8g",
+    "price": 18000,
+    "priceRange": "0-20k",
+    "description": "Beautiful traditional Kundan stud earrings with gemstone details.",
+    "images": [
+      "/uploads/earrings/ER-KD-P1-001-1.webp"
+    ],
+    "status": "active",
+    "uploadedAt": "2026-06-17T08:07:58.333Z",
+    "searchKeywords": [
+      "traditional kundan studs",
+      "er-kd-p1-001",
+      "earrings",
+      "kundan"
+    ]
+  },
+  {
+    "id": "prd-dyn-br-pk-p4-001",
+    "code": "BR-PK-P4-001",
+    "name": "Grand Polki Royal Choker",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "category": "SETT",
+    "categoryLabel": "Bridal",
+    "material": "Polki",
+    "purity": "Polki",
+    "weight": "85.2g",
+    "price": 250000,
+    "priceRange": "1L+",
+    "description": "An opulent Polki diamond choker set with emerald drop pendants.",
+    "images": [
+      "/uploads/bridal/BR-PK-P4-001-1.webp"
+    ],
+    "status": "active",
+    "uploadedAt": "2026-06-17T08:07:58.333Z",
+    "searchKeywords": [
+      "grand polki royal choker",
+      "br-pk-p4-001",
+      "bridal",
+      "polki"
+    ]
+  },
+  {
+    "id": "prd-001",
+    "code": "22K-0001-NECK-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Rajputana Bridal Necklace",
+    "category": "NECK",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "72.4g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001234",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-10",
+    "bisHallmarkNo": "22K-D-2025-0001",
+    "description": "A magnificent 22K gold bridal necklace inspired by Rajputana court jewellery. Features intricate meenakari work with ruby and emerald inlays, complemented by a graduated polki diamond centre.",
+    "aiDescription": "This heirloom-quality bridal necklace showcases the zenith of Rajputana goldsmithing tradition. The graduated form transitions from delicate filigree at the clasp to a bold pendant drop, with hand-set meenakari enamel in deep crimson and forest green. The polki diamond centrepiece catches light with characteristic flat-cut brilliance, surrounded by a lotus petal setting. Ideal for South-Indian and North-Indian bridal ceremonies alike.",
+    "occasions": [
+      "Wedding",
+      "Engagement",
+      "Reception"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "rajputana",
+      "bridal necklace",
+      "meenakari",
+      "polki",
+      "22k",
+      "heritage",
+      "red green",
+      "heirloom"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0001-A01",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0001-A02",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0001-A03"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-15T10:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-002",
+      "prd-003"
+    ]
+  },
+  {
+    "id": "prd-002",
+    "code": "22K-0002-EARR-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Chandbali Drop Earrings",
+    "category": "EARR",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "28.6g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001235",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-10",
+    "bisHallmarkNo": "22K-D-2025-0002",
+    "description": "Statement chandbali earrings in 22K gold with antique jadau work. Crescent moon form adorned with uncut diamonds and natural rubies.",
+    "aiDescription": "These oversized chandbali earrings are crafted in the traditional jadau technique, where gemstones are set directly into gold foil without prongs. The crescent moon silhouette is adorned with graduated uncut diamonds (polki) and rich red rubies, suspended from hand-twisted wire loops. The deep 22K gold colour contrasts magnificently with the pale brilliance of the polki stones.",
+    "occasions": [
+      "Wedding",
+      "Reception",
+      "Sangeet"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "chandbali",
+      "earrings",
+      "jadau",
+      "polki",
+      "ruby",
+      "22k",
+      "crescent",
+      "bridal"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0002-A01",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0002-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-15T10:30:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-001",
+      "prd-003"
+    ]
+  },
+  {
+    "id": "prd-003",
+    "code": "22K-0003-BANG-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Heritage Kangan Set (Pair)",
+    "category": "BANG",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "94.2g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001236",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-10",
+    "bisHallmarkNo": "22K-D-2025-0003",
+    "description": "A pair of heavy 22K gold bangles with antique finish and engraved floral motifs. Traditional closing mechanism with gemstone insets.",
+    "aiDescription": "These substantial bridal bangles are finished in a rich matte-antique treatment that accentuates the deeply carved floral and paisley engravings. The 22K gold is worked into thick cylindrical forms with a traditional box-clasp mechanism studded with small rubies. The pair weighs 94.2 grams, providing the characteristic weight and sound prized in traditional bridal sets.",
+    "occasions": [
+      "Wedding",
+      "Engagement"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "kangan",
+      "bangles",
+      "pair",
+      "22k",
+      "bridal",
+      "antique",
+      "floral",
+      "heavy"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0003-A01",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0003-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-16T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-001",
+      "prd-002"
+    ]
+  },
+  {
+    "id": "prd-004",
+    "code": "22K-0004-MAAG-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Kundan Maang Tikka",
+    "category": "MAAG",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "18.3g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001237",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-12",
+    "bisHallmarkNo": "22K-D-2025-0004",
+    "description": "Elaborate kundan maang tikka with emerald centre and pearl drop. Adjustable chain setting for versatile placement.",
+    "aiDescription": "This maang tikka features a circular kundan disc set with a deep green emerald centrepiece surrounded by concentric rings of carefully selected kundan stones. A single natural pearl drop hangs from the base on a gold chain. The adjustable matha-patti chain ensures a perfect fit for all head sizes. The piece complements both North and South Indian bridal hairstyles.",
+    "occasions": [
+      "Wedding",
+      "Engagement",
+      "Sangeet"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "maang tikka",
+      "matha patti",
+      "kundan",
+      "emerald",
+      "pearl",
+      "22k",
+      "bridal"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0004-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-16T11:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-001",
+      "prd-002"
+    ]
+  },
+  {
+    "id": "prd-005",
+    "code": "22K-0005-NECK-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Temple Choker Necklace",
+    "category": "NECK",
+    "subCategory": "BRD",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "58.7g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001238",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-12",
+    "bisHallmarkNo": "22K-D-2025-0005",
+    "description": "Close-fitting temple choker with Lakshmi centerpiece and rubies. Classic South Indian bridal look.",
+    "aiDescription": "This temple choker combines the sacred imagery of goddess Lakshmi with the craft traditions of Kanchipuram temple jewellers. The central Lakshmi coin is surrounded by rubies in a sun-ray setting, flanked by peacock motifs. The close-fitting collar form sits at the collarbone. Five pendant drops of graduated length hang from the base, each terminating in a natural ruby bead.",
+    "occasions": [
+      "Wedding",
+      "Temple Ceremony",
+      "Engagement"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "temple choker",
+      "lakshmi",
+      "ruby",
+      "22k",
+      "south indian",
+      "bridal",
+      "collar"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0005-A01",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0005-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-17T09:30:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-006",
+      "prd-007"
+    ]
+  },
+  {
+    "id": "prd-006",
+    "code": "22K-0006-RING-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Solitaire Engagement Ring",
+    "category": "RING",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "12.1g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001239",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-14",
+    "bisHallmarkNo": "22K-D-2025-0006",
+    "description": "Classic solitaire ring in 22K gold with oval natural yellow sapphire. Heavy shank with micro-pavé side stones.",
+    "aiDescription": "A traditional Indian engagement ring centred on a vivid yellow sapphire of 3.2 carats in an oval cut, set in a four-prong 22K gold basket. The wide polished shank tapers gracefully toward the centre setting and is adorned with micro-pavé round diamonds on the shoulder. The warm yellow of the sapphire harmonises beautifully with the 22K gold colour.",
+    "occasions": [
+      "Engagement",
+      "Wedding"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "ring",
+      "solitaire",
+      "yellow sapphire",
+      "engagement",
+      "22k",
+      "pavé"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0006-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-17T11:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-007"
+    ]
+  },
+  {
+    "id": "prd-007",
+    "code": "22K-0007-PEND-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Polki Diamond Pendant",
+    "category": "PEND",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "22.4g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001240",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-14",
+    "bisHallmarkNo": "22K-D-2025-0007",
+    "description": "Statement pendant featuring 12 polki diamonds set in 22K gold with a jadau frame. Chain included.",
+    "aiDescription": "This pendant showcases twelve certified polki diamonds of varying sizes arranged in a medallion formation within a deeply carved jadau gold frame. The reverse side features detailed blue and green meenakari enamel work — a hallmark of Rajasthani craftsmanship. Includes a handcrafted 18-inch 22K gold box chain. The pendant face diameter is 48mm.",
+    "occasions": [
+      "Wedding",
+      "Reception",
+      "Festive"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "polki",
+      "pendant",
+      "jadau",
+      "meenakari",
+      "22k",
+      "diamond",
+      "medallion"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0007-A01",
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0007-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-18T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-006"
+    ]
+  },
+  {
+    "id": "prd-008",
+    "code": "22K-0008-ANKL-BRD-HRTG-25",
+    "collectionId": "col-001",
+    "collectionName": "Bridal Heritage 2025",
+    "name": "Gold Payal (Anklet Set)",
+    "category": "ANKL",
+    "subCategory": "BRD",
+    "style": "HRTG",
+    "material": "22K",
+    "year": 2025,
+    "weight": "46.8g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-DEL-2025-001241",
+    "bisGrade": "916",
+    "bisCertDate": "2025-01-16",
+    "bisHallmarkNo": "22K-D-2025-0008",
+    "description": "Heavy 22K gold anklet pair with traditional ghungroo bells and intricate chain work. Adjustable fit.",
+    "aiDescription": "These substantial gold anklets are crafted in the traditional payal style of Rajasthan, featuring a dense chain of interlocking gold links interspersed with small ghungroo (hollow gold bells). The bells produce the characteristic sweet sound associated with bridal jewellery in Indian tradition. The adjustable clasp accommodates ankle sizes 8 to 11 inches. Sold as a pair.",
+    "occasions": [
+      "Wedding",
+      "Engagement"
+    ],
+    "styleNotes": "Heritage Traditional",
+    "searchKeywords": [
+      "anklet",
+      "payal",
+      "ghungroo",
+      "22k",
+      "bridal",
+      "feet",
+      "pair",
+      "bells"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2d1b0a/d4af37?text=22K-0008-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-01-18T11:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-001"
+    ]
+  },
+  {
+    "id": "prd-009",
+    "code": "18K-0009-NECK-DLY-CTMP-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Minimalist Bar Necklace",
+    "category": "NECK",
+    "subCategory": "DLY",
+    "style": "CTMP",
+    "material": "18K",
+    "year": 2025,
+    "weight": "8.4g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002001",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-15",
+    "bisHallmarkNo": "18K-M-2025-0009",
+    "description": "Sleek horizontal bar pendant in 18K gold on a delicate chain. Modern, versatile, perfect for everyday layering.",
+    "aiDescription": "This pendant distils contemporary jewellery design to its essential form: a highly polished 18K gold rectangular bar (35mm × 4mm) suspended from a delicate 40cm wheat chain. The brushed texture of the bar surface creates elegant contrast with the polished chain links. Suitable for layering with longer necklaces or wearing alone for understated elegance. The minimalist silhouette transitions seamlessly from morning meetings to evening occasions.",
+    "occasions": [
+      "Office",
+      "Casual",
+      "Date Night"
+    ],
+    "styleNotes": "Contemporary Minimalist",
+    "searchKeywords": [
+      "bar necklace",
+      "minimalist",
+      "18k",
+      "everyday",
+      "modern",
+      "layering",
+      "office"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0009-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-20T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-010",
+      "prd-011"
+    ]
+  },
+  {
+    "id": "prd-010",
+    "code": "18K-0010-EARR-DLY-CTMP-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Sculptural Hoop Earrings",
+    "category": "EARR",
+    "subCategory": "DLY",
+    "style": "CTMP",
+    "material": "18K",
+    "year": 2025,
+    "weight": "9.8g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002002",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-15",
+    "bisHallmarkNo": "18K-M-2025-0010",
+    "description": "Open-form sculptural hoops in 18K gold. Bold 40mm diameter with a twisted wire design. Featherlight.",
+    "aiDescription": "These architectural hoops challenge the conventional circular form with an open-ended design that creates a visual tension between positive and negative space. At 40mm diameter, they are statement pieces that retain the lightness of 18K gold at just 9.8g total weight. The twisted wire technique adds surface interest while maintaining the clean contemporary aesthetic. Suitable for all occasions from the boardroom to a gallery opening.",
+    "occasions": [
+      "Office",
+      "Evening",
+      "Casual"
+    ],
+    "styleNotes": "Contemporary Statement",
+    "searchKeywords": [
+      "hoops",
+      "earrings",
+      "sculptural",
+      "18k",
+      "modern",
+      "large",
+      "twist",
+      "contemporary"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0010-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-21T10:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-009",
+      "prd-011"
+    ]
+  },
+  {
+    "id": "prd-011",
+    "code": "18K-0011-RING-DLY-MNML-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Stacking Band Ring",
+    "category": "RING",
+    "subCategory": "DLY",
+    "style": "MNML",
+    "material": "18K",
+    "year": 2025,
+    "weight": "4.2g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002003",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-16",
+    "bisHallmarkNo": "18K-M-2025-0011",
+    "description": "Slim 2mm band in 18K gold. Hammered texture. Designed for stacking — sold individually.",
+    "aiDescription": "This 2mm band ring is the perfect foundation for a curated ring stack. The hand-hammered texture on the exterior surface catches light in an organic, non-uniform way, preventing the slight flash of a polished band from becoming monotonous. The interior is smooth and highly polished for comfort. Available in sizes 5 to 12 (US). Pairs beautifully with other rings from the Contemporary Daily collection.",
+    "occasions": [
+      "Everyday",
+      "Office",
+      "Casual"
+    ],
+    "styleNotes": "Minimalist Modern",
+    "searchKeywords": [
+      "stacking ring",
+      "band",
+      "minimalist",
+      "hammered",
+      "18k",
+      "slim",
+      "everyday"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0011-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-22T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-012"
+    ]
+  },
+  {
+    "id": "prd-012",
+    "code": "18K-0012-BRAC-DLY-CTMP-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Fluid Link Bracelet",
+    "category": "BRAC",
+    "subCategory": "DLY",
+    "style": "CTMP",
+    "material": "18K",
+    "year": 2025,
+    "weight": "14.6g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002004",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-16",
+    "bisHallmarkNo": "18K-M-2025-0012",
+    "description": "Organic-shaped interlocking links in 18K gold. Each link is slightly irregular — no two bracelets identical.",
+    "aiDescription": "Each link in this bracelet is hand-formed, resulting in organic, fluid shapes interlocking in a rhythmic sequence. The variations between links ensure that no two bracelets are identical. The comfort-fit design has a hidden box clasp closure. Length: 19cm.",
+    "occasions": [
+      "Office",
+      "Casual",
+      "Evening"
+    ],
+    "styleNotes": "Contemporary Artisan",
+    "searchKeywords": [
+      "bracelet",
+      "link",
+      "organic",
+      "18k",
+      "modern",
+      "artisan",
+      "unique"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0012-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-23T10:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-011"
+    ]
+  },
+  {
+    "id": "prd-013",
+    "code": "18K-0013-PEND-DLY-MNML-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Diamond Initial Pendant",
+    "category": "PEND",
+    "subCategory": "DLY",
+    "style": "MNML",
+    "material": "18K",
+    "year": 2025,
+    "weight": "5.8g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002005",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-18",
+    "bisHallmarkNo": "18K-M-2025-0013",
+    "description": "Custom initial letter in 18K gold with single 0.10ct diamond. Sold with a 42cm chain.",
+    "aiDescription": "A personalised initial letter crafted in solid 18K yellow gold with a single 0.10ct VS1 clarity round diamond set into the letter form. Script-style letterforms with handcrafted 42cm wheat chain.",
+    "occasions": [
+      "Everyday",
+      "Gift",
+      "Office"
+    ],
+    "styleNotes": "Minimalist Personal",
+    "searchKeywords": [
+      "initial pendant",
+      "diamond",
+      "personalised",
+      "18k",
+      "letter",
+      "custom",
+      "gift"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0013-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-24T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-009"
+    ]
+  },
+  {
+    "id": "prd-014",
+    "code": "18K-0014-EARR-DLY-MNML-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Diamond Stud Earrings (0.5ct)",
+    "category": "EARR",
+    "subCategory": "DLY",
+    "style": "MNML",
+    "material": "18K",
+    "year": 2025,
+    "weight": "3.2g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002006",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-18",
+    "bisHallmarkNo": "18K-M-2025-0014",
+    "description": "Classic round diamond studs, 0.25ct each, in 18K four-prong settings. GIA certified.",
+    "aiDescription": "These timeless stud earrings feature two certified round brilliant diamonds of 0.25ct each (F colour, VS2 clarity, GIA certificate included). Four-prong low-profile settings in 18K gold.",
+    "occasions": [
+      "Everyday",
+      "Office",
+      "Formal"
+    ],
+    "styleNotes": "Minimalist Classic",
+    "searchKeywords": [
+      "diamond studs",
+      "stud earrings",
+      "18k",
+      "round",
+      "everyday",
+      "GIA",
+      "classic"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0014-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-25T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-010"
+    ]
+  },
+  {
+    "id": "prd-015",
+    "code": "18K-0015-RING-DLY-STAT-25",
+    "collectionId": "col-002",
+    "collectionName": "Contemporary Daily",
+    "name": "Cocktail Statement Ring",
+    "category": "RING",
+    "subCategory": "DLY",
+    "style": "STAT",
+    "material": "18K",
+    "year": 2025,
+    "weight": "16.4g",
+    "purity": "18 Karat",
+    "bisHallmark": "HM-MUM-2025-002007",
+    "bisGrade": "750",
+    "bisCertDate": "2025-02-20",
+    "bisHallmarkNo": "18K-M-2025-0015",
+    "description": "Bold asymmetric cocktail ring in 18K gold with a 4ct oval blue topaz.",
+    "aiDescription": "This cocktail ring commands attention with its asymmetric gold architecture framing a vivid 4ct oval Swiss blue topaz. Wide comfort-fit band.",
+    "occasions": [
+      "Evening",
+      "Party",
+      "Festive"
+    ],
+    "styleNotes": "Statement Modern",
+    "searchKeywords": [
+      "cocktail ring",
+      "blue topaz",
+      "statement",
+      "18k",
+      "bold",
+      "asymmetric",
+      "party"
+    ],
+    "images": [
+      "https://placehold.co/800x800/0a1a2d/3b82f6?text=18K-0015-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-02-26T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-012"
+    ]
+  },
+  {
+    "id": "prd-016",
+    "code": "22K-0016-NECK-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Lakshmi Temple Necklace",
+    "category": "NECK",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "85.2g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003001",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-05",
+    "bisHallmarkNo": "22K-C-2025-0016",
+    "description": "South Indian temple necklace with Lakshmi coins and rubies. antique-finish gold. Handcrafted.",
+    "aiDescription": "South Indian temple necklace with Lakshmi coins and rubies. The antique finish is achieved through traditional sulphur treatment.",
+    "occasions": [
+      "Temple Ceremony",
+      "Wedding",
+      "Dance Performance"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "lakshmi",
+      "temple necklace",
+      "south indian",
+      "22k",
+      "antique",
+      "ruby",
+      "coins"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0016-A01",
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0016-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-10T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-017",
+      "prd-018"
+    ]
+  },
+  {
+    "id": "prd-017",
+    "code": "22K-0017-EARR-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Jhumka Bell Earrings (Large)",
+    "category": "EARR",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "32.4g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003002",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-05",
+    "bisHallmarkNo": "22K-C-2025-0017",
+    "description": "Large traditional jhumka earrings in 22K gold with rubies and hanging pearl chains.",
+    "aiDescription": "Traditional jhumka bell shape covered with ruby beads and pearl drop fringe. Hinged top posts.",
+    "occasions": [
+      "Wedding",
+      "Temple Ceremony",
+      "Festive"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "jhumka",
+      "bell earrings",
+      "22k",
+      "ruby",
+      "pearl",
+      "south indian",
+      "large"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0017-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-11T10:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-016",
+      "prd-018"
+    ]
+  },
+  {
+    "id": "prd-018",
+    "code": "22K-0018-BANG-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Temple Antique Bangles (Set of 4)",
+    "category": "BANG",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "120.6g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003003",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-06",
+    "bisHallmarkNo": "22K-C-2025-0018",
+    "description": "Set of four antique-finish temple bangles with deity motifs and ruby accents.",
+    "aiDescription": "Traditional temple gopuram and deity shapes carved in 22K gold bangles with antique sulphur finish.",
+    "occasions": [
+      "Wedding",
+      "Temple Ceremony",
+      "Festive"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "temple bangles",
+      "antique",
+      "set of 4",
+      "22k",
+      "deity",
+      "south indian"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0018-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-12T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-016"
+    ]
+  },
+  {
+    "id": "prd-019",
+    "code": "22K-0019-NECK-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Haaram Long Necklace",
+    "category": "NECK",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "148.3g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003004",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-07",
+    "bisHallmarkNo": "22K-C-2025-0019",
+    "description": "Traditional 36-inch long haaram in 22K gold with alternating temple coins.",
+    "aiDescription": "Waist-length traditional haaram featuring Lakshmi coins linked by twisted wire loops, with a central pendant drop.",
+    "occasions": [
+      "Wedding",
+      "Temple Ceremony"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "haaram",
+      "long necklace",
+      "22k",
+      "temple coins",
+      "south indian",
+      "36 inch"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0019-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-13T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-017",
+      "prd-018"
+    ]
+  },
+  {
+    "id": "prd-020",
+    "code": "22K-0020-WAIST-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Oddiyanam Waist Belt",
+    "category": "SETT",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "198.4g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003005",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-08",
+    "bisHallmarkNo": "22K-C-2025-0020",
+    "description": "Traditional South Indian oddiyanam (waist belt) in 22K gold with central Lakshmi deity medallion.",
+    "aiDescription": "Goddess Lakshmi centered gold belt plate encrusted with rubies and emeralds, with adjustable gold snake chain back.",
+    "occasions": [
+      "Wedding",
+      "Temple Ceremony"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "oddiyanam",
+      "waist belt",
+      "vaddanam",
+      "22k",
+      "south indian",
+      "bridal"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0020-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-14T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-019"
+    ]
+  },
+  {
+    "id": "prd-021",
+    "code": "22K-0021-NOSE-FST-TMPL-25",
+    "collectionId": "col-003",
+    "collectionName": "Temple Traditional",
+    "name": "Nathni Nose Ring (Bridal)",
+    "category": "NOSE",
+    "subCategory": "FST",
+    "style": "TMPL",
+    "material": "22K",
+    "year": 2025,
+    "weight": "8.6g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-CHN-2025-003006",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-09",
+    "bisHallmarkNo": "22K-C-2025-0021",
+    "description": "Large bridal nathni in 22K gold with ruby and pearl cluster. Chain hooks to hair.",
+    "aiDescription": "Classical bridal nathni nose ring set with rubies and emerald drops, including matching 40cm hair connecting chain.",
+    "occasions": [
+      "Wedding",
+      "Traditional Ceremony"
+    ],
+    "styleNotes": "Temple Traditional",
+    "searchKeywords": [
+      "nathni",
+      "nose ring",
+      "22k",
+      "ruby",
+      "pearl",
+      "bridal",
+      "large"
+    ],
+    "images": [
+      "https://placehold.co/800x800/2a1a3a/8b5cf6?text=22K-0021-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-03-15T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-016"
+    ]
+  },
+  {
+    "id": "prd-022",
+    "code": "22K-0022-NECK-GFT-FUSE-25",
+    "collectionId": "col-004",
+    "collectionName": "Festive Statement",
+    "name": "Kundan Polki Grand Necklace",
+    "category": "NECK",
+    "subCategory": "GFT",
+    "style": "FUSE",
+    "material": "22K",
+    "year": 2025,
+    "weight": "115.4g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-JAI-2025-004001",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-30",
+    "bisHallmarkNo": "22K-J-2025-0022",
+    "description": "Grand kundan necklace with 24 polki diamonds and emerald drops. Signature festive showpiece.",
+    "aiDescription": "Premium polki diamond flat cut layout encrusted in pure gold foil (Kundan) with natural emerald bead cascades.",
+    "occasions": [
+      "Wedding",
+      "Festive",
+      "Reception"
+    ],
+    "styleNotes": "Festive Fusion",
+    "searchKeywords": [
+      "kundan",
+      "polki",
+      "grand necklace",
+      "emerald",
+      "festive",
+      "22k"
+    ],
+    "images": [
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0022-A01",
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0022-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-04-05T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-023",
+      "prd-024"
+    ]
+  },
+  {
+    "id": "prd-023",
+    "code": "22K-0023-EARR-GFT-FUSE-25",
+    "collectionId": "col-004",
+    "collectionName": "Festive Statement",
+    "name": "Jhoomka Chaand Baali Set",
+    "category": "EARR",
+    "subCategory": "GFT",
+    "style": "FUSE",
+    "material": "22K",
+    "year": 2025,
+    "weight": "48.2g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-JAI-2025-004002",
+    "bisGrade": "916",
+    "bisCertDate": "2025-03-30",
+    "bisHallmarkNo": "22K-J-2025-0023",
+    "description": "Grand festive earrings combining chaand baali top with jhoomka drop. 22K gold with polki and emerald.",
+    "aiDescription": "Hybrid statement earrings comprising crescent shape kundan stud and drop bell shape encrusted with rubies.",
+    "occasions": [
+      "Wedding",
+      "Festive",
+      "Sangeet"
+    ],
+    "styleNotes": "Festive Statement",
+    "searchKeywords": [
+      "jhoomka",
+      "chaand baali",
+      "festive",
+      "22k",
+      "polki",
+      "emerald"
+    ],
+    "images": [
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0023-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-04-06T10:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-022",
+      "prd-024"
+    ]
+  },
+  {
+    "id": "prd-024",
+    "code": "22K-0024-BRAC-GFT-FUSE-25",
+    "collectionId": "col-004",
+    "collectionName": "Festive Statement",
+    "name": "Peacock Kundan Bracelet",
+    "category": "BRAC",
+    "subCategory": "GFT",
+    "style": "FUSE",
+    "material": "22K",
+    "year": 2025,
+    "weight": "56.8g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-JAI-2025-004003",
+    "bisGrade": "916",
+    "bisCertDate": "2025-04-01",
+    "bisHallmarkNo": "22K-J-2025-0024",
+    "description": "Wide kundan bracelet with three peacock motifs, polki diamonds, and sapphires.",
+    "aiDescription": "Pure 22K gold cuff with three kundan inlaid peacocks, containing flat diamond feathers and sapphire eyes.",
+    "occasions": [
+      "Festive",
+      "Wedding",
+      "Reception"
+    ],
+    "styleNotes": "Festive Statement",
+    "searchKeywords": [
+      "peacock bracelet",
+      "kundan",
+      "sapphire",
+      "polki",
+      "22k",
+      "meenakari"
+    ],
+    "images": [
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0024-A01"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-04-07T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-022"
+    ]
+  },
+  {
+    "id": "prd-025",
+    "code": "22K-0025-NECK-GFT-FUSE-25",
+    "collectionId": "col-004",
+    "collectionName": "Festive Statement",
+    "name": "Collar Choker with Maang",
+    "category": "NECK",
+    "subCategory": "GFT",
+    "style": "FUSE",
+    "material": "22K",
+    "year": 2025,
+    "weight": "92.1g",
+    "purity": "22 Karat",
+    "bisHallmark": "HM-JAI-2025-004004",
+    "bisGrade": "916",
+    "bisCertDate": "2025-04-01",
+    "bisHallmarkNo": "22K-J-2025-0025",
+    "description": "Festive collar choker set with matching maang tikka. Sold as a set. Polki and ruby work.",
+    "aiDescription": "Broad collar choker and matching forehead maang tikka, encrusted with polki flat-cut diamonds and rubies.",
+    "occasions": [
+      "Festive",
+      "Wedding",
+      "Reception"
+    ],
+    "styleNotes": "Festive Fusion",
+    "searchKeywords": [
+      "collar choker",
+      "maang tikka set",
+      "22k",
+      "polki",
+      "ruby",
+      "festive"
+    ],
+    "images": [
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0025-A01",
+      "https://placehold.co/800x800/3a2a1a/f59e0b?text=22K-0025-A02"
+    ],
+    "status": "active",
+    "uploadedAt": "2025-04-08T09:00:00Z",
+    "aiMetadataStatus": "verified",
+    "crossSell": [
+      "prd-022",
+      "prd-023"
+    ]
+  }
+]

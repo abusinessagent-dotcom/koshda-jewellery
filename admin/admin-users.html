@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Management — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+  <style>
+    .qr-mock-box {
+      background: white;
+      padding: var(--space-4);
+      width: 140px;
+      height: 140px;
+      margin: 12px auto;
+      border: 1px solid var(--border-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: black;
+      font-size: 11px;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Admin Management</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>System</span><span>›</span><span class="current">User Accounts</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header mb-6">
+        <div>
+          <h1 class="page-title">Administrator Accounts</h1>
+          <p class="page-subtitle">Configure administrative users, assign permission roles, reset credentials, and enforce MFA</p>
+        </div>
+      </div>
+
+      <!-- Main Layout Grid -->
+      <div class="grid gap-6 admin-grid-layout">
+        
+        <!-- Left: Administrators Table -->
+        <div class="table-card">
+          <div class="table-container table-container-flat">
+            <div class="table-scroll-wrap">
+              <table id="admins-table">
+                <thead>
+                  <tr>
+                    <th>Administrator Details</th>
+                    <th>Role</th>
+                    <th>MFA Status</th>
+                    <th>Account Status</th>
+                    <th>Last Active</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="admins-tbody">
+                  <!-- JS populated rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Create Administrator Form -->
+        <div class="flex flex-col gap-6">
+          
+          <div class="card">
+            <h3 class="section-title mb-4">👤 Add Administrative User</h3>
+            
+            <div class="form-group">
+              <label class="form-label">Full Name <span class="required">*</span></label>
+              <input type="text" class="form-input" id="new-adm-name" placeholder="e.g. Ramesh Patel">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Email Address <span class="required">*</span></label>
+              <input type="email" class="form-input" id="new-adm-email" placeholder="ramesh@Koshda Jewellery House.com">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Temporary Password <span class="required">*</span></label>
+              <input type="password" class="form-input" id="new-adm-password" placeholder="Min 8 characters">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Administrative Role <span class="required">*</span></label>
+              <select class="form-select" id="new-adm-role" title="Administrative Role">
+                <option value="super_admin">Super Admin</option>
+                <option value="catalogue_manager">Catalogue Manager</option>
+                <option value="dealer_manager">Dealer Manager</option>
+                <option value="analytics_viewer">Analytics Viewer</option>
+              </select>
+            </div>
+
+            <button class="btn btn-primary w-100 justify-center mt-4" onclick="createAdminUser()">
+              ? Create Account
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Password Reset Modal -->
+<div class="modal-overlay" id="_sg_reset_pwd_modal">
+  <div class="modal temp-pass-modal-width">
+    <div class="modal-header">
+      <h3 class="modal-title">Temporary Password Generated</h3>
+      <button class="modal-close" onclick="SG.modal.close('_sg_reset_pwd_modal')">×</button>
+    </div>
+    <div class="modal-body modal-body-text">
+      <p>A temporary credential has been written for user <strong id="reset-user-email">[email]</strong>.</p>
+      <div class="temp-pass-box">
+        <span class="temp-pass-label">Temporary Password</span>
+        <code class="temp-pass-code" id="reset-temp-pass">PASS-1234</code>
+      </div>
+      <p class="temp-pass-hint">Share this temporary credential securely. The user will be requested to update it on login.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="SG.modal.close('_sg_reset_pwd_modal')">Confirm Reset</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOTP Setup Modal -->
+<div class="modal-overlay" id="_sg_mfa_modal">
+  <div class="modal totp-modal-width">
+    <div class="modal-header">
+      <h3 class="modal-title">MFA TOTP Configuration</h3>
+      <button class="modal-close" onclick="SG.modal.close('_sg_mfa_modal')">×</button>
+    </div>
+    <div class="modal-body totp-modal-body">
+      <p>Scan the QR code below inside a standard authenticator app (Google Authenticator, Duo, or Authy) to link this profile.</p>
+      
+      <div class="qr-mock-box">
+        <div class="qr-mock-box-wrap">
+          <div class="qr-mock-box-icon">??</div>
+          <span>[ MOCK QR CODE ]</span>
+        </div>
+      </div>
+
+      <div class="mfa-confirm-wrap">
+        <label class="form-label form-label-small">Standard OTP Auth URI Link</label>
+        <textarea class="form-textarea otp-textarea" id="mfa-uri-text" readonly title="OTP Auth URI — click to copy" onclick="this.select()"></textarea>
+        <button class="btn btn-ghost btn-sm w-100 mt-2 justify-center" onclick="copyMfaUri()">📋 Copy URI link</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('_sg_mfa_modal')">Cancel</button>
+      <button class="btn btn-primary" id="btn-toggle-mfa-confirm">Activate Authenticator</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/totp.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession;
+  let adminUsersList = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth Check
+    if (!SG.auth.requireRole('super_admin')) return;
+    adminSession = SG.auth.current();
+
+    // STRICT Super Admin Role Guard Check
+    if (adminSession.role !== 'super_admin') {
+      SG.toast.error('Access Denied', 'Admin Account Management is strictly restricted to Super Administrators.');
+      setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      return;
+    }
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    SG.components.loadAll();
+    loadAdminUsers();
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadAdminUsers();
+    });
+  });
+
+  function loadAdminUsers() {
+    let users = [];
+    SG.dal._allowRawAccess = true;
+    try {
+      users = SG.dal.safeGet('users') || [];
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+    
+    // Filters out dealers, returns only administrative roles
+    adminUsersList = users.filter(u => u.role !== 'dealer');
+    renderTable();
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('admins-tbody');
+    tbody.innerHTML = adminUsersList.map(u => {
+      const isSelf = u.id === adminSession.id;
+      const initials = u.avatar || SG.str.initials(u.name);
+      
+      const mfaBadge = u.mfaEnabled 
+        ? `<span class="badge badge-green">Enabled</span>`
+        : `<span class="badge badge-gray">Disabled</span>`;
+
+      const statusBadge = u.active !== false
+        ? `<span class="badge badge-green">Active</span>`
+        : `<span class="badge badge-red">Deactivated</span>`;
+
+      const lastLoginLabel = u.lastLogin ? SG.time.formatFull(u.lastLogin) : 'Never';
+      
+      const deactLabel = u.active !== false ? 'Deactivate' : 'Reactivate';
+      const selfMarker = isSelf ? ' <span class="text-xs" style="color:var(--gold-400);">(You)</span>' : '';
+
+      return `
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="avatar" style="font-size:12px;width:32px;height:32px;">${initials}</div>
+              <div>
+                <div style="font-weight:600;color:var(--text-primary);">${u.name}${selfMarker}</div>
+                <div class="text-sm" style="color:var(--text-muted);">${u.email}</div>
+              </div>
+            </div>
+          </td>
+          <td><span class="badge badge-gray" style="text-transform:capitalize;">${u.role.replace('_', ' ')}</span></td>
+          <td>
+            <div style="display:flex;align-items:center;gap:6px;">
+              ${mfaBadge}
+              <button class="btn btn-ghost btn-sm" onclick="configureMfa('${u.id}')" style="padding:2px 4px;font-size:10px;">Setup</button>
+            </div>
+          </td>
+          <td>${statusBadge}</td>
+          <td><div style="font-size:11px;color:var(--text-secondary);">${lastLoginLabel}</div></td>
+          <td>
+            <div class="flex gap-2 justify-end">
+              <button class="btn btn-sm btn-secondary" onclick="triggerResetPassword('${u.id}')">Reset Pass</button>
+              <button class="btn btn-sm ${u.active !== false ? 'btn-danger' : 'btn-primary'}" 
+                      onclick="toggleAdminDeactivation('${u.id}')" 
+                      ${isSelf ? 'disabled' : ''} 
+                      title="${isSelf ? 'Self deactivation blocked' : ''}">
+                ${deactLabel}
+              </button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function createAdminUser() {
+    const name = document.getElementById('new-adm-name').value.trim();
+    const email = document.getElementById('new-adm-email').value.trim();
+    const password = document.getElementById('new-adm-password').value.trim();
+    const role = document.getElementById('new-adm-role').value;
+
+    if (!name || !email || !password) {
+      SG.toast.error('Details Incomplete', 'Please fill in all mandatory fields.');
+      return;
+    }
+
+    if (password.length < 8) {
+      SG.toast.error('Invalid Password', 'Temporary password must be at least 8 characters long.');
+      return;
+    }
+
+    SG.dal._allowRawAccess = true;
+    try {
+      const users = SG.dal.safeGet('users') || [];
+      
+      // Duplication Check
+      if (users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
+        SG.toast.error('Account Exists', 'An administrator or dealer with this email already exists.');
+        return;
+      }
+
+      const newAdmin = {
+        id: 'adm-' + SG.uid.short(),
+        name,
+        email,
+        password: password, // Seed/MFA will encrypt during auth or mock checks
+        role,
+        avatar: SG.str.initials(name),
+        active: true,
+        mfaEnabled: false,
+        createdAt: SG.time.now(),
+        lastLogin: null
+      };
+
+      users.push(newAdmin);
+      SG.store.set('users', users);
+      
+      SG.audit('ADMIN_USER_CREATED', newAdmin.id, `Created ${role} account for ${email}`);
+      SG.toast.success('Account Created', `Created ${SG.str.capitalize(role.replace('_', ' '))} account.`);
+
+      // Clear Form
+      document.getElementById('new-adm-name').value = '';
+      document.getElementById('new-adm-email').value = '';
+      document.getElementById('new-adm-password').value = '';
+      
+      loadAdminUsers();
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+  }
+
+  function triggerResetPassword(userId) {
+    const user = adminUsersList.find(u => u.id === userId);
+    if (!user) return;
+
+    SG.modal.confirm(
+      'Reset Password',
+      `Are you sure you want to reset the password for ${user.name}? This generates a new temporary password.`,
+      () => {
+        const tempPass = 'SG-PASS-' + SG.uid.short();
+        
+        SG.dal._allowRawAccess = true;
+        try {
+          const users = SG.dal.safeGet('users') || [];
+          const idx = users.findIndex(u => u.id === userId);
+          if (idx >= 0) {
+            users[idx].password = tempPass;
+            SG.store.set('users', users);
+            
+            SG.audit('ADMIN_PASSWORD_RESET', userId, `Generated temporary credential for ${user.email}`);
+            
+            // Show password reset result modal
+            document.getElementById('reset-user-email').textContent = user.email;
+            document.getElementById('reset-temp-pass').textContent = tempPass;
+            SG.modal.open('_sg_reset_pwd_modal');
+          }
+        } finally {
+          SG.dal._allowRawAccess = false;
+        }
+      }
+    );
+  }
+
+  function toggleAdminDeactivation(userId) {
+    const user = adminUsersList.find(u => u.id === userId);
+    if (!user) return;
+
+    if (userId === adminSession.id) {
+      SG.toast.error('Operation Blocked', 'You cannot deactivate your own active super administrator account.');
+      return;
+    }
+
+    const actionText = user.active !== false ? 'deactivate' : 'reactivate';
+    
+    SG.modal.confirm(
+      `${SG.str.capitalize(actionText)} Account`,
+      `Are you sure you want to ${actionText} the administrative account for ${user.name}?`,
+      () => {
+        SG.dal._allowRawAccess = true;
+        try {
+          const users = SG.dal.safeGet('users') || [];
+          const idx = users.findIndex(u => u.id === userId);
+          if (idx >= 0) {
+            users[idx].active = (user.active === false);
+            SG.store.set('users', users);
+            
+            const eventCode = user.active !== false ? 'ADMIN_DEACTIVATED' : 'ADMIN_ACTIVATED';
+            SG.audit(eventCode, userId, `Status update: active=${users[idx].active} for ${user.email}`);
+            SG.toast.warning('Account Status Updated', `Account has been ${actionText}d.`);
+            loadAdminUsers();
+          }
+        } finally {
+          SG.dal._allowRawAccess = false;
+        }
+      },
+      user.active !== false // Use danger style for deactivation
+    );
+  }
+
+  function configureMfa(userId) {
+    const user = adminUsersList.find(u => u.id === userId);
+    if (!user) return;
+
+    let secret = user.totpSecret;
+    if (!secret && SG.totp) {
+      const setup = SG.totp.enableForUser(userId);
+      secret = setup.secret;
+    }
+    if (!secret) secret = 'JBSWY3DPEHPK3PXP';
+
+    const mfaUri = `otpauth://totp/Koshda Jewellery House:${encodeURIComponent(user.email)}?secret=${secret}&issuer=Koshda Jewellery House`;
+    document.getElementById('mfa-uri-text').value = mfaUri;
+
+    SG.modal.open('_sg_mfa_modal');
+
+    // Configure confirmation trigger
+    const confirmBtn = document.getElementById('btn-toggle-mfa-confirm');
+    confirmBtn.textContent = user.mfaEnabled ? 'Deactivate Authenticator ?' : 'Activate Authenticator ?';
+    confirmBtn.className = user.mfaEnabled ? 'btn btn-danger' : 'btn btn-primary';
+
+    confirmBtn.onclick = () => {
+      SG.dal._allowRawAccess = true;
+      try {
+        const users = SG.dal.safeGet('users') || [];
+        const idx = users.findIndex(u => u.id === userId);
+        if (idx >= 0) {
+          users[idx].mfaEnabled = !user.mfaEnabled;
+          SG.store.set('users', users);
+          
+          const auditCode = users[idx].mfaEnabled ? 'ADMIN_MFA_ENABLED' : 'ADMIN_MFA_DISABLED';
+          SG.audit(auditCode, userId, `MFA configuration updated for ${user.email}`);
+          SG.toast.success('MFA Updated', `Authenticator setting updated.`);
+          
+          SG.modal.close('_sg_mfa_modal');
+          loadAdminUsers();
+        }
+      } finally {
+        SG.dal._allowRawAccess = false;
+      }
+    };
+  }
+
+  function copyMfaUri() {
+    const text = document.getElementById('mfa-uri-text').value;
+    navigator.clipboard.writeText(text).then(() => {
+      SG.toast.success('URI Copied', 'MFA OTPauth URI copied to clipboard.');
+    });
+  }
+</script>
+</body>
+</html>
+

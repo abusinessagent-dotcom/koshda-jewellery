@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Catalogue — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div id="page-head">
+        <div class="dealer-title-lg" id="col-name">Products</div>
+      </div>
+      <div class="topbar-search">
+        <div class="search-wrap"><span class="search-icon">🔍</span>
+          <input type="text" class="form-input search-input" placeholder="Filter products…" id="filter-input" oninput="filterProducts(this.value)">
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <a href="cart.html" class="icon-btn relative">🛒<span class="notif-dot hidden notif-dot-gold" id="cart-dot"></span></a>
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <!-- Breadcrumb -->
+      <div class="flex-align-center-gap-2 font-13-muted mb-5">
+        <a href="collections.html" class="text-muted">Collections</a>
+        <span>›</span>
+        <span id="breadcrumb-col" class="gold-highlight-color">All Products</span>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters-header-row mb-6">
+        <select class="form-select filter-select-category" id="filter-category" onchange="filterProducts()" title="Filter by Category">
+          <option value="">All Categories</option>
+          <option value="NECK">Necklaces</option>
+          <option value="EARR">Earrings</option>
+          <option value="BANG">Bangles</option>
+          <option value="RING">Rings</option>
+          <option value="BRAC">Bracelets</option>
+          <option value="PEND">Pendants</option>
+          <option value="ANKL">Anklets</option>
+          <option value="MAAG">Maang Tikka</option>
+          <option value="SETT">Bridal / Full Sets</option>
+        </select>
+        <select class="form-select filter-select-material" id="filter-material" onchange="filterProducts()" title="Filter by Material">
+          <option value="">All Materials</option>
+          <option value="22K">22K Gold</option>
+          <option value="18K">18K Gold</option>
+          <option value="SIL">Silver</option>
+          <option value="Diamond">Diamond</option>
+          <option value="Gold">Gold</option>
+          <option value="Kundan">Kundan</option>
+          <option value="Polki">Polki</option>
+        </select>
+        <select class="form-select filter-select-sort" id="filter-sort" onchange="filterProducts()" title="Sort Products">
+          <option value="">Sort: Default</option>
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="weight-asc">Weight ?</option>
+          <option value="weight-desc">Weight ?</option>
+        </select>
+        <div class="flex-grow-999"></div>
+        <div class="flex-gap-1">
+          <button class="btn btn-sm btn-secondary" id="view-showcase" onclick="setView('showcase')" title="Showcase View">🖼️ Showcase</button>
+          <button class="btn btn-sm btn-ghost" id="view-grid" onclick="setView('grid')" title="Grid View">📱 Grid</button>
+          <button class="btn btn-sm btn-ghost" id="view-list" onclick="setView('list')" title="List View">📋 List</button>
+        </div>
+      </div>
+
+      <!-- Results count -->
+      <div class="font-13-muted mb-5" id="results-count">Loading…</div>
+
+      <!-- Grid -->
+      <div id="product-grid" class="product-grid"></div>
+
+      <!-- Empty -->
+      <div id="empty-state" class="hidden empty-state empty-state-spaced">
+        <div class="empty-state-icon">📦</div>
+        <h3>No products found</h3>
+        <p>Try adjusting your filters or search terms.</p>
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination-wrap" class="mt-8"></div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script src="../public/assets/js/dynamic-loader.js" defer></script>
+<script>
+let dealerSession, allProducts = [], currentView = 'showcase', currentPage = 1, filteredResults = [];
+const PER_PAGE = 12;
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!SG.auth.requireDealer()) return;
+  dealerSession = SG.auth.current();
+
+  const initials = dealerSession.avatar || SG.str.initials(dealerSession.name);
+  { const el = document.getElementById('dl-avatar'); if (el) el.textContent = initials; }
+  { const el = document.getElementById('dl-name'); if (el) el.textContent = dealerSession.name; }
+  { const el = document.getElementById('dl-tier'); if (el) el.textContent = (dealerSession.tier || 'standard') + ' dealer'; }
+  document.getElementById('topbar-avatar').textContent  = initials;
+
+  // Filter by collection if param exists
+  const colId = SG.params.get('col');
+  if (colId) {
+    const cols = SG.dal.safeGet('collections') || [];
+    const col  = cols.find(c => c.id === colId);
+    if (col) {
+      document.getElementById('col-name').textContent = col.name;
+      document.getElementById('breadcrumb-col').textContent = col.name;
+    }
+  }
+
+  // Pre-load full products list into memory (using DAL direct query)
+  try {
+    const products = SG.dal.products.list(dealerSession.id);
+    if (colId) {
+      allProducts = products.filter(p => p.collectionId === colId);
+    } else {
+      allProducts = products;
+    }
+  } catch(e) {
+    console.error('Loader failed, falling back to permitted products', e);
+    allProducts = SG.auth.permittedProducts(dealerSession.id);
+    if (colId) {
+      allProducts = allProducts.filter(p => p.collectionId === colId);
+    }
+  }
+
+  await filterProducts();
+  updateCartBadge();
+});
+
+async function filterProducts(searchVal) {
+  if (searchVal === undefined) searchVal = document.getElementById('filter-input')?.value || '';
+  const cat  = document.getElementById('filter-category')?.value || '';
+  const mat  = document.getElementById('filter-material')?.value || '';
+  const sort = document.getElementById('filter-sort')?.value || '';
+  const colId = SG.params.get('col');
+
+  let results = [];
+  try {
+    // Direct DAL query with filters applied client-side
+    let products = SG.dal.products.list(dealerSession.id);
+    if (cat) {
+      const catLower = cat.toLowerCase();
+      products = products.filter(p => {
+        const pCat = (p.category || '').toLowerCase();
+        const pCatLabel = (p.categoryLabel || '').toLowerCase();
+        return pCat === catLower || pCatLabel === catLower ||
+               (catLower === 'necklace' && pCat === 'neck') ||
+               (catLower === 'rings' && pCat === 'ring') ||
+               (catLower === 'earrings' && pCat === 'earr') ||
+               (catLower === 'bridal' && pCat === 'sett');
+      });
+    }
+    if (mat) {
+      const matLower = mat.toLowerCase();
+      products = products.filter(p => {
+        const pMat = (p.material || '').toLowerCase();
+        return pMat === matLower || (matLower === '22 karat gold' && pMat === '22k') || (matLower === '18 karat gold' && pMat === '18k');
+      });
+    }
+    results = products;
+  } catch(e) {
+    console.error(e);
+    results = allProducts;
+    if (cat) results = results.filter(p => p.category === cat);
+    if (mat) results = results.filter(p => p.material === mat);
+  }
+
+  if (colId) {
+    results = results.filter(p => p.collectionId === colId);
+  }
+
+  if (searchVal) {
+    results = SG.filterItems(results, searchVal, ['name','code','description','searchKeywords','category','material','aiDescription']);
+  }
+
+  if (sort === 'name-asc')     results = [...results].sort((a,b) => a.name.localeCompare(b.name));
+  else if (sort === 'name-desc')results = [...results].sort((a,b) => b.name.localeCompare(a.name));
+  else if (sort === 'weight-asc') results = [...results].sort((a,b) => parseFloat(a.weight) - parseFloat(b.weight));
+  else if (sort === 'weight-desc')results = [...results].sort((a,b) => parseFloat(b.weight) - parseFloat(a.weight));
+
+  currentPage = 1;
+  filteredResults = results;
+  renderPage(results);
+}
+
+function renderPage(results) {
+  const isShowcase = currentView === 'showcase';
+  const perPage = isShowcase ? 1 : PER_PAGE;
+  const paginated = SG.paginate(results, currentPage, perPage);
+  
+  document.getElementById('results-count').textContent = isShowcase 
+    ? `Product ${currentPage} of ${results.length}`
+    : `Showing ${paginated.data.length} of ${results.length} product${results.length !== 1 ? 's' : ''}`;
+
+  const grid = document.getElementById('product-grid');
+  const empty = document.getElementById('empty-state');
+
+  if (!paginated.data.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    document.getElementById('pagination-wrap').innerHTML = '';
+    return;
+  }
+
+  empty.classList.add('hidden');
+  
+  if (isShowcase) {
+    grid.className = 'product-showcase-view';
+    const p = paginated.data[0];
+    const inWishlist = SG.booking.wishlist.has(dealerSession.id, p.id);
+    const imgSrc     = p.images?.[0] || `https://placehold.co/600x600/1a1a2a/d4af37?text=${encodeURIComponent(p.name.slice(0,6))}`;
+    
+    // Estimate wholesale price
+    const weightVal = parseFloat(p.weight) || 0;
+    let rate = 7200;
+    const purityLower = (p.purity || '').toLowerCase();
+    if (purityLower.includes('18k')) rate = 5900;
+    else if (purityLower.includes('14k')) rate = 4600;
+    else if (purityLower.includes('plat')) rate = 5500;
+    else if (purityLower.includes('sil')) rate = 100;
+    const estimatedPrice = (weightVal * rate * 1.12) * 1.03;
+    const priceHtml = estimatedPrice > 0 ? `<div class="showcase-price-tag">?${SG.str.currency(estimatedPrice)}* <span class="showcase-price-label">Est. Wholesale</span></div>` : '';
+
+    grid.innerHTML = `
+      <div class="showcase-card-container">
+        <div class="product-card-image showcase-image-wrap" onclick="window.location.href='product-detail.html?id=${p.id}'">
+          <img src="${imgSrc}" alt="${sanitizeHTML(p.name)}" onerror="this.src='https://placehold.co/600x600/1a1a2a/d4af37?text=??'">
+          <div class="product-card-overlay">
+            <div class="product-card-actions">
+              <button class="product-action-btn" onclick="event.stopPropagation();addToCart('${p.id}')" title="Add to Cart">🛒</button>
+              <button class="product-action-btn ${inWishlist ? 'in-wishlist' : ''}" onclick="event.stopPropagation();toggleWishlist('${p.id}')" title="Wishlist" id="wish-btn-${p.id}">⭐</button>
+              <button class="product-action-btn" onclick="event.stopPropagation();window.location.href='product-detail.html?id=${p.id}'" title="Quick View">👁️</button>
+            </div>
+          </div>
+          ${p.isNew || p.aiMetadataStatus === 'verified' ? '<span class="product-new-badge">New</span>' : ''}
+        </div>
+        <div class="showcase-info-padding">
+          <div class="product-code">${sanitizeHTML(p.code)}</div>
+          <h2 class="product-name showcase-product-title">${sanitizeHTML(p.name)}</h2>
+          ${priceHtml}
+          <div class="product-meta mt-2">
+            <span>${sanitizeHTML(p.material)}</span> · <span>${sanitizeHTML(p.weight)}</span> · <span>${sanitizeHTML(p.purity || '')}</span>
+          </div>
+          <p class="showcase-desc-text">${p.aiDescription || p.description || 'No description available.'}</p>
+          <div class="product-tags mt-3">
+            ${(p.occasions || []).map(o => `<span class="product-tag">${sanitizeHTML(o)}</span>`).join('')}
+          </div>
+          <div class="showcase-actions-row">
+            <button class="btn btn-filled-gold showcase-btn-primary" onclick="window.location.href='product-detail.html?id=${p.id}'">
+              👁️ View Full Details
+            </button>
+            <button class="btn btn-secondary btn-justify-center" onclick="addToCart('${p.id}')">
+              🛒 Add to Cart
+            </button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Showcase Controls -->
+      <div class="showcase-controls-row">
+        <button class="btn btn-secondary ${currentPage === 1 ? 'btn-disabled-overlay' : ''}" onclick="changeShowcasePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Previous</button>
+        <span class="showcase-page-indicator">Product ${currentPage} of ${results.length}</span>
+        <button class="btn btn-secondary ${currentPage === results.length ? 'btn-disabled-overlay' : ''}" onclick="changeShowcasePage(${currentPage + 1})" ${currentPage === results.length ? 'disabled' : ''}>Next ?</button>
+      </div>
+    `;
+    
+    document.getElementById('pagination-wrap').innerHTML = '';
+  } else {
+    grid.className = currentView === 'grid' ? 'product-grid' : 'product-list';
+    grid.innerHTML = paginated.data.map(p => renderProductCard(p)).join('');
+
+    // Initialize lazy observer on new images
+    SG.dynamicLoader.setupLazyImages(grid);
+
+    SG.renderPagination('pagination-wrap', currentPage, paginated.pages, (page) => {
+      currentPage = page;
+      renderPage(results);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+}
+
+function renderProductCard(p) {
+  const inWishlist = SG.booking.wishlist.has(dealerSession.id, p.id);
+  const imgSrc     = p.images?.[0] || `https://placehold.co/400x400/1a1a2a/d4af37?text=${encodeURIComponent(p.name.slice(0,6))}`;
+  return `
+  <div class="product-card" onclick="window.location.href='product-detail.html?id=${p.id}'">
+    <div class="product-card-image">
+      <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3C/svg%3E" data-src="${imgSrc}" alt="${sanitizeHTML(p.name)}" class="lazy-image" onerror="this.src='https://placehold.co/400x400/1a1a2a/d4af37?text=??'">
+      <div class="product-card-overlay">
+        <div class="product-card-actions">
+          <button class="product-action-btn" onclick="event.stopPropagation();addToCart('${p.id}')" title="Add to Cart">🛒</button>
+          <button class="product-action-btn ${inWishlist ? 'in-wishlist' : ''}" onclick="event.stopPropagation();toggleWishlist('${p.id}')" title="Wishlist" id="wish-btn-${p.id}">⭐</button>
+          <button class="product-action-btn" onclick="event.stopPropagation();window.location.href='product-detail.html?id=${p.id}'" title="Quick View">👁️</button>
+        </div>
+      </div>
+      ${p.isNew || p.aiMetadataStatus === 'verified' ? '<span class="product-new-badge">New</span>' : ''}
+    </div>
+    <div class="product-card-info">
+      <div class="product-code">${sanitizeHTML(p.code)}</div>
+      <div class="product-name">${sanitizeHTML(p.name)}</div>
+      <div class="product-meta">
+        <span>${sanitizeHTML(p.material)}</span> · <span>${sanitizeHTML(p.weight)}</span> · <span>${sanitizeHTML(p.purity || '')}</span>
+      </div>
+      <div class="product-tags">
+        ${(p.occasions || []).slice(0,2).map(o => `<span class="product-tag">${sanitizeHTML(o)}</span>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function addToCart(productId) {
+  SG.dal._allowRawAccess = true;
+  let products = [];
+  try {
+    products = SG.dal.safeGet('products') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  const product = products.find(p => p.id === productId);
+  if (product) { SG.booking.cart.add(dealerSession.id, product); updateCartBadge(); }
+}
+
+function toggleWishlist(productId) {
+  SG.dal._allowRawAccess = true;
+  let products = [];
+  try {
+    products = SG.dal.safeGet('products') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  const product = products.find(p => p.id === productId);
+  if (!product) return;
+  const has = SG.booking.wishlist.has(dealerSession.id, productId);
+  if (has) SG.booking.wishlist.remove(dealerSession.id, productId);
+  else SG.booking.wishlist.add(dealerSession.id, product);
+  const btn = document.getElementById('wish-btn-' + productId);
+  if (btn) btn.classList.toggle('in-wishlist', !has);
+}
+
+function setView(view) {
+  currentView = view;
+  currentPage = 1;
+  document.getElementById('view-showcase').className = view === 'showcase' ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-ghost';
+  document.getElementById('view-grid').className = view === 'grid' ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-ghost';
+  document.getElementById('view-list').className = view === 'list' ? 'btn btn-sm btn-secondary' : 'btn btn-sm btn-ghost';
+  renderPage(filteredResults);
+}
+
+function changeShowcasePage(page) {
+  if (page < 1 || page > filteredResults.length) return;
+  currentPage = page;
+  renderPage(filteredResults);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateCartBadge() {
+  const count = SG.booking.cart.count(dealerSession.id);
+  const badge = document.getElementById('cart-badge');
+  const dot   = document.getElementById('cart-dot');
+  
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+  }
+  if (dot) {
+    dot.classList.toggle('hidden', count === 0);
+  }
+}
+</script>
+</body>
+</html>
+

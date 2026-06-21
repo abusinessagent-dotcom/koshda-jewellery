@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <style>
+    .account-section-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      margin-bottom: var(--space-6);
+    }
+    .account-section-title {
+      font-family: var(--font-display);
+      font-size: 16px;
+      color: var(--text-primary);
+      margin-bottom: var(--space-5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+    .profile-grid-custom {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: var(--space-5);
+    }
+    .profile-item-custom {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .profile-label-custom {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .profile-value-custom {
+      font-size: 14px;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+    .device-table-container {
+      overflow-x: auto;
+      margin-top: var(--space-4);
+    }
+    .current-device-row {
+      background: rgba(34, 197, 94, 0.03);
+      border-left: 3px solid var(--green-500);
+    }
+    .coming-soon-overlay {
+      opacity: 0.4;
+      pointer-events: none;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="dealer-title-lg">👤 My Profile &amp; Settings</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">My Account</h1>
+          <p class="page-subtitle">Manage your profile, credentials, active sessions, and access tokens</p>
+        </div>
+      </div>
+
+      <!-- Section 1: Profile Overview -->
+      <div class="account-section-card">
+        <h3 class="account-section-title">👤 Profile Overview</h3>
+        <div class="profile-grid-custom">
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Business Name</span>
+            <span class="profile-value-custom" id="profile-business-name">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Owner / Representative</span>
+            <span class="profile-value-custom" id="profile-owner-name">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Email Address</span>
+            <span class="profile-value-custom" id="profile-email">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Phone Number</span>
+            <span class="profile-value-custom" id="profile-phone">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">City / State</span>
+            <span class="profile-value-custom" id="profile-location">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Account Tier</span>
+            <span class="profile-value-custom" id="profile-tier">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Member Since</span>
+            <span class="profile-value-custom" id="profile-reg-date">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">Approval Date</span>
+            <span class="profile-value-custom" id="profile-app-date">—</span>
+          </div>
+          <div class="profile-item-custom">
+            <span class="profile-label-custom">NDA signed status</span>
+            <span class="profile-value-custom" id="profile-nda-status">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Change Password -->
+      <div class="account-section-card">
+        <h3 class="account-section-title">🔑 Change Password</h3>
+        <form id="change-pass-form" onsubmit="handleChangePassword(event)" class="max-w-480 d-flex flex-col-gap-4">
+          <div class="form-group">
+            <label class="form-label">Current Password</label>
+            <input type="password" id="current-pass" class="form-input" placeholder="Enter current password" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" id="new-pass" class="form-input" placeholder="At least 8 characters, 1 uppercase" oninput="handlePasswordStrength()" required>
+            
+            <div class="mt-2">
+              <div class="progress-bar strength-bar-container">
+                <div id="strength-bar" class="strength-bar-fill"></div>
+              </div>
+              <div class="flex-between-align-center-tiny">
+                <span class="text-muted">Strength:</span>
+                <span id="strength-label" class="strength-label-bold">—</span>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm New Password</label>
+            <input type="password" id="confirm-pass" class="form-input" placeholder="Repeat new password" required>
+          </div>
+          
+          <button type="submit" class="btn btn-primary btn-update-pass">
+            Update Password &amp; Sign Out
+          </button>
+        </form>
+      </div>
+
+      <!-- Section 3: Registered Devices -->
+      <div class="account-section-card">
+        <h3 class="account-section-title">💻 Registered Devices</h3>
+        <p class="device-info-desc">
+          Your account is configured with a concurrency limit. Below are the devices that have accessed the platform using your credentials.
+        </p>
+
+        <div class="device-table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Fingerprint &amp; Client Browser</th>
+                <th>First Registered</th>
+                <th>Last Active</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="devices-table-body">
+              <!-- JS generated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Section 4: Active Token Info -->
+      <div class="account-section-card">
+        <h3 class="account-section-title">🎫 Active Subscription Token</h3>
+        <div class="grid-cols-2-340">
+          <div>
+            <div class="flex-align-center-gap-3 mb-3">
+              <span class="mono-font bold-title" id="token-id">—</span>
+              <span id="token-status-badge"></span>
+            </div>
+            <div class="token-meta-group">
+              <div>Issued At: <strong id="token-issued-at" class="text-primary">—</strong></div>
+              <div>Expires At: <strong id="token-expires-at" class="text-primary">—</strong></div>
+            </div>
+            <!-- Expiry Progress -->
+            <div class="token-progress-wrap" id="token-progress-wrapper">
+              <!-- JS generated bar -->
+            </div>
+          </div>
+          <div class="token-renew-card">
+            <h4 class="token-renew-title">Request Token Renewal</h4>
+            <p class="token-renew-desc">
+              Request access extension or access tier upgrades from administrative operations.
+            </p>
+            <a href="#" id="token-renew-btn" target="_blank" rel="noopener" class="btn btn-secondary btn-sm btn-w-100-justify-center">
+              💬 Request Renewal
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 5: Notification Preferences (COMING SOON) -->
+      <div class="account-section-card coming-soon-overlay">
+        <h3 class="account-section-title">
+          <span>🔔 Notification Preferences</span>
+          <span class="badge badge-blue badge-tiny-margin">COMING SOON</span>
+        </h3>
+        <div class="flex-col-gap-3">
+          <div class="flex-between-align-center">
+            <div>
+              <div class="notif-title">In-App Notifications</div>
+              <div class="notif-desc">Get alerts inside the platform for new status updates</div>
+            </div>
+            <input type="checkbox" checked disabled class="checkbox-large" title="In-App Notifications Preference">
+          </div>
+          <div class="flex-between-align-center">
+            <div>
+              <div class="notif-title">WhatsApp Messaging Updates</div>
+              <div class="notif-desc">Receive direct WhatsApp alerts for dispatched orders</div>
+            </div>
+            <input type="checkbox" checked disabled class="checkbox-large" title="WhatsApp Messaging Updates Preference">
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/device-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let user = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+    user = SG.auth.getUser(session.id);
+
+    // Set UI identity
+    const initials = session.avatar || SG.str.initials(session.name);
+    { const el = document.getElementById('dealer-avatar'); if (el) el.textContent = initials; }
+    document.getElementById('topbar-avatar-dealer').textContent   = initials;
+    { const el = document.getElementById('dealer-name'); if (el) el.textContent = session.name; }
+    { const el = document.getElementById('dealer-tier'); if (el) el.textContent = SG.str.capitalize(session.tier || 'standard') + ' Dealer'; }
+
+    // Load sections
+    loadProfileOverview();
+    loadDevicesTable();
+    loadTokenInfo();
+    updateBadges();
+  });
+
+  function loadProfileOverview() {
+    document.getElementById('profile-business-name').textContent = user?.businessName || '—';
+    document.getElementById('profile-owner-name').textContent = user?.name || '—';
+    document.getElementById('profile-email').textContent = user?.email || '—';
+    document.getElementById('profile-phone').textContent = user?.phone || '—';
+    document.getElementById('profile-location').textContent = `${user?.city || '—'}, ${user?.state || '—'}`;
+    // Tier badge
+    
+    // Tier badge
+    const tier = user?.tier || 'standard';
+    let badgeClass = 'badge-blue';
+    if (tier === 'premium') badgeClass = 'badge-gold';
+    if (tier === 'exclusive') badgeClass = 'badge-purple';
+    document.getElementById('profile-tier').innerHTML = `<span class="badge ${badgeClass}">${tier.toUpperCase()}</span>`;
+
+    // Timestamps
+    document.getElementById('profile-reg-date').textContent = user?.registeredAt ? SG.time.formatFull(user.registeredAt) : '—';
+    document.getElementById('profile-app-date').textContent = user?.approvedAt ? SG.time.formatFull(user.approvedAt) : '—';
+
+    // NDA Status
+    if (user?.ndaSigned) {
+      const ndaDateStr = user.ndaSignedAt ? SG.time.format(user.ndaSignedAt) : 'Yes';
+      document.getElementById('profile-nda-status').innerHTML = `<span style="color:var(--green-500);font-weight:600;">✓ Accepted (${ndaDateStr})</span>`;
+    } else {
+      document.getElementById('profile-nda-status').innerHTML = `<span style="color:var(--red-500);font-weight:600;">⚠️ Not Completed</span>`;
+    }
+  }
+
+  function handlePasswordStrength() {
+    const pw = document.getElementById('new-pass').value;
+    const bar = document.getElementById('strength-bar');
+    const label = document.getElementById('strength-label');
+
+    if (!pw) {
+      bar.style.width = '0%';
+      label.textContent = '—';
+      label.style.color = 'var(--text-muted)';
+      return;
+    }
+
+    const strength = checkPasswordStrength(pw);
+    if (strength === 'weak') {
+      bar.style.width = '33%';
+      bar.style.background = 'var(--red-500)';
+      label.textContent = 'Weak';
+      label.style.color = 'var(--red-500)';
+    } else if (strength === 'medium') {
+      bar.style.width = '66%';
+      bar.style.background = 'var(--gold-500)';
+      label.textContent = 'Medium';
+      label.style.color = 'var(--gold-500)';
+    } else if (strength === 'strong') {
+      bar.style.width = '100%';
+      bar.style.background = 'var(--green-500)';
+      label.textContent = 'Strong';
+      label.style.color = 'var(--green-500)';
+    }
+  }
+
+  function checkPasswordStrength(pw) {
+    if (pw.length < 8) return 'weak';
+    let score = 0;
+    if (/[a-z]/.test(pw)) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^a-zA-Z0-9]/.test(pw)) score++;
+    if (score <= 2) return 'weak';
+    if (score === 3) return 'medium';
+    return 'strong';
+  }
+
+  function handleChangePassword(e) {
+    e.preventDefault();
+    const currentPass = document.getElementById('current-pass').value;
+    const newPass = document.getElementById('new-pass').value;
+    const confirmPass = document.getElementById('confirm-pass').value;
+
+    if (newPass !== confirmPass) {
+      SG.toast.error('Mismatch', 'New passwords do not match.');
+      return;
+    }
+
+    if (newPass.length < 8) {
+      SG.toast.error('Validation Error', 'Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPass)) {
+      SG.toast.error('Validation Error', 'Password must contain at least one uppercase letter.');
+      return;
+    }
+
+    // Call changePassword
+    const res = SG.auth.changePassword(session.id, currentPass, newPass);
+    if (res.success) {
+      SG.toast.success('Password Changed', 'Logging out...');
+      setTimeout(() => {
+        SG.auth.logout();
+        window.location.href = '../login.html';
+      }, 1200);
+    } else {
+      SG.toast.error('Error', res.error || 'Incorrect current password.');
+    }
+  }
+
+  function loadDevicesTable() {
+    const tableBody = document.getElementById('devices-table-body');
+    const devices = SG.deviceMgr.listForDealer(session.id);
+    const currentFp = SG.deviceMgr.fingerprint();
+
+    if (devices.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="4" class="list-empty-msg">No devices registered.</td></tr>`;
+      return;
+    }
+
+    tableBody.innerHTML = devices.map(d => {
+      const isCurrent = d.fingerprint === currentFp;
+      const highlightClass = isCurrent ? 'current-device-row' : '';
+      const browserInfo = d.userAgent.split(') ').pop() || d.userAgent;
+
+      return `
+        <tr class="${highlightClass}">
+          <td>
+            <div class="device-fp-title">
+              <span>${d.fingerprint}</span>
+              ${isCurrent ? '<span class="badge badge-green badge-tiny-padding">CURRENT DEVICE</span>' : ''}
+            </div>
+            <div class="device-browser-info">${browserInfo}</div>
+          </td>
+          <td><div class="device-time-lbl">${SG.time.formatFull(d.registeredAt)}</div></td>
+          <td><div class="device-time-lbl">${SG.time.relative(d.lastSeen)}</div></td>
+          <td class="text-right">
+            <button class="btn btn-sm btn-danger ${isCurrent ? 'btn-disabled-overlay' : ''}" onclick="removeDevice('${d.id}')" ${isCurrent ? 'disabled' : ''}>
+              Remove
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function removeDevice(deviceId) {
+    const devices = SG.deviceMgr.listForDealer(session.id);
+    const target = devices.find(d => d.id === deviceId);
+    
+    if (!target) return;
+
+    if (target.fingerprint === SG.deviceMgr.fingerprint()) {
+      SG.toast.error('Action Blocked', 'Cannot remove your current active device.');
+      return;
+    }
+
+    SG.modal.confirm(
+      'Remove Device',
+      'Are you sure you want to deauthorise this device? It will be logged out and cannot reconnect without standard credentials.',
+      () => {
+        const ok = SG.deviceMgr.remove(session.id, deviceId);
+        if (ok) {
+          SG.toast.success('Device Removed', 'Device successfully deauthorised.');
+          loadDevicesTable();
+        } else {
+          SG.toast.error('Failed', 'Could not deauthorise device.');
+        }
+      },
+      true
+    );
+  }
+
+  function loadTokenInfo() {
+    const token = SG.tokenMgr.forDealer(session.id);
+    if (!token) {
+      document.getElementById('token-id').textContent = 'No active token';
+      return;
+    }
+
+    document.getElementById('token-id').textContent = token.id;
+    document.getElementById('token-issued-at').textContent = SG.time.formatFull(token.issuedAt);
+    document.getElementById('token-expires-at').textContent = SG.time.formatFull(token.expiresAt);
+
+    // Status badge
+    const status = SG.tokenMgr.getStatus(token);
+    let badgeClass = 'badge-blue';
+    if (status === 'active') badgeClass = 'badge-green';
+    if (status === 'expiring') badgeClass = 'badge-gold';
+    if (status === 'expired') badgeClass = 'badge-red';
+    if (status === 'revoked') badgeClass = 'badge-grey';
+    document.getElementById('token-status-badge').innerHTML = `<span class="badge ${badgeClass}">${status.toUpperCase()}</span>`;
+
+    // Progress bar
+    document.getElementById('token-progress-wrapper').innerHTML = SG.tokenMgr.expiryBarHtml(token);
+
+    // Renew button link
+    const textMsg = `Hello Koshda Jewellery House, I would like to request a renewal / extension for my catalogue access token (Token ID: ${token.id}, Active Tier: ${token.tier.toUpperCase()}, Dealer: ${session.name}).`;
+    document.getElementById('token-renew-btn').href = `https://wa.me/919876543210?text=${encodeURIComponent(textMsg)}`;
+  }
+
+  function updateBadges() {
+    const cartCount = SG.booking.cart.count(session.id);
+    const wishCount = SG.booking.wishlist.get(session.id).length;
+    const cartBadge = document.getElementById('cart-badge');
+    const wishBadge = document.getElementById('wishlist-badge');
+    if (cartBadge) { cartBadge.textContent = cartCount; cartBadge.style.display = cartCount > 0 ? '' : 'none'; }
+    if (wishBadge) { wishBadge.textContent = wishCount; wishBadge.style.display = wishCount > 0 ? '' : 'none'; }
+  }
+</script>
+</body>
+</html>
+

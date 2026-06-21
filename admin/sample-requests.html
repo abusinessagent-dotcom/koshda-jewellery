@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Request Queue — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Operations Control</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Samples</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Sample Model Requests</h1>
+          <p class="page-subtitle">Track, approve, and record shipping details for CAD Wax, Silver Masters, or Dummy Metal samples.</p>
+        </div>
+      </div>
+
+      <!-- Queue Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="section-title">Sample Request Queue</div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Dealer Name</th>
+                <th>Design Details</th>
+                <th>Sample Type</th>
+                <th>Timeline Progress</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="samples-tbody">
+              <!-- Loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Ship Sample Modal -->
+<div class="modal-overlay" id="ship-modal">
+  <div class="modal" style="max-width: 440px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Ship Sample Model</h3>
+      <button class="modal-close" onclick="closeShipModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="ship-request-id">
+      <div class="form-group">
+        <label class="form-label" for="shipping-ref-input">Logistics Tracking Reference No.</label>
+        <input type="text" id="shipping-ref-input" class="form-input" placeholder="e.g. DHL-EXPRESS-1002345" required>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeShipModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitShipping()">Mark as Despatched</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Initialize seed samples requests if empty
+  if (!SG.store.get('samples')) {
+    const mockSamples = [
+      { id: 'sam-001', ref: 'SG-SR-250001', dealerId: 'dlr-001', dealerName: 'Kumar Jewels Pvt Ltd', productId: 'prd-001', productName: 'Rajputana Bridal Necklace', productCode: '22K-0001-NECK-BRD-HRTG-25', type: '3D Wax CAD', status: 'submitted', requestedAt: '2025-06-13T10:00:00Z', trackingRef: '' },
+      { id: 'sam-002', ref: 'SG-SR-250002', dealerId: 'dlr-002', dealerName: 'Patel Fine Jewellery', productId: 'prd-002', productName: 'Chandbali Drop Earrings', productCode: '22K-0002-EARR-BRD-HRTG-25', type: 'Silver Master', status: 'approved', requestedAt: '2025-06-11T14:30:00Z', trackingRef: '' },
+      { id: 'sam-003', ref: 'SG-SR-250003', dealerId: 'dlr-003', dealerName: 'Sree Lakshmi Jewellers', productId: 'prd-009', productName: 'Minimalist Bar Necklace', productCode: '18K-0009-NECK-DLY-CTMP-25', type: 'Dummy Base Metal', status: 'despatched', requestedAt: '2025-06-08T09:00:00Z', trackingRef: 'DHL-EXP-99234812' }
+    ];
+    SG.store.set('samples', mockSamples);
+  }
+
+  loadSamples();
+});
+
+function loadSamples() {
+  const samples = SG.store.get('samples') || [];
+  const tbody = document.getElementById('samples-tbody');
+
+  if (!samples.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">No sample request records.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = samples.sort((a,b) => new Date(b.requestedAt) - new Date(a.requestedAt)).map(s => {
+    // Generate simple timeline visual
+    let progressHtml = '';
+    if (s.status === 'rejected') {
+      progressHtml = '<span class="text-red">Request Rejected</span>';
+    } else {
+      const step1 = 'active'; // Always submitted
+      const step2 = (s.status === 'approved' || s.status === 'despatched' || s.status === 'completed') ? 'active' : '';
+      const step3 = (s.status === 'despatched' || s.status === 'completed') ? 'active' : '';
+
+      progressHtml = `
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;">
+          <span class="badge ${step1 ? 'badge-green' : 'badge-gray'}">Submitted</span> ? 
+          <span class="badge ${step2 ? 'badge-green' : 'badge-gray'}">Approved</span> ? 
+          <span class="badge ${step3 ? 'badge-green' : 'badge-gray'}">Shipped</span>
+        </div>
+      `;
+    }
+
+    let actionButtons = '';
+    if (s.status === 'submitted') {
+      actionButtons = `
+        <button class="btn btn-green btn-xs" onclick="approveSample('${s.id}')">Approve</button>
+        <button class="btn btn-danger btn-xs" onclick="rejectSample('${s.id}')">Reject</button>
+      `;
+    } else if (s.status === 'approved') {
+      actionButtons = `
+        <button class="btn btn-primary btn-xs" onclick="openShipModal('${s.id}')">Ship Model</button>
+      `;
+    } else if (s.status === 'despatched') {
+      actionButtons = `<span style="font-size:11px;color:var(--text-muted)">Tracking: <code>${s.trackingRef}</code></span>`;
+    }
+
+    return `
+      <tr>
+        <td><span class="code">${s.ref}</span></td>
+        <td><strong>${s.dealerName}</strong></td>
+        <td><strong>${s.productName}</strong><br><small style="color:var(--text-muted)">${s.productCode}</small></td>
+        <td><span class="badge badge-gray">${s.type}</span></td>
+        <td>${progressHtml}</td>
+        <td>${SG.statusBadge(s.status)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            ${actionButtons || '—'}
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function approveSample(id) {
+  SG.modal.confirm('Approve Request', 'Confirm that raw materials are allocated for this sample model production?', () => {
+    const samples = SG.store.get('samples') || [];
+    const idx = samples.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      samples[idx].status = 'approved';
+      SG.store.set('samples', samples);
+      SG.toast.success('Approved', 'Sample request is approved.');
+      SG.audit('SAMPLE_APPROVED', id, samples[idx].ref);
+      loadSamples();
+    }
+  });
+}
+
+function rejectSample(id) {
+  SG.modal.confirm('Reject Request', 'Reject this sample request ticket?', () => {
+    const samples = SG.store.get('samples') || [];
+    const idx = samples.findIndex(s => s.id === id);
+    if (idx >= 0) {
+      samples[idx].status = 'rejected';
+      SG.store.set('samples', samples);
+      SG.toast.warning('Rejected', 'Sample request was rejected.');
+      SG.audit('SAMPLE_REJECTED', id, samples[idx].ref);
+      loadSamples();
+    }
+  });
+}
+
+function openShipModal(id) {
+  document.getElementById('ship-request-id').value = id;
+  document.getElementById('shipping-ref-input').value = '';
+  SG.modal.open('ship-modal');
+}
+
+function closeShipModal() {
+  SG.modal.close('ship-modal');
+}
+
+function submitShipping() {
+  const id = document.getElementById('ship-request-id').value;
+  const ref = document.getElementById('shipping-ref-input').value.trim();
+
+  if (!ref) {
+    SG.toast.error('Required Field', 'Please enter a shipping carrier tracking number.');
+    return;
+  }
+
+  const samples = SG.store.get('samples') || [];
+  const idx = samples.findIndex(s => s.id === id);
+  if (idx >= 0) {
+    samples[idx].status = 'despatched';
+    samples[idx].trackingRef = ref;
+    SG.store.set('samples', samples);
+    SG.toast.success('Shipped', 'Sample has been marked as shipped.');
+    SG.audit('SAMPLE_DESPATCHED', id, `Carrier Ref: ${ref}`);
+    closeShipModal();
+    loadSamples();
+  }
+}
+</script>
+</body>
+</html>
+

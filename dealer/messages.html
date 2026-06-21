@@ -1,0 +1,177 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Chat Communications — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title">Direct Messages</div>
+        <div class="topbar-breadcrumb">
+          <span>Dealer Portal</span><span>›</span><span class="current">Messages</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="dealer-content">
+      <div class="page-header messages-header">
+        <div>
+          <h1 class="page-title">Command Centre Chat</h1>
+          <p class="page-subtitle">Communicate directly with the factory catalogue designers and accounts manager.</p>
+        </div>
+      </div>
+
+      <!-- Message Chat Window -->
+      <div class="card card-no-padding-overflow-hidden">
+        <!-- Thread Header -->
+        <div class="chat-thread-header">
+          <div class="avatar chat-thread-header-avatar">AM</div>
+          <div>
+            <div class="chat-thread-header-name">Arjun Mehta</div>
+            <div class="chat-thread-header-status">
+              <span></span> Online (Admin Support)
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="message-thread chat-thread-height" id="chat-thread">
+          <!-- Bubbles inserted via JS -->
+        </div>
+
+        <!-- Input Area -->
+        <form class="message-compose" onsubmit="sendMessage(event)">
+          <textarea id="message-input" placeholder="Type your inquiry details..." required></textarea>
+          <button type="submit" class="btn btn-primary chat-compose-send-btn">
+            ✉️ Send
+          </button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/dealer.js" defer></script>
+<script>
+let session = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+
+  session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Initialize seed messages if not present
+  if (!SG.store.get('chat_messages')) {
+    const mockMessages = [
+      { id: 'msg-1', dealerId: 'dlr-001', sender: 'admin', text: 'Hello, welcome to Direct Dealer Support. How can we assist with your bridal inventory needs today?', at: new Date(Date.now() - 3600000).toISOString() },
+      { id: 'msg-2', dealerId: 'dlr-001', sender: 'dealer', text: 'Hi Arjun, I am reviewing the Rajputana Bridal Choker set. What is the average lead time for production?', at: new Date(Date.now() - 1800000).toISOString() },
+      { id: 'msg-3', dealerId: 'dlr-001', sender: 'admin', text: 'For standard orders, it is 14 business days. For customized weights adjustments, allow 21 days.', at: new Date(Date.now() - 900000).toISOString() }
+    ];
+    SG.store.set('chat_messages', mockMessages);
+  }
+
+  renderChat();
+});
+
+function renderChat() {
+  const allMessages = SG.store.get('chat_messages') || [];
+  const dealerMessages = allMessages.filter(m => m.dealerId === session.id);
+  const container = document.getElementById('chat-thread');
+
+  if (!dealerMessages.length) {
+    container.innerHTML = '<div style="text-align:center;padding:8px;color:var(--text-muted);">No messages yet. Start conversation.</div>';
+    return;
+  }
+
+  container.innerHTML = dealerMessages.map(m => {
+    const bubbleClass = m.sender === 'dealer' ? 'dealer' : 'admin';
+    return `
+      <div class="message-bubble ${bubbleClass}">
+        <div>${m.text}</div>
+        <div class="message-meta">${SG.time.relative(m.at)}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+}
+
+function sendMessage(e) {
+  e.preventDefault();
+  const input = document.getElementById('message-input');
+  const text = input.value.trim();
+
+  if (!text) return;
+
+  const messages = SG.store.get('chat_messages') || [];
+  const newMsg = {
+    id: 'msg-' + SG.uid.short(),
+    dealerId: session.id,
+    sender: 'dealer',
+    text,
+    at: SG.time.now()
+  };
+
+  messages.push(newMsg);
+  SG.store.set('chat_messages', messages);
+  input.value = '';
+  renderChat();
+
+  // Audit
+  SG.audit('DEALER_MESSAGE_SENT', session.id, SG.str.truncate(text, 25));
+
+  // Trigger simulated auto response
+  setTimeout(() => {
+    const responses = [
+      'Checking the inventory database for that code right now.',
+      'We received your inquiry. I am verifying the purity certification records with Priya Sharma.',
+      'Average lead time for this specific collection is currently 12 business days.',
+      'Yes, we can customize diamond weights on request. I will notify the CAD manager.',
+      'Excellent. Let me check the pending booking details and get back to you.'
+    ];
+    const randResp = responses[Math.floor(Math.random() * responses.length)];
+
+    const autoMsg = {
+      id: 'msg-' + SG.uid.short(),
+      dealerId: session.id,
+      sender: 'admin',
+      text: randResp,
+      at: SG.time.now()
+    };
+
+    const updatedMsgs = SG.store.get('chat_messages') || [];
+    updatedMsgs.push(autoMsg);
+    SG.store.set('chat_messages', updatedMsgs);
+    renderChat();
+    SG.chime(); // Play alert chime
+  }, 1500);
+}
+</script>
+</body>
+</html>
+

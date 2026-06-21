@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Booking Disputes — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Dispute Resolution Centre</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Disputes</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Disputed B2B Orders</h1>
+          <p class="page-subtitle">Inspect weights variances, stone discrepancies, or delivery delays claimed by dealers.</p>
+        </div>
+      </div>
+
+      <!-- Quick Summary Cards -->
+      <div class="stats-grid" style="margin-bottom:var(--space-6);">
+        <div class="stat-card-admin">
+          <div class="stat-lbl">Open Disputes</div>
+          <div class="stat-num" id="count-open" style="color:var(--red-500)">0</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-lbl">Escalated Tickets</div>
+          <div class="stat-num" id="count-escalated" style="color:var(--yellow-500)">0</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-lbl">Resolved (This Month)</div>
+          <div class="stat-num" id="count-resolved" style="color:var(--green-500)">0</div>
+        </div>
+      </div>
+
+      <!-- Disputes Queue -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="section-title">Dispute Claims Queue</div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Dispute Ref</th>
+                <th>Booking Ref</th>
+                <th>Dealer Name</th>
+                <th>Claim Reason</th>
+                <th>Claim Amount</th>
+                <th>Status</th>
+                <th>Filed Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="disputes-tbody">
+              <!-- Loaded via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Note Modal -->
+<div class="modal-overlay" id="note-modal">
+  <div class="modal" style="max-width: 480px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Add Administration Log Note</h3>
+      <button class="modal-close" onclick="closeNoteModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="current-dispute-id">
+      <div class="form-group">
+        <label class="form-label" for="dispute-note-input">Administrative Internal Note</label>
+        <textarea id="dispute-note-input" class="form-input" style="height:100px;resize:none;" placeholder="Enter notes about investigation, weight verification, etc..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeNoteModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitDisputeNote()">Save Note</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Initialize seed disputes if not present
+  if (!SG.store.get('disputes')) {
+    const mockDisputes = [
+      { id: 'dsp-001', ref: 'SG-DS-1001', bookingId: 'bk-mock-1', bookingRef: 'SG-BK-250002', dealerId: 'dlr-001', dealerName: 'Kumar Jewels Pvt Ltd', reason: 'Gold Purity mismatch claim (Expected 22K, tested 18K)', amount: 154000, status: 'open', filedAt: '2025-06-12T11:00:00Z', notes: [] },
+      { id: 'dsp-002', ref: 'SG-DS-1002', bookingId: 'bk-mock-2', bookingRef: 'SG-BK-250004', dealerId: 'dlr-002', dealerName: 'Patel Fine Jewellery', reason: 'Stone weight variance: Emerald count is 3 less than catalog specs', amount: 48000, status: 'escalated', filedAt: '2025-06-11T09:30:00Z', notes: ['Awaiting lab certificate confirmation.'] },
+      { id: 'dsp-003', ref: 'SG-DS-1003', bookingId: 'bk-mock-3', bookingRef: 'SG-BK-250001', dealerId: 'dlr-003', dealerName: 'Sree Lakshmi Jewellers', reason: 'Damaged clasp lock on necklace delivery', amount: 5000, status: 'resolved', filedAt: '2025-06-08T14:00:00Z', notes: ['Clasp replacement shipped on 2025-06-09.'] }
+    ];
+    SG.store.set('disputes', mockDisputes);
+  }
+
+  loadDisputes();
+});
+
+function loadDisputes() {
+  const disputes = SG.store.get('disputes') || [];
+
+  // Count summaries
+  document.getElementById('count-open').textContent = disputes.filter(d => d.status === 'open').length;
+  document.getElementById('count-escalated').textContent = disputes.filter(d => d.status === 'escalated').length;
+  document.getElementById('count-resolved').textContent = disputes.filter(d => d.status === 'resolved').length;
+
+  const tbody = document.getElementById('disputes-tbody');
+  if (!disputes.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">No dispute records found.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = disputes.map(d => {
+    let statusClass = 'badge-yellow';
+    if (d.status === 'resolved') statusClass = 'badge-green';
+    else if (d.status === 'escalated') statusClass = 'badge-red';
+
+    const cleanNotes = d.notes && d.notes.length ? `<br><small style="color:var(--text-muted)"><strong>Internal Note:</strong> ${d.notes[d.notes.length - 1]}</small>` : '';
+
+    return `
+      <tr>
+        <td><span class="code">${d.ref}</span></td>
+        <td><a href="booking-detail.html?id=${d.bookingId}" class="code" style="color:var(--gold-500)">${d.bookingRef}</a></td>
+        <td><strong>${d.dealerName}</strong></td>
+        <td>${d.reason}${cleanNotes}</td>
+        <td>?${SG.str.currency(d.amount)}</td>
+        <td><span class="badge ${statusClass}">${d.status.toUpperCase()}</span></td>
+        <td>${SG.time.format(d.filedAt)}</td>
+        <td>
+          <div style="display:flex;gap:6px;">
+            ${d.status !== 'resolved' ? `<button class="btn btn-green btn-xs" onclick="resolveDispute('${d.id}')">Resolve</button>` : ''}
+            ${d.status === 'open' ? `<button class="btn btn-danger btn-xs" onclick="escalateDispute('${d.id}')">Escalate</button>` : ''}
+            <button class="btn btn-secondary btn-xs" onclick="openNoteModal('${d.id}')">📝 Note</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function resolveDispute(id) {
+  SG.modal.confirm('Confirm Dispute Resolution', 'Are you sure you want to mark this dispute as Resolved? We assume verification is done.', () => {
+    const disputes = SG.store.get('disputes') || [];
+    const idx = disputes.findIndex(d => d.id === id);
+    if (idx >= 0) {
+      disputes[idx].status = 'resolved';
+      disputes[idx].notes.push(`Dispute resolved on ${SG.time.format(SG.time.now())} by admin.`);
+      SG.store.set('disputes', disputes);
+      SG.toast.success('Dispute Resolved', 'Ticket marked as resolved.');
+      SG.audit('DISPUTE_RESOLVED', id, disputes[idx].ref);
+      loadDisputes();
+    }
+  });
+}
+
+function escalateDispute(id) {
+  SG.modal.confirm('Escalate Claim', 'Are you sure you want to escalate this claim to the Production Head for validation?', () => {
+    const disputes = SG.store.get('disputes') || [];
+    const idx = disputes.findIndex(d => d.id === id);
+    if (idx >= 0) {
+      disputes[idx].status = 'escalated';
+      disputes[idx].notes.push(`Dispute escalated to production head on ${SG.time.format(SG.time.now())}.`);
+      SG.store.set('disputes', disputes);
+      SG.toast.warning('Dispute Escalated', 'Claim has been escalated.');
+      SG.audit('DISPUTE_ESCALATED', id, disputes[idx].ref);
+      loadDisputes();
+    }
+  });
+}
+
+function openNoteModal(id) {
+  document.getElementById('current-dispute-id').value = id;
+  document.getElementById('dispute-note-input').value = '';
+  SG.modal.open('note-modal');
+}
+
+function closeNoteModal() {
+  SG.modal.close('note-modal');
+}
+
+function submitDisputeNote() {
+  const id = document.getElementById('current-dispute-id').value;
+  const noteText = document.getElementById('dispute-note-input').value.trim();
+
+  if (!noteText) {
+    SG.toast.error('Field Required', 'Please input a note before saving.');
+    return;
+  }
+
+  const disputes = SG.store.get('disputes') || [];
+  const idx = disputes.findIndex(d => d.id === id);
+  if (idx >= 0) {
+    disputes[idx].notes.push(noteText);
+    SG.store.set('disputes', disputes);
+    SG.toast.success('Note Logged', 'Internal administrative note was added.');
+    closeNoteModal();
+    loadDisputes();
+  }
+}
+</script>
+</body>
+</html>
+

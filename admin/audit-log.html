@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Security Audit Trail — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Audit Trail</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Audit Log</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      
+      <!-- Page Header -->
+      <div class="admin-page-header-flex">
+        <div>
+          <h1 class="page-title">Operational Audit Log</h1>
+          <p class="page-subtitle">Track security actions, role updates, authentication logs, and database sync entries</p>
+        </div>
+        <div>
+          <button class="btn btn-primary" onclick="downloadCSV()">📊 Export CSV spreadsheet</button>
+        </div>
+      </div>
+
+      <!-- Stats row -->
+      <div class="stats-grid mb-6" id="audit-stats-grid">
+        <!-- JS populated stats -->
+      </div>
+
+      <!-- Filters Panel Card -->
+      <div class="card mb-6 p-4">
+        <div class="flex gap-4 items-center flex-wrap">
+          <!-- Text search -->
+          <div class="flex-grow-min-240">
+            <label class="form-label form-label-small">Search actor or details</label>
+            <input type="text" class="form-input" id="search-query" placeholder="Type name, ID, or description…" oninput="handleSearchFilters()">
+          </div>
+
+          <!-- Category select -->
+          <div class="w-160">
+            <label class="form-label form-label-small">Event category</label>
+            <select class="form-select" id="filter-category" title="Filter by event category" onchange="handleSearchFilters()">
+              <option value="">All Categories</option>
+              <option value="LOGIN">Auth/Logins</option>
+              <option value="TOKEN">Token Issues</option>
+              <option value="PERMISSION">Permissions</option>
+              <option value="BOOKING">Bookings</option>
+              <option value="REGISTRATION">Registrations</option>
+              <option value="SYSTEM">System/Settings</option>
+            </select>
+          </div>
+
+          <!-- Start date -->
+          <div class="w-150">
+            <label class="form-label form-label-small">Start Date</label>
+            <input type="date" class="form-input" id="filter-start-date" title="Filter start date" onchange="handleSearchFilters()">
+          </div>
+
+          <!-- End date -->
+          <div class="w-150">
+            <label class="form-label form-label-small">End Date</label>
+            <input type="date" class="form-input" id="filter-end-date" title="Filter end date" onchange="handleSearchFilters()">
+          </div>
+
+          <!-- Reset button -->
+          <div class="self-end">
+            <button class="btn btn-secondary btn-sm" onclick="resetFilters()">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="table-card">
+        <div class="table-container table-container-flat">
+          <div class="table-scroll-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Event Code</th>
+                  <th>Actor User</th>
+                  <th>Target Description</th>
+                  <th class="text-right">Access IP</th>
+                </tr>
+              </thead>
+              <tbody id="audit-tbody">
+                <!-- Dynamically populated rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination Wrap -->
+      <div id="pagination-wrap" class="mt-5"></div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession;
+  let allLogs = [];
+  let filteredLogs = [];
+  let currentPage = 1;
+  const PER_PAGE = 15;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth Check
+    if (!SG.auth.requireRole('super_admin', 'analytics_viewer')) return;
+    adminSession = SG.auth.current();
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    SG.components.loadAll();
+    loadAuditData();
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadAuditData();
+    });
+  });
+
+  function loadAuditData() {
+    allLogs = SG.store.get('audit_log') || [];
+    renderStats();
+    handleSearchFilters();
+  }
+
+  function renderStats() {
+    const total = allLogs.length;
+    const logins = allLogs.filter(l => l.event && l.event.includes('LOGIN')).length;
+    const tokens = allLogs.filter(l => l.event && l.event.includes('TOKEN')).length;
+    const permissions = allLogs.filter(l => l.event && l.event.includes('PERMISSION')).length;
+
+    document.getElementById('audit-stats-grid').innerHTML = `
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--blue-500)">${total}</div>
+        <div class="stat-lbl">Total Audit Events</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--green-500)">${logins}</div>
+        <div class="stat-lbl">Authentication / Logins</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--yellow-500)">${tokens}</div>
+        <div class="stat-lbl">Token Adjustments</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--purple-500)">${permissions}</div>
+        <div class="stat-lbl">Permission Changes</div>
+      </div>
+    `;
+  }
+
+  function handleSearchFilters() {
+    const query = document.getElementById('search-query').value.toLowerCase();
+    const category = document.getElementById('filter-category').value;
+    const startDate = document.getElementById('filter-start-date').value;
+    const endDate = document.getElementById('filter-end-date').value;
+
+    filteredLogs = allLogs.filter(l => {
+      // Category check
+      if (category) {
+        if (category === 'LOGIN' && !l.event.includes('LOGIN')) return false;
+        if (category === 'TOKEN' && !l.event.includes('TOKEN')) return false;
+        if (category === 'PERMISSION' && !l.event.includes('PERMISSION')) return false;
+        if (category === 'BOOKING' && !l.event.includes('BOOKING')) return false;
+        if (category === 'REGISTRATION' && !l.event.includes('REGISTRATION')) return false;
+        if (category === 'SYSTEM' && (l.event.includes('LOGIN') || l.event.includes('TOKEN') || l.event.includes('PERMISSION') || l.event.includes('BOOKING') || l.event.includes('REGISTRATION'))) return false;
+      }
+
+      // Text query check
+      if (query) {
+        const actorName = (l.actorName || '').toLowerCase();
+        const entityDesc = (l.entityDesc || '').toLowerCase();
+        const eventCode = (l.event || '').toLowerCase();
+        if (!actorName.includes(query) && !entityDesc.includes(query) && !eventCode.includes(query) && !l.actor.toLowerCase().includes(query)) {
+          return false;
+        }
+      }
+
+      // Date checks
+      if (startDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        if (new Date(l.at) < start) return false;
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        if (new Date(l.at) > end) return false;
+      }
+
+      return true;
+    });
+
+    // Sort by date desc
+    filteredLogs.sort((a, b) => new Date(b.at) - new Date(a.at));
+    
+    currentPage = 1;
+    renderTableRows();
+  }
+
+  function renderTableRows() {
+    const tbody = document.getElementById('audit-tbody');
+    const paginated = SG.paginate(filteredLogs, currentPage, PER_PAGE);
+
+    if (!paginated.data.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align:center;padding:50px;color:var(--text-muted);">
+            No audit records match your filters.
+          </td>
+        </tr>`;
+      document.getElementById('pagination-wrap').innerHTML = '';
+      return;
+    }
+
+    tbody.innerHTML = paginated.data.map(l => {
+      const actorLabel = l.actorName ? `${sanitizeHTML(l.actorName)} (${sanitizeHTML(l.actor)})` : sanitizeHTML(l.actor);
+      
+      let eventClass = 'badge-gray';
+      if (l.event.includes('FAIL') || l.event.includes('BLOCKED') || l.event.includes('SUSPEND') || l.event.includes('OVERRIDE')) {
+        eventClass = 'badge-red';
+      } else if (l.event.includes('APPROVED') || l.event.includes('SUCCESS') || l.event.includes('GRANTED')) {
+        eventClass = 'badge-green';
+      } else if (l.event.includes('UPDATE') || l.event.includes('EDIT')) {
+        eventClass = 'badge-yellow';
+      }
+
+      return `
+        <tr>
+          <td style="font-size:12px;white-space:nowrap;">${SG.time.formatFull(l.at)}</td>
+          <td><span class="badge ${eventClass}" style="font-size:10px;font-family:var(--font-mono);">${sanitizeHTML(l.event)}</span></td>
+          <td style="font-weight:500;color:var(--text-primary);">${actorLabel}</td>
+          <td style="font-size:12px;color:var(--text-secondary);max-width:350px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${sanitizeHTML(l.entityDesc)}">${sanitizeHTML(l.entityDesc)}</td>
+          <td style="text-align:right;font-family:var(--font-mono);font-size:11px;">${sanitizeHTML(l.ip || '127.0.0.1')}</td>
+        </tr>
+      `;
+    }).join('');
+
+    SG.renderPagination('pagination-wrap', currentPage, paginated.pages, (page) => {
+      currentPage = page;
+      renderTableRows();
+    });
+  }
+
+  function resetFilters() {
+    document.getElementById('search-query').value = '';
+    document.getElementById('filter-category').value = '';
+    document.getElementById('filter-start-date').value = '';
+    document.getElementById('filter-end-date').value = '';
+    handleSearchFilters();
+  }
+
+  function downloadCSV() {
+    if (!filteredLogs.length) {
+      SG.toast.error('No Data', 'There is no filtered audit trail data to export.');
+      return;
+    }
+
+    const headers = ['Timestamp', 'Event', 'Actor Name', 'Actor ID', 'Details', 'IP Address'];
+    const rows = filteredLogs.map(l => [
+      l.at,
+      l.event,
+      l.actorName || 'System',
+      l.actor,
+      `"${(l.entityDesc || '').replace(/"/g, '""')}"`,
+      l.ip || '127.0.0.1'
+    ]);
+    
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Koshda Jewellery House_audit_log_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    SG.toast.success('CSV Spreadsheet Exported', 'CSV download completed.');
+    SG.audit('AUDIT_LOG_EXPORT', 'audit_log', 'Audit log spreadsheet downloaded');
+  }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Registration Queue — Admin | Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Registration Queue</div>
+        <div class="topbar-breadcrumb"><span>Admin</span><span>›</span><span class="current">Registrations</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header">
+        <div><h1 class="page-title">Dealer Registration Queue</h1><p class="page-subtitle">Review and approve new dealer applications</p></div>
+      </div>
+
+      <!-- Status Tabs -->
+      <div class="tabs tab-border-bottom-mb-6" data-tabs>
+        <button class="tab-btn active" data-tab="pending-panel">⏳ Pending <span class="badge badge-yellow ml-2" id="pending-count">0</span></button>
+        <button class="tab-btn" data-tab="approved-panel">✓ Approved</button>
+        <button class="tab-btn" data-tab="all-panel">All Registrations</button>
+      </div>
+
+      <div id="pending-panel" class="tab-panel active">
+        <div id="pending-list"></div>
+      </div>
+      <div id="approved-panel" class="tab-panel">
+        <div id="approved-list"></div>
+      </div>
+      <div id="all-panel" class="tab-panel">
+        <div class="flex gap-3 mb-5">
+          <input type="text" class="form-input input-w-300" id="all-search" placeholder="Search by name or business…" oninput="renderAll()">
+          <select class="form-select select-w-auto" id="all-status" onchange="renderAll()" title="Filter by status">
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Rejected</option>
+            <option value="suspended">Suspended</option>
+          </select>
+        </div>
+        <div id="all-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Approval Modal -->
+<div class="modal-overlay" id="approve-modal">
+  <div class="modal modal-w-480">
+    <div class="modal-header">
+      <h3 class="modal-title">Approve Dealer Registration</h3>
+      <button class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-intro-text">Approving will issue an access token and send a WhatsApp notification to the dealer.</p>
+      <div class="form-group">
+        <label class="form-label" for="modal-tier">Assign Tier <span class="required">*</span></label>
+        <select class="form-select" id="modal-tier" title="Assign Tier">
+          <option value="standard">🔵 Standard</option>
+          <option value="premium">? Premium</option>
+          <option value="exclusive">💎 Exclusive</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Internal Note (optional)</label>
+        <textarea class="form-textarea textarea-h-70" id="modal-approve-note" placeholder="e.g. Verified PAN manually. Approved."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('approve-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApproval()">✓ Approve & Issue Token</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="reject-modal">
+  <div class="modal modal-w-480">
+    <div class="modal-header">
+      <h3 class="modal-title">Reject Application</h3>
+      <button class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label" for="reject-reason-select">Rejection Reason <span class="required">*</span></label>
+        <select class="form-select" id="reject-reason-select" onchange="document.getElementById('reject-reason').value=this.value" title="Rejection Reason">
+          <option value="">Select a reason…</option>
+          <option value="Incomplete documents submitted">Incomplete documents</option>
+          <option value="Business does not meet eligibility criteria">Eligibility criteria not met</option>
+          <option value="Dealer already registered under another email">Duplicate registration</option>
+        </select>
+        <textarea class="form-textarea textarea-mt-3-h-70" id="reject-reason" placeholder="Enter rejection reason…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('reject-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="saveRejection()">❌ Reject Application</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/booking.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+let adminSession, selectedDealerId;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+  adminSession = SG.auth.current();
+  const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+  { const el = document.getElementById('admin-av'); if (el) el.textContent = initials; }
+  { const el = document.getElementById('admin-nm'); if (el) el.textContent = adminSession.name; }
+  { const el = document.getElementById('topbar-av'); if (el) el.textContent = initials; }
+
+  SG.setupTabs();
+  renderPending();
+  renderApproved();
+  renderAll();
+  SG.liveUpdate.start();
+  SG.events.on('live_update', () => { renderPending(); });
+});
+
+function getDealers() { return SG.dal.safeGet('users')?.filter(u => u.role === 'dealer') || []; }
+
+function dealerCard(d, showActions = true) {
+  return `
+  <div class="registration-card">
+    <div class="reg-avatar">${d.avatar || SG.str.initials(d.name)}</div>
+    <div class="reg-info">
+      <div class="reg-biz-name">${d.businessName}</div>
+      <div class="reg-owner">${d.name} · ${d.city}, ${d.state}</div>
+      <div class="reg-meta">
+        <span>?? ${d.email}</span>
+        <span>?? ${d.phone}</span>
+        <span>Filed: ${SG.time.relative(d.registeredAt)}</span>
+        ${d.ndaSigned ? `<span class="text-green">? NDA Signed</span>` : `<span class="text-red-light">? NDA Not Signed</span>`}
+      </div>
+      <div class="reg-cats">${(d.categories || []).map(c => `<span class="badge badge-gray">${c}</span>`).join('')}</div>
+    </div>
+    ${showActions && d.status === 'pending' ? `
+    <div class="reg-actions">
+      <button class="btn btn-sm btn-primary" onclick="openApproveModal('${d.id}')">✓ Approve</button>
+      <button class="btn btn-sm btn-danger" onclick="openRejectModal('${d.id}')">❌ Reject</button>
+      <button class="btn btn-sm btn-ghost" onclick="window.location.href='registration-detail.html?id=${d.id}'">View Details ?</button>
+    </div>` : d.status !== 'pending' ? `
+    <div class="reg-actions">
+      ${SG.statusBadge(d.status)}
+      ${d.approvedAt ? `<div class="text-sm text-muted-mt-4">Approved ${SG.time.relative(d.approvedAt)}</div>` : ''}
+      <button class="btn btn-sm btn-ghost" onclick="window.location.href='registration-detail.html?id=${d.id}'">View ?</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderPending() {
+  const pending = getDealers().filter(d => d.status === 'pending');
+  document.getElementById('pending-count').textContent = pending.length;
+  document.querySelectorAll('[data-count="pending-regs"]').forEach(el => { el.textContent = pending.length; el.classList.toggle('hidden', pending.length === 0); });
+  const el = document.getElementById('pending-list');
+  if (!pending.length) { el.innerHTML = '<div class="empty-state m-40-auto"><div class="empty-state-icon">?</div><h3>No Pending Registrations</h3><p>All applications have been reviewed.</p></div>'; return; }
+  el.innerHTML = pending.map(d => dealerCard(d, true)).join('');
+}
+
+function renderApproved() {
+  const approved = getDealers().filter(d => d.status === 'approved').sort((a,b) => new Date(b.approvedAt) - new Date(a.approvedAt));
+  const el = document.getElementById('approved-list');
+  if (!approved.length) { el.innerHTML = '<div class="text-center-muted-padding">No approved dealers yet</div>'; return; }
+  el.innerHTML = approved.map(d => dealerCard(d, false)).join('');
+}
+
+function renderAll() {
+  const search = document.getElementById('all-search')?.value.toLowerCase() || '';
+  const status = document.getElementById('all-status')?.value || '';
+  let dealers  = getDealers();
+  if (status) dealers = dealers.filter(d => d.status === status);
+  if (search) dealers = dealers.filter(d => (d.name + d.businessName + d.email).toLowerCase().includes(search));
+  const el = document.getElementById('all-list');
+  if (!dealers.length) { el.innerHTML = '<div class="text-center-muted-padding">No results</div>'; return; }
+  el.innerHTML = dealers.map(d => dealerCard(d, false)).join('');
+}
+
+function openApproveModal(dealerId) { selectedDealerId = dealerId; SG.modal.open('approve-modal'); }
+function openRejectModal(dealerId)  { selectedDealerId = dealerId; SG.modal.open('reject-modal'); }
+
+function saveApproval() {
+  const tier = document.getElementById('modal-tier').value;
+  const tempPass = SG.admin.approveDealer(selectedDealerId, tier);
+  SG.modal.close('approve-modal');
+  if (tempPass) {
+    // Retrieve dealer business name
+    SG.dal._allowRawAccess = True;
+    let dealerName = 'the dealer';
+    try {
+      const users = SG.dal.safeGet('users') || [];
+      const user = users.find(u => u.id === selectedDealerId);
+      if (user) dealerName = user.businessName || user.name;
+    } finally {
+      SG.dal._allowRawAccess = False;
+    }
+    SG.modal.alert(
+      'Dealer Approved Successfully',
+      `Account for <strong>${dealerName}</strong> has been approved and activated.<br><br>` +
+      `A temporary security credential was generated:<br>` +
+      `<div class="temp-pass-display">${tempPass}</div>` +
+      `Please share this password securely with the dealer. They will be prompted to update it upon their first login.`,
+      () => { renderPending(); renderApproved(); renderAll(); }
+    );
+  } else {
+    SG.toast.error('Approval Error', 'An error occurred during approval.');
+  }
+}
+
+function saveRejection() {
+  const reason = document.getElementById('reject-reason').value.trim();
+  if (!reason) { SG.toast.error('Required', 'Please enter a rejection reason.'); return; }
+  SG.admin.rejectDealer(selectedDealerId, reason);
+  SG.modal.close('reject-modal');
+  SG.toast.warning('Application Rejected', 'The dealer has been notified.');
+  renderPending(); renderAll();
+}
+</script>
+</body>
+</html>
+

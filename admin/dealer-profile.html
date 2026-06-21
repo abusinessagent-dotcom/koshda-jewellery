@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Profile — Admin | Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Dealer Management</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Dealers</span><span>›</span><span class="current" id="breadcrumb-biz-name">Loading Profile...</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="admin-content">
+      
+      <!-- Page Header -->
+      <div class="page-header profile-header">
+        <div class="flex-align-center-gap-4">
+          <div class="avatar avatar-xl" id="profile-avatar">👤</div>
+          <div>
+            <h1 class="page-title" id="profile-biz-name">Business Name</h1>
+            <p class="page-subtitle" id="profile-owner-sub">Owner Name · City, State</p>
+          </div>
+        </div>
+        
+        <!-- Status actions -->
+        <div class="page-actions" id="action-buttons-wrap">
+          <!-- Dynamically generated action buttons -->
+        </div>
+      </div>
+
+      <!-- Main Layout Grid -->
+      <div class="grid gap-6 admin-grid-layout-360">
+        
+        <!-- Left Column: Details, Bookings, Permissions, Audit -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Detail Cards Section -->
+          <div class="card grid grid-2 gap-4">
+            <div>
+              <div class="profile-detail-label">Owner Name</div>
+              <div class="profile-detail-value" id="detail-owner">—</div>
+            </div>
+
+            <div>
+              <div class="profile-detail-label">Email Address</div>
+              <div class="profile-detail-value" id="detail-email">—</div>
+            </div>
+            <div>
+              <div class="profile-detail-label">Phone Number</div>
+              <div class="profile-detail-value" id="detail-phone">—</div>
+            </div>
+            <div>
+              <div class="profile-detail-label">Registered On</div>
+              <div class="profile-detail-value" id="detail-reg-date">—</div>
+            </div>
+            <div>
+              <div class="profile-detail-label">Approval Date</div>
+              <div class="profile-detail-value" id="detail-app-date">—</div>
+            </div>
+            <div>
+              <div class="profile-detail-label">Last Active</div>
+              <div class="profile-detail-value" id="detail-last-login">—</div>
+            </div>
+            <div>
+              <div class="profile-detail-label">Engagement Score</div>
+              <div class="profile-detail-score" id="detail-score">0</div>
+            </div>
+          </div>
+
+          <!-- Permission Grid -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">🔐 Catalogue Permissions <span class="section-title-sub">Enforce B2B collection boundaries</span></div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Collection Code</th>
+                    <th>Collection Name</th>
+                    <th>Material</th>
+                    <th>Status</th>
+                    <th class="text-right">Collection Access</th>
+                  </tr>
+                </thead>
+                <tbody id="permissions-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Bookings History -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">📦 Recent Bookings <span class="section-title-sub">Last 5 submissions</span></div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ref</th>
+                    <th>Submitted At</th>
+                    <th>Items Count</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="bookings-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Activity / Audit Log -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">📋 Activity Audit Trail <span class="section-title-sub">Last 20 log events</span></div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Event</th>
+                    <th>Description</th>
+                    <th>IP Address</th>
+                  </tr>
+                </thead>
+                <tbody id="audit-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Selected Items (Wishlist) -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">⭐ Selected Items (Wishlist)</div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Saved At</th>
+                  </tr>
+                </thead>
+                <tbody id="wishlist-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Cart Contents -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">🛒 Cart Contents</div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Product Code</th>
+                    <th>Product Name</th>
+                    <th>Dealer Notes</th>
+                    <th>Added At</th>
+                  </tr>
+                </thead>
+                <tbody id="cart-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Token Request History -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">🎫 Token Request History</div>
+            </div>
+            <div class="table-container table-container-flat">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Request ID</th>
+                    <th>Scope Type</th>
+                    <th>Target</th>
+                    <th>Reason</th>
+                    <th>Submitted At</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="token-requests-tbody">
+                  <!-- JS Filled -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: NDA, Token & Devices -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Access Tier Card (Super Admin only) -->
+          <div class="card">
+            <div class="section-title mb-3">Access Tier Settings</div>
+            <div class="form-group mb-0">
+              <select class="form-select" id="tier-dropdown" title="Access Tier" onchange="changeAccessTier(this.value)">
+                <option value="standard">🔵 Standard Tier</option>
+                <option value="premium">? Premium Tier</option>
+                <option value="exclusive">💎 Exclusive Tier</option>
+              </select>
+              <p class="form-hint form-hint-small" id="tier-hint">Standard: max 2 devices. Premium: 5. Exclusive: 8.</p>
+            </div>
+          </div>
+
+          <!-- NDA Status Card -->
+          <div class="card card-nda-signed">
+            <div class="flex-between-align-center-mb-3">
+              <div class="section-title">🤝 NDA Execution</div>
+              <span class="badge badge-green" id="nda-badge">Signed</span>
+            </div>
+            <p class="nda-date-lbl" id="nda-signed-date">Executed on March 1, 2024</p>
+            <button class="btn btn-secondary btn-w-100-justify-center" onclick="simulateNDAPdf()">View Signed NDA PDF</button>
+          </div>
+
+          <!-- Token lifecycle card -->
+          <div class="card" id="token-card-wrap">
+            <div class="section-title mb-3">🎫 Access Token Management</div>
+            <div id="token-details-body">
+              <!-- JS Filled -->
+            </div>
+          </div>
+
+          <!-- Registered Devices Card -->
+          <div class="card">
+            <div class="section-title mb-3">📱 Authorized Devices</div>
+            <div id="device-table-wrap">
+              <!-- JS Filled -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/totp.js" defer></script>
+<script src="/js/device-manager.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/booking.js" defer></script>
+<script src="/js/google-sheets.js" defer></script>
+<script src="/js/whatsapp.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+let adminSession, dealerId, dealerUser;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+  adminSession = SG.auth.current();
+
+  dealerId = SG.params.get('id');
+  if (!dealerId) {
+    SG.toast.error('Missing ID', 'No dealer ID provided in URL.');
+    setTimeout(() => window.location.href = 'dealer-list.html', 1500);
+    return;
+  }
+
+  // Load component sidebars
+  SG.components.loadAll();
+  
+  loadDealerProfile();
+  SG.liveUpdate.start();
+  SG.events.on('live_update', () => { loadDealerProfile(); });
+  SG.events.on('token_updated', () => { loadDealerProfile(); });
+});
+
+function loadDealerProfile() {
+  dealerUser = SG.auth.getUser(dealerId);
+  if (!dealerUser) {
+    SG.toast.error('Dealer Not Found', `Dealer with ID ${dealerId} does not exist.`);
+    return;
+  }
+
+  // Header Details
+  document.getElementById('breadcrumb-biz-name').textContent = dealerUser.businessName;
+  document.getElementById('profile-biz-name').textContent = dealerUser.businessName;
+  document.getElementById('profile-owner-sub').textContent = `${dealerUser.name} · ${dealerUser.city}, ${dealerUser.state}`;
+  document.getElementById('profile-avatar').textContent = dealerUser.avatar || SG.str.initials(dealerUser.name);
+
+  // Stats / Details block
+  document.getElementById('detail-owner').textContent = dealerUser.name;
+
+  document.getElementById('detail-email').textContent = dealerUser.email;
+  document.getElementById('detail-phone').textContent = dealerUser.phone || '—';
+  document.getElementById('detail-reg-date').textContent = SG.time.format(dealerUser.registeredAt);
+  document.getElementById('detail-app-date').textContent = SG.time.format(dealerUser.approvedAt);
+  document.getElementById('detail-last-login').textContent = SG.time.formatFull(dealerUser.lastLogin);
+  document.getElementById('detail-score').textContent = dealerUser.engagementScore || '0';
+
+  // Actions Buttons Wrap
+  renderActionButtons();
+
+  // Access Tier Dropdown & details
+  const tierDrop = document.getElementById('tier-dropdown');
+  tierDrop.value = dealerUser.tier || 'standard';
+  // Check if role is super admin to enable changing
+  if (adminSession.role !== 'super_admin') {
+    tierDrop.disabled = true;
+    document.getElementById('tier-hint').innerHTML = `<span class="text-red-light">* Requires Super Admin privilege to change tier</span>`;
+  }
+
+  // NDA Status
+  const ndaBadge = document.getElementById('nda-badge');
+  const ndaDate = document.getElementById('nda-signed-date');
+  if (dealerUser.ndaSigned) {
+    ndaBadge.className = 'badge badge-green';
+    ndaBadge.textContent = 'Signed';
+    ndaDate.textContent = `Executed on ${SG.time.format(dealerUser.ndaSignedAt)}`;
+  } else {
+    ndaBadge.className = 'badge badge-red';
+    ndaBadge.textContent = 'Not Signed';
+    ndaDate.textContent = 'NDA signature pending dealer action';
+  }
+
+  // Active Token status
+  renderTokenDetails();
+
+  // Device List
+  renderDeviceTable();
+
+  // Booking history
+  renderBookingsHistory();
+
+  // Permissions Grid
+  renderPermissionsGrid();
+
+  // Audit Logs
+  renderAuditLogs();
+
+  // Selected Items (Wishlist)
+  renderWishlistTable();
+
+  // Cart Contents
+  renderCartTable();
+
+  // Token Request History
+  renderTokenRequestsTable();
+}
+
+function renderActionButtons() {
+  const wrap = document.getElementById('action-buttons-wrap');
+  const status = dealerUser.status;
+
+  if (status === 'approved') {
+    wrap.innerHTML = `
+      <button class="btn btn-secondary btn-sm" onclick="pauseDealer()">⏸️ Pause Access</button>
+      <button class="btn btn-danger btn-sm" onclick="suspendDealer()">?🚫 Suspend Dealer</button>
+    `;
+  } else if (status === 'paused') {
+    wrap.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="reinstateDealer()">▶️ Reinstate Access</button>
+      <button class="btn btn-danger btn-sm" onclick="suspendDealer()">?🚫 Suspend Dealer</button>
+    `;
+  } else if (status === 'suspended') {
+    wrap.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="reinstateDealer()">▶️ Reinstate Account</button>
+    `;
+  } else if (status === 'pending') {
+    wrap.innerHTML = `
+      <button class="btn btn-primary btn-sm" onclick="approvePendingDealer()">✓ Approve Application</button>
+      <button class="btn btn-danger btn-sm" onclick="rejectPendingDealer()">❌ Reject Application</button>
+    `;
+  }
+}
+
+function renderTokenDetails() {
+  const token = SG.tokenMgr.forDealer(dealerId);
+  const body = document.getElementById('token-details-body');
+  
+  if (!token) {
+    body.innerHTML = `
+      <div class="alert alert-warning mb-3">No active access token issued.</div>
+      <button class="btn btn-primary btn-sm" onclick="issueNewToken()">Issue Token</button>
+    `;
+    return;
+  }
+
+  const status = SG.tokenMgr.getStatus(token);
+  const progressHtml = SG.tokenMgr.expiryBarHtml(token);
+  
+  body.innerHTML = `
+    <div class="flex-between-align-center-mb-2">
+      <span class="font-12-text-secondary">Token Status:</span>
+      ${SG.statusBadge(status)}
+    </div>
+    <div class="mb-3">
+      ${progressHtml}
+    </div>
+    <div class="flex-gap-2">
+      <button class="btn btn-secondary btn-sm" onclick="SG.tokenMgr.openExtendModal('${token.id}')">Extend 1 Year</button>
+      ${status !== 'revoked' ? `<button class="btn btn-danger btn-sm" onclick="SG.tokenMgr.confirmRevoke('${token.id}')">Revoke Token</button>` : ''}
+    </div>
+  `;
+}
+
+function renderDeviceTable() {
+  const wrap = document.getElementById('device-table-wrap');
+  wrap.innerHTML = SG.deviceMgr.renderDeviceTable(dealerId);
+}
+
+function removeDevice(deviceId) {
+  SG.modal.confirm(
+    'Remove Device',
+    'Are you sure you want to de-authorize this device? The dealer will be forced to re-verify on next login.',
+    () => {
+      SG.deviceMgr.remove(dealerId, deviceId);
+      SG.toast.success('Device Removed', 'Device de-authorized successfully.');
+      loadDealerProfile();
+    },
+    true
+  );
+}
+
+function renderBookingsHistory() {
+  // Use DAL query safely
+  let list = [];
+  if (SG.dal && SG.dal.bookings) {
+    try {
+      list = SG.dal.bookings.list(dealerId);
+    } catch(e) {}
+  } else {
+    list = SG.booking.forDealer(dealerId);
+  }
+  
+  const recent = list.slice(0, 5);
+  const tbody = document.getElementById('bookings-tbody');
+  
+  if (!recent.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="table-empty-cell">No bookings placed yet.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = recent.map(b => `
+    <tr>
+      <td><span class="code cursor-pointer" onclick="window.location.href='booking-detail.html?id=${b.id}'">${b.ref}</span></td>
+      <td>${SG.time.formatFull(b.submittedAt)}</td>
+      <td class="text-primary">${b.items.length}</td>
+      <td>${SG.statusBadge(b.status)}</td>
+      <td><button class="btn btn-sm btn-ghost" onclick="window.location.href='booking-detail.html?id=${b.id}'">View</button></td>
+    </tr>
+  `).join('');
+}
+
+function renderPermissionsGrid() {
+  const collections = SG.dal.safeGet('collections') || [];
+  const tbody = document.getElementById('permissions-tbody');
+  
+  tbody.innerHTML = collections.map(col => {
+    const hasAccess = SG.auth.canAccessCollection(dealerId, col.id);
+    const checked = hasAccess ? 'checked' : '';
+    
+    return `
+      <tr>
+        <td><span class="code">${col.code}</span></td>
+        <td class="item-name-bold">${col.name}</td>
+        <td>${col.material}</td>
+        <td>${SG.statusBadge(col.status)}</td>
+        <td class="text-right">
+          <label class="switch">
+            <input type="checkbox" ${checked} onchange="togglePermission('${col.id}', this.checked)">
+            <span class="slider round"></span>
+          </label>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function togglePermission(colId, granted) {
+  if (granted) {
+    SG.admin.grantPermission(dealerId, colId);
+    SG.toast.success('Permission Granted', 'Collection access authorized.');
+  } else {
+    SG.admin.revokePermission(dealerId, colId);
+    SG.toast.warning('Permission Revoked', 'Collection access removed.');
+  }
+}
+
+function renderAuditLogs() {
+  const logs = SG.store.get('audit_log') || [];
+  const filtered = logs.filter(l => l.actor === dealerId || l.entity === dealerId || l.entityDesc?.includes(dealerId)).slice(0, 20);
+  const tbody = document.getElementById('audit-tbody');
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">No audit trails for this dealer.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(l => `
+    <tr>
+      <td class="font-12-text-secondary">${SG.time.formatFull(l.at)}</td>
+      <td><span class="badge badge-gray badge-tiny">${l.event}</span></td>
+      <td class="font-12-text-secondary text-ellipsis mw-300" title="${l.entityDesc}">${l.entityDesc}</td>
+      <td class="mono-small">${l.ip || '127.0.0.1'}</td>
+    </tr>
+  `).join('');
+}
+
+// Action Button commands
+function pauseDealer() {
+  SG.modal.confirm('Pause Access', 'Temporarily suspend catalog access for this dealer?', () => {
+    const users = SG.dal.safeGet('users') || [];
+    const idx = users.findIndex(u => u.id === dealerId);
+    if (idx >= 0) {
+      users[idx].status = 'paused';
+      SG.store.set('users', users);
+      SG.audit('DEALER_PAUSED', dealerId, `Access paused for ${users[idx].businessName}`);
+      SG.toast.warning('Access Paused', 'Dealer access is temporarily paused.');
+      loadDealerProfile();
+    }
+  });
+}
+
+// Suspend dealer
+function suspendDealer() {
+  SG.modal.confirm(
+    'Suspend Account',
+    'Suspend this dealer? This immediately revokes their active access token and blocks login. Continue?',
+    () => {
+      SG.admin.suspendDealer(dealerId, 'Administrative suspension');
+      SG.toast.error('Account Suspended', 'Dealer account has been suspended.');
+      loadDealerProfile();
+    },
+    true
+  );
+}
+
+function reinstateDealer() {
+  SG.modal.confirm('Reinstate Account', 'Reinstate catalog access for this dealer?', () => {
+    const users = SG.dal.safeGet('users') || [];
+    const idx = users.findIndex(u => u.id === dealerId);
+    if (idx >= 0) {
+      users[idx].status = 'approved';
+      SG.store.set('users', users);
+      
+      // Check if active token exists, if not issue one
+      const token = SG.tokenMgr.forDealer(dealerId);
+      if (!token || token.status !== 'active') {
+        const settings = SG.store.get('settings') || {};
+        SG.tokenMgr.issue(dealerId, users[idx].tier || 'standard', settings.tokenValidityDays || 365, adminSession.id);
+      }
+      
+      SG.audit('DEALER_REINSTATED', dealerId, `Access reinstated for ${users[idx].businessName}`);
+      SG.toast.success('Account Active', 'Dealer access reinstated.');
+      loadDealerProfile();
+    }
+  });
+}
+
+function approvePendingDealer() {
+  SG.modal.confirm(
+    'Approve Dealer Application',
+    `Are you sure you want to approve **${dealerUser.businessName}**? This will issue their access token and activate the account.`,
+    () => {
+      const tempPass = SG.admin.approveDealer(dealerId, dealerUser.tier || 'standard', 'Approved via Profile Page');
+      if (tempPass) {
+        SG.modal.alert(
+          'Dealer Approved Successfully',
+          `Account for <strong>${dealerUser.businessName}</strong> has been approved and activated.<br><br>` +
+          `A temporary security credential was generated:<br>` +
+          `<div class="temp-pass-display">${tempPass}</div>` +
+          `Please share this password securely with the dealer. They will be prompted to update it upon their first login.`,
+          () => { loadDealerProfile(); }
+        );
+      } else {
+        SG.toast.error('Approval Error', 'An error occurred during approval.');
+      }
+    }
+  );
+}
+
+function rejectPendingDealer() {
+  const reason = window.prompt('Enter reason for rejection:');
+  if (reason === null) return; // cancelled
+  if (!reason.trim()) {
+    SG.toast.error('Required', 'Rejection reason is required.');
+    return;
+  }
+
+  SG.modal.confirm(
+    'Reject Application',
+    `Are you sure you want to reject this application? This action is permanent.`,
+    () => {
+      const success = SG.admin.rejectDealer(dealerId, reason.trim());
+      if (success) {
+        SG.toast.warning('Application Rejected', 'The registration has been rejected.');
+        loadDealerProfile();
+      } else {
+        SG.toast.error('Rejection Error', 'An error occurred during rejection.');
+      }
+    },
+    true
+  );
+}
+
+function changeAccessTier(newTier) {
+  if (adminSession.role !== 'super_admin') return;
+  const users = SG.dal.safeGet('users') || [];
+  const idx = users.findIndex(u => u.id === dealerId);
+  if (idx >= 0) {
+    users[idx].tier = newTier;
+    SG.store.set('users', users);
+    
+    // Also extend/update tier on token if exists
+    const tokens = SG.dal.safeGet('tokens') || [];
+    const token = tokens.find(t => t.dealerId === dealerId && t.status === 'active');
+    if (token) {
+      token.tier = newTier;
+      SG.store.set('tokens', tokens);
+    }
+
+    SG.audit('DEALER_TIER_UPDATED', dealerId, `Tier updated to ${newTier} for ${users[idx].businessName}`);
+    SG.toast.success('Tier Updated', `Dealer tier set to ${newTier}.`);
+    loadDealerProfile();
+  }
+}
+
+function issueNewToken() {
+  const settings = SG.store.get('settings') || {};
+  SG.tokenMgr.issue(dealerId, dealerUser.tier || 'standard', settings.tokenValidityDays || 365, adminSession.id);
+  SG.toast.success('Token Issued', 'Active access token created.');
+  loadDealerProfile();
+}
+
+function simulateNDAPdf() {
+  SG.toast.info('NDA PDF', 'Simulating PDF generation: NDA signature and checksum verified.');
+  window.open(`data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iaik8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PmVuZG9iag==`, '_blank');
+}
+
+function renderWishlistTable() {
+  const wishlist = SG.booking.wishlist.get(dealerId);
+  const tbody = document.getElementById('wishlist-tbody');
+  
+  if (!wishlist.length) {
+    tbody.innerHTML = `<tr><td colspan="3" class="table-empty-cell">Wishlist is empty.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = wishlist.map(w => `
+    <tr>
+      <td><span class="code">${w.productCode}</span></td>
+      <td class="text-primary">${w.productName}</td>
+      <td>${SG.time.formatFull(w.addedAt)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderCartTable() {
+  const cart = SG.booking.cart.get(dealerId);
+  const tbody = document.getElementById('cart-tbody');
+  
+  if (!cart.items || !cart.items.length) {
+    tbody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">Cart is empty.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = cart.items.map(item => `
+    <tr>
+      <td><span class="code">${item.code}</span></td>
+      <td class="text-primary">${item.name}</td>
+      <td class="item-note-italic">${item.note || '—'}</td>
+      <td>${SG.time.formatFull(item.addedAt)}</td>
+    </tr>
+  `).join('');
+}
+
+function renderTokenRequestsTable() {
+  const allReqs = SG.store.get('token_requests') || [];
+  const dealerReqs = allReqs.filter(r => r.userId === dealerId);
+  const tbody = document.getElementById('token-requests-tbody');
+  
+  if (!dealerReqs.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="table-empty-cell">No token requests submitted.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = dealerReqs.map(r => {
+    let actionHtml = '—';
+    if (r.status === 'pending') {
+      actionHtml = `
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-success btn-tiny-padding" onclick="approveTokenRequest('${r.id}')">Approve</button>
+          <button class="btn btn-sm btn-danger btn-tiny-padding" onclick="rejectTokenRequest('${r.id}')">Reject</button>
+        </div>
+      `;
+    }
+
+    let targetLabel = r.type === 'category' ? `Category: ${r.targetName.toUpperCase()}` : `Product: ${r.targetName}`;
+    
+    return `
+      <tr>
+        <td><span class="code">${r.id}</span></td>
+        <td style="text-transform:capitalize;">${r.type}</td>
+        <td class="dealer-name-title">${targetLabel}</td>
+        <td class="text-ellipsis mw-180" title="${r.reason}">${r.reason || '—'}</td>
+        <td>${SG.time.formatFull(r.submittedAt)}</td>
+        <td>${SG.statusBadge(r.status)}</td>
+        <td>${actionHtml}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function approveTokenRequest(reqId) {
+  SG.modal.confirm(
+    'Approve Token Request',
+    'Are you sure you want to approve this category access request? Access will be granted for 14 days.',
+    () => {
+      const allReqs = SG.store.get('token_requests') || [];
+      const req = allReqs.find(r => r.id === reqId);
+      if (!req) return;
+
+      req.status = 'approved';
+      req.approvedAt = SG.time.now();
+      // Set validity for 14 days
+      req.expiresAt = new Date(Date.now() + 14 * 86400000).toISOString();
+      
+      SG.store.set('token_requests', allReqs);
+
+      // Notify dealer
+      SG.notify(
+        req.userId, 
+        'token_approved', 
+        'Access Token Approved', 
+        `Your request for ${req.targetName.toUpperCase()} category access has been approved for 14 days.`, 
+        `dealer/product-list.html?cat=${req.targetName}`
+      );
+
+      // Audit log
+      SG.audit('TOKEN_REQUEST_APPROVED', reqId, `Approved access to category ${req.targetName} for ${req.userName}`);
+
+      SG.toast.success('Approved', 'Token request approved.');
+      loadDealerProfile();
+    }
+  );
+}
+
+function rejectTokenRequest(reqId) {
+  const reason = window.prompt('Enter reason for rejection:');
+  if (reason === null) return; // cancelled
+  if (!reason.trim()) {
+    SG.toast.error('Required', 'Rejection reason is required.');
+    return;
+  }
+  
+  const allReqs = SG.store.get('token_requests') || [];
+  const req = allReqs.find(r => r.id === reqId);
+  if (!req) return;
+
+  req.status = 'rejected';
+  req.rejectReason = reason.trim();
+  
+  SG.store.set('token_requests', allReqs);
+
+  // Notify dealer
+  SG.notify(
+    req.userId, 
+    'token_rejected', 
+    'Access Token Request Rejected', 
+    `Your request for ${req.targetName.toUpperCase()} category access was rejected. Reason: ${reason.trim()}`, 
+    `dealer/token-requests.html`
+  );
+
+  // Audit log
+  SG.audit('TOKEN_REQUEST_REJECTED', reqId, `Rejected access to category ${req.targetName} for ${req.userName}. Reason: ${reason.trim()}`);
+
+  SG.toast.warning('Rejected', 'Token request rejected.');
+  loadDealerProfile();
+}
+</script>
+</body>
+</html>
+

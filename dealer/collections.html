@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Collections — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+
+<!-- Custom Upgrade Modal -->
+<div class="modal-overlay" id="upgrade-modal">
+  <div class="modal max-w-480">
+    <div class="modal-header">
+      <h3 class="modal-title">?? Upgrade Access Tier</h3>
+      <button class="modal-close" onclick="SG.modal.close('upgrade-modal')">×</button>
+    </div>
+    <div class="modal-body modal-body-custom">
+      <p class="modal-p-spaced">
+        The collection <strong id="modal-col-name" class="color-text-primary">—</strong> is locked because it requires the <span id="modal-req-tier" class="badge">—</span> access tier.
+      </p>
+      <p class="modal-p-spaced-lg">
+        Upgraded access tiers allow you to browse exclusive product catalogues, request physical samples, and submit booking requests for high-end Koshda Jewellery House jewellery designs.
+      </p>
+      <div class="upgrade-instructions-box">
+        <span class="gold-title-bold">How to upgrade:</span>
+        <ol class="upgrade-steps-list">
+          <li>Submit your business requirements to administration.</li>
+          <li>Koshda team will review your account history.</li>
+          <li>Upon approval, a new access token will be issued.</li>
+        </ol>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('upgrade-modal')">Close</button>
+      <a href="#" id="modal-wa-link" target="_blank" rel="noopener" class="btn btn-primary flex-inline-align-center-gap-2">
+        💬 Request via WhatsApp
+      </a>
+    </div>
+  </div>
+</div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="dealer-title-lg">💎 Jewellery Collections</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <!-- Hero Banner -->
+      <div class="collections-hero">
+        <div>
+          <h1 class="collections-hero-title">Your Collections</h1>
+          <p class="collections-hero-desc">
+            Browse designs permitted under your subscription token. Lock icons indicate collections requiring a tier upgrade.
+          </p>
+        </div>
+        <div class="hero-token-tier-box">
+          <span class="hero-token-tier-label">Your Token:</span>
+          <span id="hero-tier-badge"></span>
+        </div>
+      </div>
+
+      <!-- Grid -->
+      <div class="collections-grid-custom" id="collections-container">
+        <!-- JS generated -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let permittedCols = [];
+  let allCols = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+
+    // Set UI identity
+    const initials = session.avatar || SG.str.initials(session.name);
+    const topbarAv = document.getElementById('topbar-avatar-dealer');
+    if (topbarAv) topbarAv.textContent = initials;
+
+    // Get active token to reflect correct access tier
+    const token = SG.tokenMgr.forDealer(session.id);
+    const activeTier = token ? token.tier : (session.tier || 'standard');
+
+    let badgeClass = 'badge-blue';
+    if (activeTier === 'premium') badgeClass = 'badge-gold';
+    if (activeTier === 'exclusive') badgeClass = 'badge-purple';
+    document.getElementById('hero-tier-badge').innerHTML = `<span class="badge ${badgeClass}">${activeTier.toUpperCase()}</span>`;
+
+    // Load Collections list
+    loadCollections(activeTier);
+    updateBadges();
+  });
+
+  function loadCollections(activeTier) {
+    permittedCols = SG.dal.collections.list(session.id);
+
+    // Bypass DAL layer to read all active collections to display locked states
+    SG.dal._allowRawAccess = true;
+    try {
+      const allRaw = SG.dal.safeGet('collections') || [];
+      allCols = allRaw.filter(c => c.status === 'active');
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+
+    renderCollections(activeTier);
+  }
+
+  function renderCollections(activeTier) {
+    const container = document.getElementById('collections-container');
+    const permittedProducts = SG.dal.products.list(session.id);
+
+    container.innerHTML = allCols.map(col => {
+      const isPermitted = permittedCols.some(c => c.id === col.id);
+      const minRequiredTier = getMinRequiredTier(col);
+
+      // Category / Material labels
+      const categoryLabel = SG.str.capitalize(col.category || 'Jewellery');
+      const materialLabel = col.material + ' Gold';
+
+      if (isPermitted) {
+        // Permitted collection count matches what dealer is allowed to see
+        const productCount = permittedProducts.filter(p => p.collectionId === col.id).length;
+
+        // Double linking parameter in href to pass both functional script bindings
+        const link = `product-list.html?col=${col.id}&collection=${col.id}`;
+
+        return `
+          <div class="collection-card-custom permitted" onclick="window.location.href='${link}'">
+            <div class="collection-image-panel" style="background:linear-gradient(135deg, ${col.coverColor || '#F5ECD9'} 0%, #EDE5D8 100%);">
+              <span>${col.coverEmoji || '??'}</span>
+              ${col.isNew ? '<span class="product-new-badge new-badge-pos-col">NEW</span>' : ''}
+            </div>
+            <div class="collection-info-panel">
+              <h3 class="collection-name-custom">${col.name}</h3>
+              <p class="collection-desc-custom">${col.description || 'Exclusive Jewellery designs'}</p>
+              
+              <div class="collection-meta-custom">
+                <span class="badge badge-blue badge-font-10">${productCount} Designs</span>
+                <span class="badge badge-gold badge-font-10">${materialLabel}</span>
+                <span class="badge badge-teal badge-font-10">${categoryLabel}</span>
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        // Locked collection view with blur overlay
+        let tierColorClass = 'badge-blue';
+        if (minRequiredTier === 'premium') tierColorClass = 'badge-gold';
+        if (minRequiredTier === 'exclusive') tierColorClass = 'badge-purple';
+
+        return `
+          <div class="collection-card-custom pointer-events-none">
+            <!-- Locked Overlay content -->
+            <div class="locked-overlay pointer-events-auto">
+              <div class="locked-lock-icon">??</div>
+              <h4 class="locked-col-title">
+                ${col.name}
+              </h4>
+              <div class="locked-col-tier-label">
+                Requires: <span class="badge ${tierColorClass}">${minRequiredTier.toUpperCase()}</span>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="requestAccess('${col.id}', '${col.name}', '${minRequiredTier}')">
+                Request Access
+              </button>
+            </div>
+
+            <!-- Blurred Background content -->
+            <div class="locked-blurred-bg">
+              <div class="collection-image-panel" style="background:linear-gradient(135deg, ${col.coverColor || '#F5ECD9'} 0%, #EDE5D8 100%);">
+                <span>${col.coverEmoji || '??'}</span>
+              </div>
+              <div class="collection-info-panel">
+                <h3 class="collection-name-custom">${col.name}</h3>
+                <p class="collection-desc-custom">${col.description || 'Exclusive designs'}</p>
+                <div class="collection-meta-custom">
+                  <span class="badge badge-blue">— Designs</span>
+                  <span class="badge badge-gold">${materialLabel}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  }
+
+  function getMinRequiredTier(col) {
+    if (!col.accessTiers) return 'standard';
+    if (col.accessTiers.includes('standard')) return 'standard';
+    if (col.accessTiers.includes('premium')) return 'premium';
+    if (col.accessTiers.includes('exclusive')) return 'exclusive';
+    return 'exclusive';
+  }
+
+  function requestAccess(colId, colName, requiredTier) {
+    document.getElementById('modal-col-name').textContent = colName;
+    
+    // Tier required badge
+    const reqBadge = document.getElementById('modal-req-tier');
+    reqBadge.textContent = requiredTier.toUpperCase();
+    reqBadge.className = 'badge ' + (requiredTier === 'exclusive' ? 'badge-purple' : 'badge-gold');
+
+    // Create custom WhatsApp message
+    const msg = `Hello Koshda Jewellery House, I am logged in as dealer: ${session.name} (${session.email}). I would like to request upgrade access to the "${colName}" collection which requires ${requiredTier.toUpperCase()} tier access.`;
+    const waLink = `https://wa.me/919876543210?text=${encodeURIComponent(msg)}`;
+    document.getElementById('modal-wa-link').href = waLink;
+
+    SG.modal.open('upgrade-modal');
+  }
+
+  function updateBadges() {
+    const cartCount = SG.booking.cart.count(session.id);
+    const wishCount = SG.booking.wishlist.get(session.id).length;
+    const cartBadge = document.getElementById('cart-badge');
+    const wishBadge = document.getElementById('wishlist-badge');
+    if (cartBadge) { cartBadge.textContent = cartCount; cartBadge.style.display = cartCount > 0 ? '' : 'none'; }
+    if (wishBadge) { wishBadge.textContent = wishCount; wishBadge.style.display = wishCount > 0 ? '' : 'none'; }
+  }
+</script>
+</body>
+</html>
+

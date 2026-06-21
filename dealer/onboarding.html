@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealer Onboarding — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dashboard.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="onboarding-page">
+  <div class="onboarding-card">
+    <!-- Wizard Step Badges -->
+    <div class="wizard-steps">
+      <div class="wizard-step active" id="step-tab-1">
+        <div class="step-badge">1</div>
+        <div class="step-label">Welcome</div>
+      </div>
+      <div class="wizard-step" id="step-tab-2">
+        <div class="step-badge">2</div>
+        <div class="step-label">Security</div>
+      </div>
+      <div class="wizard-step" id="step-tab-3">
+        <div class="step-badge">3</div>
+        <div class="step-label">Agreement</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Welcome -->
+    <div class="onboarding-step-content active" id="step-content-1">
+      <h2 class="onboarding-title-center">Welcome to Koshda</h2>
+      <p class="onboarding-desc-center">Let's complete your portal setup in just a few quick steps.</p>
+
+      <div class="onboarding-info-panel">
+        <div class="flex-between-align-center-spaced">
+          <div class="font-13-muted">Registered Business</div>
+          <div class="business-name-bold" id="welcome-business-name">Kumar Jewels</div>
+        </div>
+        <div class="flex-between-align-center-spaced">
+          <div class="font-13-muted">Account Representative</div>
+          <div class="owner-name-text" id="welcome-owner-name">Rajesh Kumar</div>
+        </div>
+        <div class="flex-between-align-center">
+          <div class="font-13-muted">Access Level</div>
+          <div id="welcome-tier-badge"></div>
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <h4 class="accessible-cols-title">Your Accessible Collections</h4>
+        <div id="accessible-collections-list" class="flex-col-gap-8px">
+          <!-- JS generated -->
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-primary-full" onclick="goToStep(2)">
+        Continue to Security →
+      </button>
+    </div>
+
+    <!-- Step 2: Password Setup -->
+    <div class="onboarding-step-content" id="step-content-2">
+      <h2 class="onboarding-title-center">Secure Your Account</h2>
+      <p class="onboarding-desc-center">Please update your default password to activate your access.</p>
+
+      <form id="password-form" onsubmit="handlePasswordSubmit(event)" class="flex-col-gap-4">
+        <div class="form-group">
+          <label class="form-label">Current Password</label>
+          <input type="password" id="current-pass" class="form-input" placeholder="Hint: Dealer@1234" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">New Password</label>
+          <input type="password" id="new-pass" class="form-input" placeholder="At least 8 chars, 1 uppercase" oninput="handlePasswordChange()" required>
+          <div class="strength-meter-container">
+            <div class="strength-meter-bar">
+              <div id="strength-fill" class="strength-meter-fill"></div>
+            </div>
+            <div class="flex-between-align-center">
+              <span class="font-11-muted">Password strength:</span>
+              <span id="strength-txt" class="strength-text font-11-muted">—</span>
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm New Password</label>
+          <input type="password" id="confirm-pass" class="form-input" placeholder="Repeat new password" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-primary-full mt-3">
+          Update Password & Continue →
+        </button>
+      </form>
+    </div>
+
+    <!-- Step 3: NDA & Agreement -->
+    <div class="onboarding-step-content" id="step-content-3">
+      <h2 class="onboarding-title-center">Dealer Agreement</h2>
+      <p class="onboarding-desc-center">Review and accept our terms to finalise your registration.</p>
+
+      <div class="nda-terms-box">
+        <div class="nda-term">
+          <strong>1. Confidentiality of Designs:</strong> The dealer agrees to keep all design images, patterns, pricing structures, and catalogue codes strictly confidential and will not share them with any third parties or competitors.
+        </div>
+        <div class="nda-term">
+          <strong>2. Single Business Entity Use:</strong> Access credentials and product information are granted solely for the registered dealer's business entity and may not be shared, sub-licensed, or transferred.
+        </div>
+        <div class="nda-term">
+          <strong>3. Device &amp; Location Monitoring:</strong> The dealer acknowledges that Koshda monitors active sessions, registered devices, and concurrent logins to maintain security and protect proprietary designs.
+        </div>
+        <div class="nda-term">
+          <strong>4. Compliance &amp; Direct Booking:</strong> All booking requests placed represent serious business intent. The dealer agrees not to circumvent the system or copy assets for unauthorized reproduction.
+        </div>
+      </div>
+
+      <div class="mb-6">
+        <label class="checkbox-container">
+          <input type="checkbox" id="nda-checkbox" onchange="handleNDAToggle()">
+          <span>I accept the Koshda Dealer Agreement terms and conditions.</span>
+        </label>
+        <div id="timestamp-container" class="timestamp-signed">
+          ?? Signed on: <span id="nda-timestamp"></span>
+        </div>
+      </div>
+
+      <button id="complete-btn" class="btn btn-primary btn-primary-full" onclick="completeSetup()" disabled>
+        ✓ Complete Setup
+      </button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/dealer.js" defer></script>
+<script>
+  let session = null;
+  let user = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+    user = SG.auth.getUser(session.id);
+
+    // Guard: Redirect if onboarding already done
+    if (user && user.onboardingDone === true) {
+      window.location.href = 'dashboard.html';
+      return;
+    }
+
+    // Load Welcome Info
+    document.getElementById('welcome-business-name').textContent = user?.businessName || session.name;
+    document.getElementById('welcome-owner-name').textContent = user?.name || session.name;
+    
+    const tier = user?.tier || 'standard';
+    let badgeClass = 'badge-blue';
+    if (tier === 'premium') badgeClass = 'badge-gold';
+    if (tier === 'exclusive') badgeClass = 'badge-purple';
+    document.getElementById('welcome-tier-badge').innerHTML = `<span class="badge ${badgeClass}">${tier.toUpperCase()}</span>`;
+
+    // Load accessible collections
+    const permColIds = SG.auth.permittedCollections(session.id);
+    SG.dal._allowRawAccess = true;
+    try {
+      const collections = SG.dal.safeGet('collections') || [];
+      const userCols = collections.filter(c => permColIds.includes(c.id));
+      const colList = document.getElementById('accessible-collections-list');
+      if (userCols.length > 0) {
+        colList.innerHTML = userCols.map(c => `
+          <div class="accessible-col-item">
+            <span class="col-emoji-icon">${c.coverEmoji || '??'}</span>
+            <span class="col-name-text">${c.name}</span>
+            <span class="col-meta-right">${c.material}</span>
+          </div>
+        `).join('');
+      } else {
+        colList.innerHTML = `<div class="col-empty-msg">No collections currently assigned. Please contact administration.</div>`;
+      }
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+  });
+
+  // Allow custom styling classes for dynamic stepper navigation
+  function goToStep(stepNum) {
+    // Hide all contents
+    document.querySelectorAll('.onboarding-step-content').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.wizard-step').forEach(el => el.classList.remove('active'));
+
+    // Show active step
+    document.getElementById(`step-content-${stepNum}`).classList.add('active');
+    document.getElementById(`step-tab-${stepNum}`).classList.add('active');
+
+    // Update steps visual indicators (completed)
+    for (let i = 1; i < stepNum; i++) {
+      document.getElementById(`step-tab-${i}`).classList.add('completed');
+    }
+    for (let i = stepNum; i <= 3; i++) {
+      document.getElementById(`step-tab-${i}`).classList.remove('completed');
+    }
+  }
+
+  function handlePasswordChange() {
+    const pw = document.getElementById('new-pass').value;
+    const fill = document.getElementById('strength-fill');
+    const txt = document.getElementById('strength-txt');
+
+    fill.className = 'strength-meter-fill';
+    
+    if (!pw) {
+      fill.style.width = '0%';
+      txt.textContent = '—';
+      txt.style.color = '';
+      return;
+    }
+
+    const strength = checkPasswordStrength(pw);
+    if (strength === 'weak') {
+      fill.classList.add('strength-weak');
+      txt.textContent = 'Weak';
+      txt.style.color = 'var(--red-500)';
+    } else if (strength === 'medium') {
+      fill.classList.add('strength-medium');
+      txt.textContent = 'Medium';
+      txt.style.color = 'var(--gold-500)';
+    } else if (strength === 'strong') {
+      fill.classList.add('strength-strong');
+      txt.textContent = 'Strong';
+      txt.style.color = 'var(--green-500)';
+    }
+  }
+
+  // Pure validation logic returning strength scores
+  function checkPasswordStrength(pw) {
+    if (pw.length < 8) return 'weak';
+    
+    let score = 0;
+    if (/[a-z]/.test(pw)) score++;
+    if (/[A-Z]/.test(pw)) score++;
+    if (/[0-9]/.test(pw)) score++;
+    if (/[^a-zA-Z0-9]/.test(pw)) score++;
+
+    if (score <= 2) return 'weak';
+    if (score === 3) return 'medium';
+    return 'strong';
+  }
+
+  function handlePasswordSubmit(e) {
+    e.preventDefault();
+    const currentPass = document.getElementById('current-pass').value;
+    const newPass = document.getElementById('new-pass').value;
+    const confirmPass = document.getElementById('confirm-pass').value;
+
+    if (newPass !== confirmPass) {
+      SG.toast.error('Mismatch', 'New passwords do not match.');
+      return;
+    }
+
+    if (newPass.length < 8) {
+      SG.toast.error('Validation Error', 'Password must be at least 8 characters long.');
+      return;
+    }
+
+    if (!/[A-Z]/.test(newPass)) {
+      SG.toast.error('Validation Error', 'Password must contain at least one uppercase letter.');
+      return;
+    }
+
+    // Attempt password change
+    const res = SG.auth.changePassword(session.id, currentPass, newPass);
+    if (res.success) {
+      SG.toast.success('Password Updated', 'Your password has been changed.');
+      goToStep(3);
+    } else {
+      SG.toast.error('Change Failed', res.error || 'Incorrect current password.');
+    }
+  }
+
+  function handleNDAToggle() {
+    const cb = document.getElementById('nda-checkbox');
+    const tsContainer = document.getElementById('timestamp-container');
+    const tsSpan = document.getElementById('nda-timestamp');
+    const completeBtn = document.getElementById('complete-btn');
+
+    if (cb.checked) {
+      const stamp = new Date();
+      const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+      tsSpan.textContent = stamp.toLocaleDateString('en-US', options);
+      tsContainer.style.display = 'block';
+      completeBtn.disabled = false;
+    } else {
+      tsContainer.style.display = 'none';
+      completeBtn.disabled = true;
+    }
+  }
+
+  function completeSetup() {
+    const cb = document.getElementById('nda-checkbox');
+    if (!cb.checked) return;
+
+    const btn = document.getElementById('complete-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner btn-spinner-icon"></span> Saving setup…';
+
+    setTimeout(() => {
+      SG.dal._allowRawAccess = true;
+      try {
+        const users = SG.dal.safeGet('users') || [];
+        const idx = users.findIndex(u => u.id === session.id);
+        if (idx >= 0) {
+          users[idx].ndaSigned = true;
+          users[idx].ndaSignedAt = new Date().toISOString();
+          users[idx].onboardingDone = true;
+          SG.store.set('users', users);
+        }
+      } finally {
+        SG.dal._allowRawAccess = false;
+      }
+
+      SG.audit('ONBOARDING_COMPLETED', session.id, 'Setup complete');
+      SG.toast.success('Welcome to Koshda', 'Setup successfully completed.');
+      
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1000);
+    }, 800);
+  }
+</script>
+</body>
+</html>
+

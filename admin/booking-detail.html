@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Details — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Booking Details</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Bookings</span><span>›</span><span class="current" id="breadcrumb-ref">Loading...</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      
+      <!-- Top Actions Bar -->
+      <div class="admin-page-header-flex">
+        <div>
+          <h1 class="page-title" id="page-booking-ref">Booking Ref</h1>
+          <p class="page-subtitle" id="page-booking-meta">Dealer · Date</p>
+        </div>
+        <div class="flex gap-3 items-center">
+          <button class="btn btn-secondary" onclick="window.location.href='booking-queue.html'">← Back to Queue</button>
+        </div>
+      </div>
+
+      <!-- Pipeline Stepper Card -->
+      <div class="card mb-6">
+        <div class="stepper">
+          <div class="stepper-progress" id="stepper-progress-bar"></div>
+          
+          <div class="step-node" id="step-submitted">
+            <div class="step-circle">1</div>
+            <div class="step-label">Submitted</div>
+          </div>
+          
+          <div class="step-node" id="step-under_review">
+            <div class="step-circle">2</div>
+            <div class="step-label">Under Review</div>
+          </div>
+
+          <div class="step-node" id="step-confirmed">
+            <div class="step-circle">3</div>
+            <div class="step-label">Confirmed</div>
+          </div>
+
+          <div class="step-node" id="step-in_production">
+            <div class="step-circle">4</div>
+            <div class="step-label">In Production</div>
+          </div>
+
+          <div class="step-node" id="step-despatched">
+            <div class="step-circle">5</div>
+            <div class="step-label">Despatched</div>
+          </div>
+
+          <div class="step-node" id="step-completed">
+            <div class="step-circle">6</div>
+            <div class="step-label">Completed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Layout Grid -->
+      <div class="grid gap-6 admin-grid-layout-1-5">
+        <!-- Left: Product List & Status History -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Ordered Items Table Card -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">💍 Ordered Jewellery Items</div>
+            </div>
+            <div class="table-container table-container-flat">
+              <div class="table-scroll-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Item Details</th>
+                      <th>Product Code</th>
+                      <th>Material Specifications</th>
+                      <th>Dealer Item Note</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ordered-items-tbody">
+                    <!-- JS filled -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Timeline / History Card -->
+          <div class="card">
+            <h3 class="section-title mb-4">⏳ Processing Timeline</h3>
+            <div class="flex-col-gap-4" id="timeline-body">
+              <!-- JS filled -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right: Status Update, Integration Status, Admin Notes -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Update Status Card -->
+          <div class="card">
+            <h3 class="section-title mb-4">⚙️ Update Status</h3>
+            <div class="form-group">
+              <label class="form-label">Workflow Status</label>
+              <select class="form-select" id="status-select" title="Workflow Status" onchange="handleStatusChange()">
+                <!-- Options populated dynamically -->
+              </select>
+              <p class="form-hint form-hint-small" id="status-hint">Status dropdown restricts transitions based on valid workflow sequences.</p>
+            </div>
+
+            <div class="form-group" id="status-note-group">
+              <label class="form-label">Status Update Note (Optional)</label>
+              <textarea class="form-textarea textarea-h-70" id="status-note" placeholder="Explain the status change or add details for the dealer..."></textarea>
+            </div>
+
+            <button class="btn btn-primary btn-w-100-justify-center" id="btn-save-status" onclick="saveStatusUpdate()">
+              Update Status
+            </button>
+          </div>
+
+          <!-- Integration Sync Panel -->
+          <div class="card">
+            <h3 class="section-title mb-4">🔌 Integration Status</h3>
+            <div class="flex-col-gap-3">
+              
+              <!-- Google Sheets export -->
+              <div class="integration-sync-row">
+                <div>
+                  <div class="integration-row-title">Google Sheets sync</div>
+                  <div class="integration-row-desc">Sync rows dynamically on status 'Confirmed'</div>
+                </div>
+                <div id="sheets-sync-status">
+                  <!-- Badges populated dynamically -->
+                </div>
+              </div>
+
+              <!-- WhatsApp notification -->
+              <div class="integration-sync-row">
+                <div>
+                  <div class="integration-row-title">WhatsApp dispatch</div>
+                  <div class="integration-row-desc">Alert triggers automatically on status changes</div>
+                </div>
+                <div>
+                  <span class="integration-badge connected">
+                    💚 Connected
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Internal Admin Notes (Auto-save) -->
+          <div class="card">
+            <h3 class="section-title mb-2">📝 Internal Admin Notes</h3>
+            <p class="section-desc-small">Private notes visible only to the administrative team. Saved automatically on blur.</p>
+            <div class="form-group mb-0">
+              <textarea class="form-textarea textarea-h-120" id="admin-note-textarea" placeholder="e.g. Check material details with factory manager, customer request urgent delivery..."></textarea>
+              <div id="autosave-indicator" class="autosave-label">
+                Changes will save automatically.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/booking.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script src="/js/google-sheets.js" defer></script>
+<script src="/js/whatsapp.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+  let adminSession, bookingId, bookingData;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth Check
+    if (!SG.auth.requireAdmin()) return;
+    adminSession = SG.auth.current();
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    bookingId = SG.params.get('id');
+    if (!bookingId) {
+      SG.toast.error('Missing ID', 'No Booking ID provided in URL.');
+      setTimeout(() => window.location.href = 'booking-queue.html', 1500);
+      return;
+    }
+
+    SG.components.loadAll();
+    loadBookingDetail();
+
+    // Auto-save admin notes on blur
+    document.getElementById('admin-note-textarea').addEventListener('blur', () => {
+      const notes = document.getElementById('admin-note-textarea').value;
+      const indicator = document.getElementById('autosave-indicator');
+      indicator.textContent = 'Saving...';
+      
+      const bookings = SG.dal.safeGet('bookings') || [];
+      const idx = bookings.findIndex(b => b.id === bookingId);
+      if (idx >= 0) {
+        bookings[idx].adminNote = notes;
+        SG.store.set('bookings', bookings);
+        indicator.innerHTML = '<span class="text-green">✓ Notes Saved</span>';
+        SG.audit('BOOKING_NOTE_SAVED', bookingId, `Updated internal notes for booking ${bookings[idx].ref}`);
+        setTimeout(() => {
+          indicator.textContent = 'Changes will save automatically.';
+        }, 2000);
+      }
+    });
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadBookingDetail();
+    });
+  });
+
+  function loadBookingDetail() {
+    const bookings = SG.dal.safeGet('bookings') || [];
+    bookingData = bookings.find(b => b.id === bookingId);
+    if (!bookingData) {
+      SG.toast.error('Not Found', 'The requested booking could not be found.');
+      setTimeout(() => window.location.href = 'booking-queue.html', 1500);
+      return;
+    }
+
+    // Set Header
+    document.getElementById('breadcrumb-ref').textContent = bookingData.ref;
+    document.getElementById('page-booking-ref').textContent = bookingData.ref;
+    document.getElementById('page-booking-meta').textContent = `${bookingData.dealerName} · Submitted ${SG.time.formatFull(bookingData.submittedAt)}`;
+
+    // Populate Admin Notes Textarea
+    document.getElementById('admin-note-textarea').value = bookingData.adminNote || '';
+
+    // Render Ordered Products
+    renderOrderedProducts();
+
+    // Render Timeline / History
+    renderTimeline();
+
+    // Render Stepper Node Highlights
+    updateStepper(bookingData.status);
+
+    // Setup Status Transitions Select Options
+    setupStatusDropdown(bookingData.status);
+
+    // Render Google Sheets Sync Integration Status
+    refreshExportStatus();
+  }
+
+  function renderOrderedProducts() {
+    const products = SG.dal.safeGet('products') || [];
+    const tbody = document.getElementById('ordered-items-tbody');
+
+    if (!bookingData.items || !bookingData.items.length) {
+      tbody.innerHTML = `<tr><td colspan="4" class="table-empty-cell">No products in this booking.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = bookingData.items.map(item => {
+      const prod = products.find(p => p.id === item.productId || p.code === item.code);
+      const material = prod ? `${prod.material} · ${prod.weight} · ${prod.purity}` : '—';
+      const imgSrc = prod?.images?.[0] || 'https://placehold.co/100x100/1a1a2a/d4af37?text=??';
+      
+      return `
+        <tr>
+          <td>
+            <div class="flex-align-center-gap-3">
+              <img src="${imgSrc}" class="product-thumb-sm" onerror="this.src='https://placehold.co/100x100/1a1a2a/d4af37?text=??'">
+              <div class="item-name-bold">${sanitizeHTML(item.name)}</div>
+            </div>
+          </td>
+          <td><span class="code">${sanitizeHTML(item.code || '—')}</span></td>
+          <td>${sanitizeHTML(material)}</td>
+          <td class="item-note-italic">
+            ${sanitizeHTML(item.note || 'No specific requests.')}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderTimeline() {
+    const timeline = document.getElementById('timeline-body');
+    const history = bookingData.statusHistory || [];
+
+    if (!history.length) {
+      timeline.innerHTML = `<div class="timeline-empty">No timeline history found.</div>`;
+      return;
+    }
+
+    timeline.innerHTML = history.map((item, index) => {
+      const user = SG.auth.getUser(item.by);
+      const actorLabel = user ? `${user.name} (${SG.str.capitalize(user.role.replace('_', ' '))})` : 'System';
+      const noteHtml = item.note ? `<div class="timeline-note">Note: "${sanitizeHTML(item.note)}"</div>` : '';
+      
+      return `
+        <div class="timeline-row">
+          <div class="timeline-col-indicator">
+            <div class="timeline-dot"></div>
+            ${index < history.length - 1 ? `<div class="timeline-line"></div>` : ''}
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <span>${SG.statusBadge(item.status)}</span>
+              <span class="timeline-time">${SG.time.formatFull(item.at)}</span>
+            </div>
+            <div class="timeline-actor">
+              Action by: ${sanitizeHTML(actorLabel)}
+            </div>
+            ${noteHtml}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateStepper(status) {
+    const steps = ['submitted', 'under_review', 'confirmed', 'in_production', 'despatched', 'completed'];
+    const currentIndex = steps.indexOf(status);
+
+    steps.forEach((step, index) => {
+      const node = document.getElementById('step-' + step);
+      if (!node) return;
+
+      node.classList.remove('active', 'completed');
+
+      if (index < currentIndex) {
+        node.classList.add('completed');
+        node.querySelector('.step-circle').innerHTML = '?';
+      } else if (index === currentIndex) {
+        node.classList.add('active');
+        node.querySelector('.step-circle').innerHTML = index + 1;
+      } else {
+        node.querySelector('.step-circle').innerHTML = index + 1;
+      }
+    });
+
+    // Bar progress width
+    const progressPercent = currentIndex >= 0 ? (currentIndex / (steps.length - 1)) * 100 : 0;
+    document.getElementById('stepper-progress-bar').style.width = progressPercent + '%';
+
+    // If cancelled or rejected, reset stepper progress line to custom look or show alert
+    if (status === 'cancelled' || status === 'rejected') {
+      document.getElementById('stepper-progress-bar').style.backgroundColor = 'var(--red-500)';
+      document.getElementById('stepper-progress-bar').style.width = '100%';
+    } else {
+      document.getElementById('stepper-progress-bar').style.backgroundColor = 'var(--gold-500)';
+    }
+  }
+
+  function setupStatusDropdown(currentStatus) {
+    const select = document.getElementById('status-select');
+    select.innerHTML = '';
+
+    // Define valid sequences
+    let allowedTransitions = [];
+
+    if (currentStatus === 'submitted') {
+      allowedTransitions = ['submitted', 'under_review', 'confirmed', 'cancelled', 'rejected'];
+    } else if (currentStatus === 'under_review') {
+      allowedTransitions = ['under_review', 'confirmed', 'cancelled', 'rejected'];
+    } else if (currentStatus === 'confirmed') {
+      allowedTransitions = ['confirmed', 'in_production', 'cancelled'];
+    } else if (currentStatus === 'in_production') {
+      allowedTransitions = ['in_production', 'despatched', 'cancelled'];
+    } else if (currentStatus === 'despatched') {
+      allowedTransitions = ['despatched', 'completed'];
+    } else {
+      // Completed, Cancelled, Rejected
+      allowedTransitions = [currentStatus];
+      select.disabled = true;
+      document.getElementById('status-note').disabled = true;
+      document.getElementById('btn-save-status').disabled = true;
+      document.getElementById('status-hint').innerHTML = `
+        <span class="text-red-light">* Booking is in a terminal state (${SG.str.capitalize(currentStatus.replace('_', ' '))}) and cannot be edited.</span>
+      `;
+    }
+
+    allowedTransitions.forEach(st => {
+      const opt = document.createElement('option');
+      opt.value = st;
+      opt.textContent = SG.str.capitalize(st.replace('_', ' '));
+      if (st === currentStatus) opt.selected = true;
+      select.appendChild(opt);
+    });
+  }
+
+  function handleStatusChange() {
+    const select = document.getElementById('status-select');
+    const noteField = document.getElementById('status-note-group');
+    if (select.value === bookingData.status) {
+      noteField.classList.add('opacity-60');
+    } else {
+      noteField.classList.remove('opacity-60');
+    }
+  }
+
+  function saveStatusUpdate() {
+    const select = document.getElementById('status-select');
+    const note = document.getElementById('status-note').value.trim();
+    const newStatus = select.value;
+
+    if (newStatus === bookingData.status) {
+      SG.toast.info('No Change', 'Please choose a different status to perform an update.');
+      return;
+    }
+
+    SG.modal.confirm(
+      'Update Booking Status',
+      `Move booking to status **${SG.str.capitalize(newStatus.replace('_', ' '))}**?`,
+      () => {
+        const success = SG.booking.updateStatus(bookingId, newStatus, note, adminSession.id);
+        if (success) {
+          SG.toast.success('Status Updated', `Booking moved to ${newStatus.replace('_', ' ')}.`);
+          document.getElementById('status-note').value = '';
+          loadBookingDetail();
+        } else {
+          SG.toast.error('Update Failed', 'Could not update status.');
+        }
+      }
+    );
+  }
+
+  function refreshExportStatus() {
+    const status = SG.sheetsExport.getStatus(bookingId);
+    const wrap = document.getElementById('sheets-sync-status');
+
+    if (status === 'exported') {
+      wrap.innerHTML = `
+        <span class="integration-badge exported">
+          📤 Exported
+        </span>
+      `;
+    } else if (status === 'failed') {
+      wrap.innerHTML = `
+        <div class="flex-col-align-end-gap-2">
+          <span class="integration-badge failed">
+            ❌ Sync Failed
+          </span>
+          <button class="btn btn-ghost btn-tiny" onclick="reattemptSheetsExport()">
+            Retry Now 🔄
+          </button>
+        </div>
+      `;
+    } else if (status === 'pending') {
+      wrap.innerHTML = `
+        <div class="flex-col-align-end-gap-2">
+          <span class="integration-badge pending">
+            ⏳ Pending Retry
+          </span>
+          <button class="btn btn-ghost btn-tiny" onclick="reattemptSheetsExport()">
+            Force Sync 🔄
+          </button>
+        </div>
+      `;
+    } else {
+      // not_started / default
+      if (bookingData.status === 'confirmed' || bookingData.status === 'in_production' || bookingData.status === 'despatched' || bookingData.status === 'completed') {
+        wrap.innerHTML = `
+          <button class="btn btn-secondary btn-sm btn-sm-text" onclick="reattemptSheetsExport()">
+            Export to Sheets 📊
+          </button>
+        `;
+      } else {
+        wrap.innerHTML = `
+          <span class="integration-badge inactive" title="Sheets export is triggered only on Confirmation">
+            ? Not Triggered
+          </span>
+        `;
+      }
+    }
+  }
+
+  async function reattemptSheetsExport() {
+    await SG.sheetsExport.handleReAttempt(bookingId);
+  }
+
+  // Define global callback expected by SG.sheetsExport.handleReAttempt
+  window.refreshExportStatus = function() {
+    loadBookingDetail();
+  };
+</script>
+</body>
+</html>
+

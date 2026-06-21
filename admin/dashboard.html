@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" integrity="sha512-Z4RJa36Kl84unoevz3wyZ0uFDMj7lfaxAs+hiqXXeZcXg/rjdYTafAXxP/hKSqW8Wwo3vwfg2V/dkuH5fKO2bw==" crossorigin="anonymous" defer></script>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Command Centre</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Dashboard</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator">
+          <div class="live-dot"></div> Live
+        </div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'" data-tooltip="Notifications">
+          <span style="font-size:12px;">Alerts</span>
+          <span class="notif-dot notif-count" id="notif-badge"></span>
+        </div>
+        <div class="icon-btn" style="font-size:12px;" onclick="window.location.href='settings.html'" data-tooltip="Settings">Settings</div>
+        <div class="avatar cursor-pointer" id="topbar-avatar" onclick="window.location.href='admin-users.html'">AM</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="admin-content">
+
+      <!-- Page Header -->
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dashboard</h1>
+          <p class="page-subtitle" id="dash-datetime">Loading...</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='registration-queue.html'">
+            Review Registrations
+          </button>
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='booking-queue.html'">
+            Process Bookings
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="stats-grid">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Alerts Banner -->
+      <div id="alerts-banner"></div>
+
+      <!-- Main Grid -->
+      <div class="grid gap-6 admin-grid-layout">
+
+        <!-- Left: Recent Activity + Chart -->
+        <div class="flex flex-col gap-6">
+
+          <!-- Booking Funnel Chart -->
+          <div class="chart-card">
+            <div class="chart-header flex items-center justify-between">
+              <div>
+                <div class="chart-title">Booking Pipeline</div>
+                <div class="chart-subtitle">Current booking status distribution</div>
+              </div>
+              <button class="btn btn-sm btn-ghost" onclick="window.location.href='booking-queue.html'">View All ?</button>
+            </div>
+            <div class="chart-wrap">
+              <canvas id="bookingChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Recent Bookings -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">Recent Bookings <span class="section-title-sub">last 7 days</span></div>
+              <a href="booking-queue.html" class="btn btn-sm btn-ghost">View All ?</a>
+            </div>
+            <div class="table-container table-container-flat">
+            <div class="table-scroll-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Booking Ref</th>
+                    <th>Dealer</th>
+                    <th>Items</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-bookings-tbody">
+                  <tr><td colspan="6" class="table-loading-cell">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          </div>
+        </div>
+
+        <!-- Right: Activity + Pending Regs -->
+        <div class="flex flex-col gap-6">
+
+          <!-- Pending Registrations -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">Pending Approvals</div>
+              <a href="registration-queue.html" class="btn btn-sm btn-ghost">Queue ?</a>
+            </div>
+            <div id="pending-regs-list">
+              <div class="list-loading-state">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Expiring Tokens -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">⏳ Expiring Tokens <span class="section-title-sub">next 14 days</span></div>
+              <a href="tokens.html" class="btn btn-sm btn-ghost">All Tokens ?</a>
+            </div>
+            <div id="expiring-tokens-list">
+              <div class="list-loading-state">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="section-title mb-4">Quick Actions</div>
+            <div class="btn-column">
+              <button onclick="window.location.href='product-upload.html'" class="btn btn-secondary btn-align-left">
+                Upload New Product
+              </button>
+              <button onclick="window.location.href='permissions.html'" class="btn btn-secondary btn-align-left">
+                Manage Permissions
+              </button>
+              <button onclick="window.location.href='analytics.html'" class="btn btn-secondary btn-align-left">
+                View Analytics
+              </button>
+              <button onclick="window.location.href='audit-log.html'" class="btn btn-secondary btn-align-left">
+                Audit Log
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dealer Product Upload Requests Approval Queue -->
+      <div class="table-card mt-6 mb-6" id="approval-queue-section">
+        <div class="table-card-header">
+          <div class="section-title">📦 Dealer Product Upload Requests <span class="section-title-sub">Approval Queue</span></div>
+        </div>
+        <div class="table-container table-container-flat">
+          <div class="table-scroll-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Dealer Email</th>
+                  <th>Product Details</th>
+                  <th>Products Count</th>
+                  <th>Submitted At</th>
+                  <th>Status</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="product-requests-tbody">
+                <tr><td colspan="6" class="table-loading-cell">Loading requests...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Session Tracking Table -->
+      <div class="table-card mt-6 mb-6">
+        <div class="table-card-header">
+          <div class="section-title">👤 Active Sessions <span class="section-title-sub">same-browser sessions detected in localStorage (prototype view)</span></div>
+        </div>
+        <div class="table-container table-container-flat">
+          <div class="table-scroll-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Role / Tier</th>
+                  <th>Status</th>
+                  <th>Origin</th>
+                  <th>Session Age</th>
+                  <th>Last Activity</th>
+                  <th class="text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody id="live-users-tbody">
+                <!-- JS populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /admin-content -->
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/booking.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Auth guard
+  if (!SG.auth.requireAdmin()) return;
+
+  const session = SG.auth.current();
+  { const el = document.getElementById('admin-name'); if (el) el.textContent = session.name; }
+  { const el = document.getElementById('admin-role'); if (el) el.textContent = session.role.replace('_', ' '); }
+  { const el = document.getElementById('admin-avatar'); if (el) el.textContent = session.avatar || SG.str.initials(session.name); }
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // DateTime
+  function updateTime() {
+    document.getElementById('dash-datetime').textContent =
+      new Date().toLocaleString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric', hour:'2-digit', minute:'2-digit' });
+  }
+  updateTime();
+  setInterval(updateTime, 60000);
+
+  // Stats
+  renderStats();
+  renderProductRequests();
+  renderRecentBookings();
+  renderPendingRegs();
+  renderExpiringTokens();
+  renderAlerts();
+  initChart();
+  renderLiveUsers();
+
+  // Refresh live user table every 30 seconds
+  setInterval(renderLiveUsers, 30000);
+
+  // Start live updates
+  SG.liveUpdate.start();
+  SG.events.on('live_update', () => { 
+    renderStats(); 
+    renderProductRequests();
+    renderRecentBookings(); 
+    renderPendingRegs(); 
+    renderLiveUsers();
+  });
+
+  // Event delegation for live users table action buttons
+  const liveUsersTbody = document.getElementById('live-users-tbody');
+  if (liveUsersTbody) {
+    liveUsersTbody.addEventListener('click', (event) => {
+      const btn = event.target.closest('[data-force-id]');
+      if (btn) {
+        forceLogout(btn.dataset.forceId, btn.dataset.forceName);
+      }
+    });
+  }
+});
+
+async function renderStats() {
+  try {
+    const res = await SG.auth.fetch('/api/admin/dashboard-stats');
+    const stats = await res.json();
+    
+    if (!stats || !stats.success) {
+      throw new Error(stats?.error || 'Failed to fetch stats');
+    }
+
+    const grid  = document.getElementById('stats-grid');
+    
+    let liveSessionsCount = 0;
+    Object.keys(localStorage).forEach(k => { if (k.startsWith('active_session_')) liveSessionsCount++; });
+    liveSessionsCount = Math.max(liveSessionsCount, 1);
+
+    grid.innerHTML = `
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-blue"><div style="font-size:18px">👥</div></div>
+          <span class="badge badge-gray">Accounts</span>
+        </div>
+        <div class="stat-num">${stats.activeDealers}</div>
+        <div class="stat-lbl">Registered Dealers</div>
+        <div class="stat-meta">Total users: ${stats.totalUsers}</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-green"><div style="font-size:18px">✔️</div></div>
+          <span class="badge badge-green">Live Now</span>
+        </div>
+        <div class="stat-num">${liveSessionsCount}</div>
+        <div class="stat-lbl">Active Sessions</div>
+        <div class="stat-meta">Refreshes every 30s</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-yellow"><div style="font-size:18px">⏸️</div></div>
+          ${stats.pendingProductRequests > 0 ? `<span class="badge badge-red">Action</span>` : '<span class="badge badge-green">Clear</span>'}
+        </div>
+        <div class="stat-num" style="color:${stats.pendingProductRequests > 0 ? 'var(--yellow-500)' : 'var(--text-primary)'}">${stats.pendingProductRequests}</div>
+        <div class="stat-lbl">Pending Product Uploads</div>
+        <div class="stat-meta"><a href="#approval-queue-section" style="color:var(--gold-500);font-size:11px;">View Requests ↓</a></div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-yellow"><div style="font-size:18px">👤</div></div>
+          ${stats.pendingRegistrations > 0 ? `<span class="badge badge-red">Action</span>` : '<span class="badge badge-green">Clear</span>'}
+        </div>
+        <div class="stat-num" style="color:${stats.pendingRegistrations > 0 ? 'var(--yellow-500)' : 'var(--text-primary)'}">${stats.pendingRegistrations}</div>
+        <div class="stat-lbl">Pending Dealers</div>
+        <div class="stat-meta"><a href="registration-queue.html" style="color:var(--gold-500);font-size:11px;">Review Queue ?</a></div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-gold"><div style="font-size:18px">👑</div></div>
+          <span class="badge badge-gold">Catalogue</span>
+        </div>
+        <div class="stat-num">${stats.totalProducts}</div>
+        <div class="stat-lbl">Active Products</div>
+        <div class="stat-meta">Updated server-side</div>
+      </div>
+    `;
+
+    document.querySelectorAll('[data-count="pending-regs"]').forEach(el => {
+      el.textContent = stats.pendingRegistrations;
+      el.style.display = stats.pendingRegistrations > 0 ? '' : 'none';
+    });
+  } catch (err) {
+    console.error('Error rendering dashboard stats:', err);
+  }
+}
+
+async function renderProductRequests() {
+  const tbody = document.getElementById('product-requests-tbody');
+  if (!tbody) return;
+
+  try {
+    const res = await SG.auth.fetch('/api/admin/products/requests');
+    const data = await res.json();
+
+    if (!data || !data.success) {
+      throw new Error(data?.error || 'Failed to fetch requests');
+    }
+
+    const requests = data.requests || [];
+    const pendingRequests = requests.filter(r => r.status === 'pending');
+
+    if (pendingRequests.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No pending upload requests</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = pendingRequests.map(r => {
+      const dateStr = new Date(r.createdAt).toLocaleString('en-IN');
+      const productPreviews = r.products.map(p => `<code>${p.code || p.id}</code> (${p.name || p.title})`).join(', ');
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:600; color:var(--text-primary);">${sanitizeHTML(r.userEmail)}</div>
+            <div class="text-xs" style="color:var(--text-muted);">ID: ${sanitizeHTML(r.id)}</div>
+          </td>
+          <td>
+            <div style="max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${sanitizeHTML(r.products.map(p => p.name || p.title).join(', '))}">
+              ${productPreviews}
+            </div>
+          </td>
+          <td><span class="badge badge-gray">${r.products.length} item(s)</span></td>
+          <td><span style="font-size:12px; color:var(--text-secondary);">${dateStr}</span></td>
+          <td><span class="badge badge-yellow">Pending</span></td>
+          <td style="text-align:right; white-space: nowrap;">
+            <button class="btn btn-sm btn-secondary" onclick="processProductRequest('${r.id}', 'reject')" style="color:var(--red-500); border-color:rgba(224, 82, 82, 0.2); margin-right: 6px;">Reject</button>
+            <button class="btn btn-sm btn-primary" onclick="processProductRequest('${r.id}', 'approve')">Approve</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+  } catch (err) {
+    console.error('Error rendering product requests:', err);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--red-500);">Failed to load requests: ${err.message}</td></tr>`;
+  }
+}
+
+async function processProductRequest(requestId, action) {
+  if (!confirm(`Are you sure you want to ${action} this request?`)) return;
+
+  try {
+    const res = await SG.auth.fetch(`/api/admin/products/requests/${requestId}/${action}`, {
+      method: 'POST'
+    });
+    const result = await res.json();
+
+    if (result.success) {
+      SG.toast.success('Success', `Request has been ${action}ed.`);
+      renderProductRequests();
+      renderStats();
+    } else {
+      SG.toast.error('Error', result.error || `Failed to ${action} request.`);
+    }
+  } catch (err) {
+    console.error(`Error processing request:`, err);
+    SG.toast.error('Error', `Failed to process request.`);
+  }
+}
+
+function renderAlerts() {
+  const tokens  = SG.dal.safeGet('tokens') || [];
+  const expiring = tokens.filter(t => t.status === 'active' && SG.time.daysUntil(t.expiresAt) <= 7);
+  const banner   = document.getElementById('alerts-banner');
+  if (!expiring.length) { banner.innerHTML = ''; return; }
+  banner.innerHTML = `
+    <div class="alert-banner" style="margin-bottom:var(--space-6);">
+      <span class="alert-banner-icon">🚨</span>
+      <span><strong>${expiring.length} dealer token${expiring.length > 1 ? 's' : ''} expire within 7 days.</strong>
+      <a href="tokens.html" style="color:var(--red-500);margin-left:8px;">Review Tokens ?</a></span>
+    </div>`;
+}
+
+function renderRecentBookings() {
+  const bookings = (SG.dal.safeGet('bookings') || []).slice(0, 6);
+  const tbody    = document.getElementById('recent-bookings-tbody');
+  if (!bookings.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted);">No bookings yet</td></tr>'; return; }
+  tbody.innerHTML = bookings.map(b => `
+    <tr style="cursor:pointer;" onclick="window.location.href='booking-detail.html?id=${encodeURIComponent(b.id)}'">
+      <td><span class="code">${sanitizeHTML(b.ref)}</span></td>
+      <td>${sanitizeHTML(b.dealerName)}</td>
+      <td style="color:var(--text-primary)">${b.items.length}</td>
+      <td>${SG.statusBadge(b.status)}</td>
+      <td>${SG.time.relative(b.submittedAt)}</td>
+      <td><button class="btn btn-sm btn-ghost">View ?</button></td>
+    </tr>`).join('');
+}
+
+function renderPendingRegs() {
+  const users   = SG.dal.safeGet('users') || [];
+  const pending = users.filter(u => u.role === 'dealer' && u.status === 'pending');
+  const list    = document.getElementById('pending-regs-list');
+  if (!pending.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:30px;"><div class="empty-state-icon" style="font-size:32px;">?</div><p style="font-size:13px;">No pending registrations</p></div>';
+    return;
+  }
+  list.innerHTML = pending.map(d => `
+    <div class="activity-item" onclick="window.location.href='registration-detail.html?id=${encodeURIComponent(d.id)}'" style="cursor:pointer;">
+      <div class="avatar" style="width:36px;height:36px;font-size:13px;">${sanitizeHTML(d.avatar)}</div>
+      <div class="activity-item-content">
+        <div class="activity-item-title">${sanitizeHTML(d.businessName)}</div>
+        <div class="activity-item-meta">${sanitizeHTML(d.name)} · ${sanitizeHTML(d.city)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+        <span class="badge badge-yellow">Pending</span>
+        <span class="text-sm" style="color:var(--text-muted)">${SG.time.relative(d.registeredAt)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function renderExpiringTokens() {
+  const tokens  = SG.dal.safeGet('tokens') || [];
+  const users   = SG.dal.safeGet('users') || [];
+  const expiring = tokens.filter(t => t.status === 'active' && SG.time.daysUntil(t.expiresAt) <= 14)
+                         .sort((a, b) => new Date(a.expiresAt) - new Date(b.expiresAt));
+  const list    = document.getElementById('expiring-tokens-list');
+  if (!expiring.length) {
+    list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--text-muted);">✓ No tokens expiring soon</div>';
+    return;
+  }
+  list.innerHTML = expiring.map(t => {
+    const dealer = users.find(u => u.id === t.dealerId);
+    const days   = SG.time.daysUntil(t.expiresAt);
+    return `
+    <div class="activity-item">
+      <div style="width:36px;height:36px;border-radius:50%;background:rgba(245,158,11,0.1);border:2px solid rgba(245,158,11,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">?</div>
+      <div class="activity-item-content">
+        <div class="activity-item-title">${sanitizeHTML(dealer?.businessName || '—')}</div>
+        <div class="activity-item-meta">${days} days left</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="SG.tokenMgr.openExtendModal('${sanitizeHTML(t.id)}');event.stopPropagation();">Extend</button>
+    </div>`;
+  }).join('');
+}
+
+function renderLiveUsers() {
+  const currentAdmin = SG.auth.current();
+  if (!currentAdmin) return;
+
+  // -- Real session scan: reads active_session_* keys written by auth.js on login --
+  // NOTE: This reflects only sessions that exist in *this browser's* localStorage.
+  // A real backend would query a server-side session store across all clients.
+  const sessionEntries = [];
+  const seenIds = new Set();
+
+  // Always include the currently viewing admin
+  sessionEntries.push({
+    id: currentAdmin.id,
+    name: currentAdmin.name,
+    role: currentAdmin.role,
+    tier: currentAdmin.tier || null,
+    loginAt: currentAdmin.loginAt || new Date().toISOString(),
+    isCurrentUser: true
+  });
+  seenIds.add(currentAdmin.id);
+
+  // Scan localStorage for other users who have logged in via this browser
+  SG.dal._allowRawAccess = true;
+  let allUsers = [];
+  try {
+    allUsers = SG.dal.safeGet('users') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('active_session_')) {
+      const userId = key.replace('active_session_', '');
+      if (!seenIds.has(userId)) {
+        const u = allUsers.find(u => u.id === userId);
+        if (u) {
+          sessionEntries.push({
+            id: u.id, name: u.name, role: u.role,
+            tier: u.tier || null, loginAt: u.lastLogin || null,
+            isCurrentUser: false
+          });
+          seenIds.add(userId);
+        }
+      }
+    }
+  });
+
+  const tbody = document.getElementById('live-users-tbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = sessionEntries.map(u => {
+    const loginTs = u.loginAt ? new Date(u.loginAt).getTime() : Date.now();
+    const durationMs = Math.max(0, Date.now() - loginTs);
+    const hrs = Math.floor(durationMs / 3600000);
+    const mins = Math.floor((durationMs % 3600000) / 60000);
+    const durationStr = hrs > 0 ? `${hrs}h ${mins}m` : `${mins}m`;
+    const roleDisplay = sanitizeHTML(SG.str.capitalize(u.role.replace('_', ' ')) + (u.tier ? ` (${SG.str.capitalize(u.tier)})` : ''));
+    const name = sanitizeHTML(u.name || '—');
+    const label = u.isCurrentUser ? '(You — current session)' : 'Same-browser session';
+    const safeId = sanitizeHTML(u.id);
+
+    return `
+      <tr>
+        <td>
+          <div style="font-weight:600; color:var(--text-primary);">${name}</div>
+          <div class="text-xs" style="color:var(--text-muted);">${label}</div>
+        </td>
+        <td><span class="text-sm" style="color:var(--text-secondary);">${roleDisplay}</span></td>
+        <td><span class="badge badge-green">Online</span></td>
+        <td><span style="font-family:monospace; font-size:12px; color:var(--text-muted);">Local</span></td>
+        <td><span style="font-size:12px; color:var(--text-secondary);">${durationStr}</span></td>
+        <td><span style="font-size:12px; font-weight:500; color:var(--text-muted);">-</span></td>
+        <td style="text-align:right;">
+          ${!u.isCurrentUser
+            ? `<button class="btn btn-sm btn-secondary" data-force-id="${safeId}" data-force-name="${name}" style="color:var(--red-500); border-color:rgba(224, 82, 82, 0.2);">Remove</button>`
+            : '—'}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function forceLogout(userId, userName) {
+  SG.modal.confirm(
+    'Remove Session Record',
+    `Remove the local session record for ${userName}? ` +
+    `Note: without a backend, this only clears the localStorage key — their active browser tab is not terminated.`,
+    () => {
+      localStorage.removeItem('active_session_' + userId);
+      SG.audit('FORCE_LOGOUT', userId, `Admin removed session record for ${userName}`);
+      SG.toast.info('Session Record Removed', `${userName}’s active_session key cleared. Re-render will reflect the change.`);
+      renderLiveUsers();
+    },
+    true
+  );
+}
+
+let bookingChart;
+function initChart() {
+  const bookings = SG.dal.safeGet('bookings') || [];
+  const counts = {
+    submitted:    bookings.filter(b => b.status === 'submitted').length,
+    under_review: bookings.filter(b => b.status === 'under_review').length,
+    confirmed:    bookings.filter(b => b.status === 'confirmed').length,
+    in_production:bookings.filter(b => b.status === 'in_production').length,
+    despatched:   bookings.filter(b => b.status === 'despatched').length,
+    completed:    bookings.filter(b => b.status === 'completed').length,
+  };
+
+  const canvas = document.getElementById('bookingChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  if (bookingChart) {
+    try {
+      bookingChart.destroy();
+    } catch (e) {
+      console.warn('Error destroying bookingChart:', e);
+    }
+  }
+
+  Chart.defaults.color = '#A8A4B8';
+  bookingChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Submitted', 'Under Review', 'Confirmed', 'In Production', 'Despatched', 'Completed'],
+      datasets: [{
+        label: 'Bookings',
+        data: Object.values(counts),
+        backgroundColor: ['rgba(59,130,246,0.7)','rgba(245,158,11,0.7)','rgba(16,185,129,0.7)','rgba(249,115,22,0.7)','rgba(139,92,246,0.7)','rgba(212,175,55,0.7)'],
+        borderColor:     ['rgb(59,130,246)','rgb(245,158,11)','rgb(16,185,129)','rgb(249,115,22)','rgb(139,92,246)','rgb(212,175,55)'],
+        borderWidth: 1,
+        borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      resizeDelay: 50,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { title: (t) => t[0].label } } },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.04)' }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
+

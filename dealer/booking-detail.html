@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Detail — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div class="topbar-nav-breadcrumbs">
+        <a href="booking-history.html" class="breadcrumb-back-link">📅 Bookings</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current-ref" id="topbar-ref">bk-XXXXXX</span>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <!-- Error State -->
+      <div id="error-screen" class="empty-state hidden error-screen-wrapper">
+        <div class="empty-state-icon">📦</div>
+        <h3>Access Denied</h3>
+        <p id="error-message">You are not authorised to view this booking.</p>
+        <a href="booking-history.html" class="btn btn-primary mt-5">Back to Bookings</a>
+      </div>
+
+      <!-- Main Booking Info Screen -->
+      <div id="booking-detail-content">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title title-mono" id="header-ref">SG-XXXXXX</h1>
+            <p class="page-subtitle" id="header-date">Submitted on: --</p>
+          </div>
+          <div id="header-status-badge"></div>
+        </div>
+
+        <!-- Progress Pipeline -->
+        <div class="stepper-container" id="pipeline-container">
+          <div class="stepper-pipeline">
+            <div class="stepper-progress-line" id="pipeline-progress-line"></div>
+            
+            <div class="pipeline-step" id="step-submitted">
+              <div class="pipeline-dot">📝</div>
+              <div class="pipeline-label">Submitted</div>
+            </div>
+            <div class="pipeline-step" id="step-under_review">
+              <div class="pipeline-dot">🔍</div>
+              <div class="pipeline-label">Under Review</div>
+            </div>
+            <div class="pipeline-step" id="step-confirmed">
+              <div class="pipeline-dot">✅</div>
+              <div class="pipeline-label">Confirmed</div>
+            </div>
+            <div class="pipeline-step" id="step-in_production">
+              <div class="pipeline-dot">🔨</div>
+              <div class="pipeline-label">In Production</div>
+            </div>
+            <div class="pipeline-step" id="step-despatched">
+              <div class="pipeline-dot">📦</div>
+              <div class="pipeline-label">Despatched</div>
+            </div>
+            <div class="pipeline-step" id="step-completed">
+              <div class="pipeline-dot">🏁</div>
+              <div class="pipeline-label">Completed</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Grid Layout for Details -->
+        <div class="grid gap-6 grid-cols-2-340-align-start">
+          <!-- Left Column: Items and Messages -->
+          <div class="flex-col-gap-6">
+            <!-- Items Card -->
+            <div class="table-card">
+              <div class="table-card-header">
+                <div class="section-title">Items Ordered</div>
+                <span id="items-count-badge" class="badge badge-blue">0 items</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="th-width-70">Image</th>
+                      <th>Product Info</th>
+                      <th>Per-Item Instruction / Note</th>
+                    </tr>
+                  </thead>
+                  <tbody id="items-table-body">
+                    <!-- JS generated -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Admin Note Card -->
+            <div class="card hidden admin-msg-card" id="admin-note-card">
+              <div class="flex-align-start-gap-3">
+                <span class="font-size-20">📋</span>
+                <div>
+                  <h4 class="admin-msg-title">Message from Koshda team</h4>
+                  <p class="admin-msg-text" id="admin-note-text"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Timeline and Info -->
+          <div class="flex-col-gap-5">
+            <!-- Shipping Information (Visible on despatch) -->
+            <div class="card hidden shipping-info-card" id="shipping-card">
+              <h3 class="shipping-card-title">📦 Dispatch Information</h3>
+              <div class="shipping-details-list">
+                <div class="flex-between">
+                  <span class="text-muted">Tracking Ref:</span>
+                  <strong class="font-mono-primary" id="shipping-ref">--</strong>
+                </div>
+                <div class="flex-between">
+                  <span class="text-muted">Status:</span>
+                  <span class="teal-highlight">In Transit</span>
+                </div>
+                <div class="divider divider-y-sm"></div>
+                <p class="shipping-note">
+                  Your package has been despatched. Estimated delivery is within 3–5 business days.
+                </p>
+              </div>
+            </div>
+
+            <!-- Status History Timeline -->
+            <div class="card">
+              <h3 class="timeline-title-card">Timeline & Updates</h3>
+              <div class="timeline-container" id="timeline-list">
+                <!-- JS generated -->
+              </div>
+            </div>
+
+            <!-- General Assistance -->
+            <div class="card assistance-card">
+              <div class="assistance-icon">💬</div>
+              <h4 class="assistance-title">Need Assistance?</h4>
+              <p class="assistance-desc">
+                If you have questions regarding this booking, please contact us directly.
+              </p>
+              <a href="messages.html" class="btn btn-secondary btn-sm btn-w-100-justify-center">
+                💬 Contact Us
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let booking = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+
+    // Set UI identity
+    const initials = session.avatar || SG.str.initials(session.name);
+    { const el = document.getElementById('dealer-avatar'); if (el) el.textContent = initials; }
+    document.getElementById('topbar-avatar-dealer').textContent   = initials;
+    { const el = document.getElementById('dealer-name'); if (el) el.textContent = session.name; }
+    { const el = document.getElementById('dealer-tier'); if (el) el.textContent = SG.str.capitalize(session.tier || 'standard') + ' Dealer'; }
+
+    // Get booking ID from query parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const bookingId = urlParams.get('id');
+
+    if (!bookingId) {
+      showError('Booking ID is missing from the query path.');
+      return;
+    }
+
+    // Load booking and verify ownership
+    const bookings = SG.booking.forDealer(session.id);
+    booking = bookings.find(b => b.id === bookingId);
+
+    if (!booking) {
+      // Check if it belongs to someone else
+      const allBookings = SG.dal.safeGet('bookings') || [];
+      const exists = allBookings.find(b => b.id === bookingId);
+      
+      if (exists) {
+        showError('You do not have permission to access this booking record.');
+      } else {
+        showError('The requested booking record could not be found.');
+      }
+      return;
+    }
+
+    // Set header & topbar values
+    document.getElementById('topbar-ref').textContent = booking.ref;
+    document.getElementById('header-ref').textContent = booking.ref;
+    document.getElementById('header-date').textContent = `Submitted on: ${SG.time.formatFull(booking.submittedAt)}`;
+    
+    // Status badge
+    const badgeColorClass = getStatusBadgeClass(booking.status);
+    const icon = SG.booking.statusIcon(booking.status);
+    const formattedStatus = booking.status.replace('_', ' ').toUpperCase();
+    document.getElementById('header-status-badge').innerHTML = `
+      <span class="badge ${badgeColorClass} header-badge-status">
+        <span>${icon}</span>
+        <span>${formattedStatus}</span>
+      </span>`;
+
+    // Render stepper progress pipeline
+    renderPipeline();
+
+    // Render ordered items table
+    renderItemsTable();
+
+    // Render shipping details if despatched
+    if (booking.status === 'despatched' && booking.shippingRef) {
+      document.getElementById('shipping-card').classList.remove('hidden');
+      document.getElementById('shipping-ref').textContent = booking.shippingRef;
+    }
+
+    // Render admin message card if present
+    if (booking.adminNote) {
+      document.getElementById('admin-note-card').classList.remove('hidden');
+      document.getElementById('admin-note-text').textContent = booking.adminNote;
+    }
+
+    // Render updates history timeline
+    renderHistoryTimeline();
+    
+    updateBadges();
+  });
+
+  function showError(msg) {
+    document.getElementById('booking-detail-content').classList.add('hidden');
+    document.getElementById('error-screen').classList.remove('hidden');
+    document.getElementById('error-message').textContent = msg;
+    SG.toast.error('Access Denied', msg, 6000);
+  }
+
+  function getStatusBadgeClass(status) {
+    const map = {
+      submitted: 'badge-blue',
+      under_review: 'badge-gold',
+      confirmed: 'badge-blue',
+      in_production: 'badge-purple',
+      despatched: 'badge-teal',
+      completed: 'badge-green',
+      cancelled: 'badge-red',
+      rejected: 'badge-red'
+    };
+    return map[status] || 'badge-blue';
+  }
+
+  function renderPipeline() {
+    const steps = ['submitted', 'under_review', 'confirmed', 'in_production', 'despatched', 'completed'];
+    const currentIndex = steps.indexOf(booking.status);
+
+    if (currentIndex === -1) {
+      // Cancelled or rejected state, hide stepper
+      document.getElementById('pipeline-container').style.display = 'none';
+      return;
+    }
+
+    // Set progress line width
+    const pct = (currentIndex / (steps.length - 1)) * 100;
+    document.getElementById('pipeline-progress-line').style.width = pct + '%';
+
+    // Hydrate steps
+    steps.forEach((s, idx) => {
+      const stepEl = document.getElementById(`step-${s}`);
+      if (!stepEl) return;
+
+      if (idx < currentIndex) {
+        stepEl.className = 'pipeline-step completed';
+        // Add a checkmark icon to the completed step
+        stepEl.querySelector('.pipeline-dot').textContent = '?';
+      } else if (idx === currentIndex) {
+        stepEl.className = 'pipeline-step active current';
+      } else {
+        stepEl.className = 'pipeline-step';
+      }
+    });
+  }
+
+  function renderItemsTable() {
+    const tableBody = document.getElementById('items-table-body');
+    const products = SG.dal.safeGet('products') || [];
+    
+    document.getElementById('items-count-badge').textContent = `${booking.items.length} item${booking.items.length !== 1 ? 's' : ''}`;
+
+    tableBody.innerHTML = booking.items.map(item => {
+      const product = products.find(p => p.id === item.productId);
+      const name = product ? product.name : '(unavailable)';
+      const desc = product ? `${product.material} · ${product.weight} · ${product.purity}` : 'Product is no longer available in the catalogue.';
+      const imgSrc = product?.images?.[0] || 'https://placehold.co/50x50/1a1a2a/d4af37?text=??';
+
+      return `
+        <tr>
+          <td>
+            <img src="${imgSrc}" class="product-thumb-50" onerror="this.src='https://placehold.co/50x50/1a1a2a/d4af37?text=??'">
+          </td>
+          <td>
+            <div class="item-code-mono">${sanitizeHTML(item.code)}</div>
+            <div class="item-name-heading">${sanitizeHTML(name)}</div>
+            <div class="item-desc-sub">${sanitizeHTML(desc)}</div>
+          </td>
+          <td>
+            <div class="item-instruction-note">
+              ${item.note ? `"${sanitizeHTML(item.note)}"` : `<span class="text-muted">—</span>`}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function renderHistoryTimeline() {
+    const timeline = document.getElementById('timeline-list');
+    
+    // Sort chronological: newest to oldest
+    const history = [...booking.statusHistory].reverse();
+
+    timeline.innerHTML = history.map((h, idx) => {
+      // Attribute actor
+      // If actor matches dealerId, it's the dealer. If it's an admin user, attribute as "Koshda team"
+      const actor = h.by === booking.dealerId ? 'You' : 'Koshda team';
+      const statusLabel = h.status.replace('_', ' ').toUpperCase();
+      const statusIcon = SG.booking.statusIcon(h.status);
+
+      return `
+        <div class="timeline-event ${idx === 0 ? 'active' : ''}">
+          <div class="timeline-event-header">
+            <strong class="timeline-event-status">
+              <span>${statusIcon}</span>
+              <span>${statusLabel}</span>
+            </strong>
+            <span class="timeline-event-time">${SG.time.relative(h.at)}</span>
+          </div>
+          <div class="timeline-event-actor">
+            Updated by <strong>${sanitizeHTML(actor)}</strong>
+          </div>
+          ${h.note ? `
+            <div class="timeline-event-note">
+              Note: "${sanitizeHTML(h.note)}"
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updateBadges() {
+    const cartCount = SG.booking.cart.count(session.id);
+    const wishCount = SG.booking.wishlist.get(session.id).length;
+    const cartBadge = document.getElementById('cart-badge');
+    const wishBadge = document.getElementById('wishlist-badge');
+    if (cartBadge) { cartBadge.textContent = cartCount; cartBadge.style.display = cartCount > 0 ? '' : 'none'; }
+    if (wishBadge) { wishBadge.textContent = wishCount; wishBadge.style.display = wishCount > 0 ? '' : 'none'; }
+  }
+</script>
+</body>
+</html>
+

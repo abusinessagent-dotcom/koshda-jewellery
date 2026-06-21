@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Broadcast Communications — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Communications Hub</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Broadcasts</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Broadcast Centre</h1>
+          <p class="page-subtitle">Send instant announcements, line updates, and security disclosures to dealers via WhatsApp/SMS Simulation.</p>
+        </div>
+      </div>
+
+      <div class="grid gap-6" style="grid-template-columns: 380px 1fr;">
+        <!-- Left Column: Send Form -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:var(--space-4);">New Broadcast Message</div>
+          <form id="broadcast-form" onsubmit="sendBroadcast(event)">
+            <div class="form-group">
+              <label class="form-label" for="target-group">Target Audience Group</label>
+              <select id="target-group" class="form-select" required>
+                <option value="all">All Approved Dealers</option>
+                <option value="exclusive">Exclusive Tier Dealers</option>
+                <option value="premium">Premium Tier Dealers</option>
+                <option value="standard">Standard Tier Dealers</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="channel">Transmission Channel</label>
+              <select id="channel" class="form-select" required>
+                <option value="whatsapp">WhatsApp Business API</option>
+                <option value="sms">SMS Gateway</option>
+                <option value="both">Both Channels</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="msg-title">Broadcast Title</label>
+              <input type="text" id="msg-title" class="form-input" placeholder="e.g. Price Revision Warning" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="msg-body">Message Content</label>
+              <textarea id="msg-body" class="form-input" style="height: 120px; resize: none;" placeholder="Write message details..." required></textarea>
+              <span class="text-xs" style="color:var(--text-muted);display:block;margin-top:4px;">Supports WhatsApp markup (*bold*, _italics_).</span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 8px;">
+              📢 Dispatch Broadcast
+            </button>
+          </form>
+        </div>
+
+        <!-- Right Column: History -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="section-title">Broadcast History Logs</div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Title</th>
+                  <th>Audience Group</th>
+                  <th>Channel</th>
+                  <th>Receivers</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="broadcast-history-tbody">
+                <!-- Loaded via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Setup Initial Mock Broadcast Logs if empty
+  if (!SG.store.get('broadcast_history')) {
+    const mockHistory = [
+      { id: 'bc-1', at: '2025-06-10T10:00:00Z', title: 'June Catalogue Launch', group: 'all', channel: 'whatsapp', count: 6, status: 'sent' },
+      { id: 'bc-2', at: '2025-06-05T14:30:00Z', title: 'Urgent Bullion Rate Adjustments', group: 'exclusive', channel: 'both', count: 2, status: 'sent' },
+      { id: 'bc-3', at: '2025-05-20T09:15:00Z', title: 'System Security MFA Enrollment Requirements', group: 'all', channel: 'sms', count: 6, status: 'sent' }
+    ];
+    SG.store.set('broadcast_history', mockHistory);
+  }
+
+  renderHistory();
+});
+
+function renderHistory() {
+  const history = SG.store.get('broadcast_history') || [];
+  const tbody = document.getElementById('broadcast-history-tbody');
+
+  if (!history.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-muted)">No broadcast history logged yet</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = history.sort((a,b) => new Date(b.at) - new Date(a.at)).map(bc => `
+    <tr>
+      <td>${SG.time.formatFull(bc.at)}</td>
+      <td><strong>${bc.title}</strong></td>
+      <td><span class="badge badge-gray">${bc.group.toUpperCase()}</span></td>
+      <td>${bc.channel === 'both' ? '💬 WhatsApp & 📱 SMS' : bc.channel === 'whatsapp' ? '💬 WhatsApp' : '📱 SMS'}</td>
+      <td><strong>${bc.count}</strong> dealers</td>
+      <td><span class="badge badge-green">${bc.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function sendBroadcast(e) {
+  e.preventDefault();
+  const targetGroup = document.getElementById('target-group').value;
+  const channel = document.getElementById('channel').value;
+  const title = document.getElementById('msg-title').value;
+  const body = document.getElementById('msg-body').value;
+
+  // Retrieve user lists to target
+  SG.dal._allowRawAccess = true;
+  let users = [];
+  try {
+    users = SG.dal.safeGet('users') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+
+  const targetDealers = users.filter(u => 
+    u.role === 'dealer' && 
+    u.status === 'approved' && 
+    (targetGroup === 'all' || u.tier === targetGroup)
+  );
+
+  if (!targetDealers.length) {
+    SG.toast.error('Dispatch Refused', 'No approved dealers match your target audience group.');
+    return;
+  }
+
+  SG.modal.confirm('Confirm Broadcast Dispatch', `You are about to transmit this message to ${targetDealers.length} dealer(s). Dispatch cannot be undone. Proceed?`, () => {
+    // Submit notices
+    targetDealers.forEach(dealer => {
+      // In-app alert
+      SG.notify(dealer.id, 'broadcast', title, body, '');
+
+      // Simulate WhatsApp
+      if (channel === 'whatsapp' || channel === 'both') {
+        const log = SG.store.get('whatsapp_log') || [];
+        log.push({
+          id: 'wa-' + SG.uid.short(),
+          to: dealer.id,
+          template: 'CUSTOM_BROADCAST',
+          message: `📢 *${title}*\n\n${body}`,
+          sentAt: SG.time.now(),
+          status: 'delivered'
+        });
+        SG.store.set('whatsapp_log', log);
+      }
+    });
+
+    // Save history
+    const history = SG.store.get('broadcast_history') || [];
+    history.push({
+      id: 'bc-' + SG.uid.short(),
+      at: SG.time.now(),
+      title,
+      group: targetGroup,
+      channel,
+      count: targetDealers.length,
+      status: 'sent'
+    });
+    SG.store.set('broadcast_history', history);
+
+    SG.audit('BROADCAST_DISPATCHED', title, `Target Group: ${targetGroup}, count: ${targetDealers.length}`);
+    SG.toast.success('Dispatched Successfully', `Notice has been transmitted to ${targetDealers.length} dealer(s).`);
+
+    // Reset Form
+    document.getElementById('broadcast-form').reset();
+    renderHistory();
+  });
+}
+</script>
+</body>
+</html>
+

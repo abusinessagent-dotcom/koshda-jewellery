@@ -1,0 +1,348 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Export PDF Catalogue — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <style>
+    /* Premium Catalog Builder styles */
+    .exporter-grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: var(--space-6);
+      align-items: start;
+    }
+    .preview-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      box-shadow: var(--shadow-lg);
+    }
+    .preview-header {
+      border-bottom: 2px dashed var(--border-subtle);
+      padding-bottom: var(--space-4);
+      margin-bottom: var(--space-6);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .preview-sheet {
+      background: #FFFFFF;
+      color: #0c0c16;
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      aspect-ratio: 0.707; /* A4 Ratio */
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      flex-grow: 1;
+    }
+    .preview-item {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f8fafc;
+    }
+    .preview-item img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .preview-item-code {
+      font-family: monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: var(--gold-600);
+    }
+    .preview-item-name {
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 2px;
+      color: #0c0c16;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+    .preview-item-price {
+      font-size: 10px;
+      color: #475569;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+    .watermark-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-35deg);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: rgba(212, 175, 55, 0.08);
+      pointer-events: none;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+    }
+
+    /* Print media adjustments */
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .preview-sheet, .preview-sheet * {
+        visibility: visible;
+      }
+      .preview-sheet {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        max-width: 100%;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+        margin: 0;
+      }
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title-rem">💎 PDF Catalogue Generator</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Catalog Exporter</h1>
+          <p class="page-subtitle">Export your assigned jewellery lines into a high-resolution, print-ready PDF catalog sheet watermarked with your credentials.</p>
+        </div>
+      </div>
+
+      <div class="exporter-grid">
+        <!-- Configuration Card -->
+        <div class="card pdf-config-card">
+          <div class="section-title">Configuration</div>
+          
+          <div class="form-group">
+            <label class="form-label" for="collection-select">Select Collection</label>
+            <select id="collection-select" class="form-select" onchange="loadPreviewProducts()">
+              <!-- Dynamic -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="layout-select">Layout Style</label>
+            <select id="layout-select" class="form-select" onchange="updatePreviewLayout()">
+              <option value="grid3">3x3 Grid (Recommended)</option>
+              <option value="grid2">2x2 Grid (Detailed)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="show-prices">Include Price Estimates</label>
+            <select id="show-prices" class="form-select" onchange="togglePrices()">
+              <option value="yes">Yes, show prices</option>
+              <option value="no">No, hide prices</option>
+            </select>
+          </div>
+
+          <div class="form-group mt-2">
+            <button class="btn btn-primary pdf-btn-export" onclick="printCatalogue()">
+              🖨️ Export &amp; Print PDF
+            </button>
+          </div>
+        </div>
+
+        <!-- Sheet Preview Column -->
+        <div class="preview-card">
+          <div class="section-title pdf-preview-title">Print Sheet Preview</div>
+          
+          <!-- Simulated Paper Page -->
+          <div class="preview-sheet" id="print-sheet">
+            <div class="watermark-overlay" id="sheet-watermark">Koshda Jewellery House CONFIDENTIAL</div>
+            
+            <div class="preview-header">
+              <div>
+                <h2 class="pdf-sheet-header-title">Koshda Jewellery House</h2>
+                <div class="pdf-sheet-header-sub" id="sheet-col-name">Autumn Line</div>
+              </div>
+              <div class="text-right">
+                <div class="pdf-sheet-header-date" id="sheet-date">17 June 2026</div>
+                <div class="pdf-sheet-header-dealer" id="sheet-dealer-tag">Dealer: —</div>
+              </div>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="preview-grid" id="sheet-products-grid">
+              <!-- Loaded via JS -->
+            </div>
+            
+            <!-- Footer -->
+            <div class="pdf-sheet-footer">
+              <span>Classified: Authorized Dealer Viewing Only</span>
+              <span>Page 1 of 1</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let dealerProducts = [];
+  let collections = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Requires premium/exclusive
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+    if (session.tier === 'standard') {
+      SG.toast.error('Tier Restricted', 'PDF Exporter requires Premium or Exclusive access tier.');
+      setTimeout(() => {
+        window.location.href = 'dashboard.html';
+      }, 1500);
+      return;
+    }
+
+    // Set topbar avatar
+    const initials = session.avatar || SG.str.initials(session.name);
+    const topbarAv = document.getElementById('topbar-avatar-dealer');
+    if (topbarAv) topbarAv.textContent = initials;
+
+    // Load static details
+    document.getElementById('sheet-date').textContent = SG.time.format(new Date().toISOString());
+    document.getElementById('sheet-dealer-tag').textContent = `Dealer: ${session.name}`;
+    document.getElementById('sheet-watermark').textContent = `CONFIDENTIAL ${session.name.toUpperCase()} / ID: ${session.id.slice(0,8)}`;
+
+    // Set page as active in sidebar
+    SG.components.setActivePage('pdf-export.html');
+
+    // Populate Select Options
+    loadSelectorData();
+  });
+
+  function loadSelectorData() {
+    collections = SG.dal.collections.list(session.id);
+    dealerProducts = SG.dal.products.list(session.id);
+
+    const select = document.getElementById('collection-select');
+    if (!collections.length) {
+      select.innerHTML = '<option value="">No collections active</option>';
+      return;
+    }
+
+    select.innerHTML = collections.map(c => `
+      <option value="${c.id}">${c.name} (${c.category.toUpperCase()})</option>
+    `).join('');
+
+    loadPreviewProducts();
+  }
+
+  function loadPreviewProducts() {
+    const colId = document.getElementById('collection-select').value;
+    const col = collections.find(c => c.id === colId);
+    if (!col) return;
+
+    document.getElementById('sheet-col-name').textContent = `${col.name} — ${col.material} Gold ${col.category}`;
+
+    const filtered = dealerProducts.filter(p => p.collectionId === colId && p.status === 'active');
+    const layout = document.getElementById('layout-select').value;
+    const limit = layout === 'grid3' ? 9 : 4;
+    const displayProducts = filtered.slice(0, limit);
+
+    const showPricesVal = document.getElementById('show-prices').value;
+    const gridEl = document.getElementById('sheet-products-grid');
+
+    if (!displayProducts.length) {
+      gridEl.innerHTML = '<div style="grid-column: 1/-1; text-align: center; padding: 60px 0; color: #94a3b8; font-size: 13px;">No designs assigned in this collection</div>';
+      return;
+    }
+
+    gridEl.innerHTML = displayProducts.map(p => {
+      const priceText = showPricesVal === 'yes' ? `₹${SG.str.currency(p.estimatedPrice || 25000)}` : 'POA (Price on Ask)';
+      const imgSrc = p.images?.[0] || 'https://placehold.co/400x400/f1f5f9/0f172a?text=💍';
+      return `
+        <div class="preview-item">
+          <img src="${imgSrc}" onerror="this.src='https://placehold.co/400x400/f1f5f9/0f172a?text=💍'">
+          <div class="preview-item-code">${p.code}</div>
+          <div class="preview-item-name">${p.name}</div>
+          <div class="preview-item-price">${priceText}</div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function updatePreviewLayout() {
+    const layout = document.getElementById('layout-select').value;
+    const gridEl = document.getElementById('sheet-products-grid');
+    if (layout === 'grid3') {
+      gridEl.classList.add('grid-cols-3');
+      gridEl.classList.remove('grid-cols-2');
+    } else {
+      gridEl.classList.add('grid-cols-2');
+      gridEl.classList.remove('grid-cols-3');
+    }
+    loadPreviewProducts();
+  }
+
+  function togglePrices() {
+    loadPreviewProducts();
+  }
+
+  function printCatalogue() {
+    SG.toast.success('Building PDF', 'Simulating high-resolution document compile...');
+    setTimeout(() => {
+      window.print();
+    }, 1000);
+  }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,154 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sample Request History — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title">Sample Tracking</div>
+        <div class="topbar-breadcrumb">
+          <span>Dealer Portal</span><span>›</span><span>Samples</span><span>›</span><span class="current">History</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Sample Tickets History</h1>
+          <p class="page-subtitle">Inspect the status of your prototype wax models and master alloy samples.</p>
+        </div>
+        <div class="page-actions">
+          <a href="sample-requests.html" class="btn btn-primary btn-sm">🔬 Request New Sample</a>
+        </div>
+      </div>
+
+      <!-- Tickets Grid -->
+      <div class="flex-col-gap-4-rem" id="sample-history-container">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/dealer.js" defer></script>
+<script>
+let session = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+
+  session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  loadSampleHistory();
+});
+
+function loadSampleHistory() {
+  const samples = SG.store.get('samples') || [];
+  const dealerSamples = samples.filter(s => s.dealerId === session.id);
+  const container = document.getElementById('sample-history-container');
+
+  if (!dealerSamples.length) {
+    container.innerHTML = `
+      <div class="card" style="text-align:center;padding:60px;">
+        <div style="font-size:48px;margin-bottom:16px;">🔬</div>
+        <div class="section-title">No Sample Requests Found</div>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:20px;">You haven't requested any sample models for catalogue designs yet.</p>
+        <a href="sample-requests.html" class="btn btn-primary">Request First Sample</a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = dealerSamples.sort((a,b) => new Date(b.requestedAt) - new Date(a.requestedAt)).map(s => {
+    let statusClass = 'badge-yellow';
+    if (s.status === 'despatched' || s.status === 'completed') statusClass = 'badge-green';
+    else if (s.status === 'rejected') statusClass = 'badge-red';
+
+    // Build timeline node list
+    let timelineHtml = '';
+    if (s.status === 'rejected') {
+      timelineHtml = '<div style="color:var(--red-500);font-weight:600;font-size:12px;">🚫 Sample Request Rejected by Admin</div>';
+    } else {
+      const step1 = 'completed';
+      const step2 = (s.status === 'approved' || s.status === 'despatched' || s.status === 'completed') ? 'completed' : '';
+      const step3 = (s.status === 'despatched' || s.status === 'completed') ? 'completed' : '';
+
+      timelineHtml = `
+        <div style="display:flex;justify-content:between;align-items:center;margin-top:16px;position:relative;">
+          <div style="flex:1;text-align:center;">
+            <div style="width:24px;height:24px;border-radius:50%;background:${step1 ? 'var(--gold-500)' : 'var(--border-subtle)'};color:var(--bg-primary);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;z-index:2;position:relative;">1</div>
+            <div style="font-size:10px;margin-top:4px;color:${step1 ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:500;">Submitted</div>
+          </div>
+          <div style="flex:1;height:2px;background:${step2 ? 'var(--gold-500)' : 'var(--border-subtle)'};margin-bottom:14px;"></div>
+          <div style="flex:1;text-align:center;">
+            <div style="width:24px;height:24px;border-radius:50%;background:${step2 ? 'var(--gold-500)' : 'var(--border-subtle)'};color:var(--bg-primary);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;z-index:2;position:relative;">2</div>
+            <div style="font-size:10px;margin-top:4px;color:${step2 ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:500;">Approved</div>
+          </div>
+          <div style="flex:1;height:2px;background:${step3 ? 'var(--gold-500)' : 'var(--border-subtle)'};margin-bottom:14px;"></div>
+          <div style="flex:1;text-align:center;">
+            <div style="width:24px;height:24px;border-radius:50%;background:${step3 ? 'var(--gold-500)' : 'var(--border-subtle)'};color:var(--bg-primary);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold;z-index:2;position:relative;">3</div>
+            <div style="font-size:10px;margin-top:4px;color:${step3 ? 'var(--text-primary)' : 'var(--text-muted)'};font-weight:500;">Shipped</div>
+          </div>
+        </div>
+      `;
+    }
+
+    const shippingInfo = s.trackingRef ? `
+      <div style="margin-top:16px;background:var(--bg-secondary);padding:10px 14px;border-radius:6px;font-size:12px;display:flex;justify-content:space-between;align-items:center;">
+        <span>Logistics Carrier: <strong>${s.trackingRef.split('-')[0] || 'DHL'} Express</strong></span>
+        <span>Tracking Reference: <code style="color:var(--gold-500)">${s.trackingRef}</code></span>
+      </div>
+    ` : '';
+
+    return `
+      <div class="card" style="display:flex;flex-direction:column;gap:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:start;">
+          <div>
+            <span class="code" style="font-size:11px;color:var(--gold-500);font-weight:700;">${s.ref}</span>
+            <h3 class="section-title" style="margin-top:2px;">${s.productName}</h3>
+            <p style="color:var(--text-muted);font-size:11px;">Design Code: ${s.productCode} · Requested: ${SG.time.format(s.requestedAt)}</p>
+          </div>
+          <div style="text-align:right;">
+            <span class="badge badge-gray">${s.type}</span>
+            <div style="margin-top:6px;">${SG.statusBadge(s.status)}</div>
+          </div>
+        </div>
+
+        ${timelineHtml}
+        ${shippingInfo}
+        
+        ${s.note ? `<div style="margin-top:12px;font-size:12px;color:var(--text-secondary);border-left:2px solid var(--border-gold);padding-left:8px;"><em>"${s.note}"</em></div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+</script>
+</body>
+</html>
+

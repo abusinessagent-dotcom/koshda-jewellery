@@ -1,0 +1,7 @@
+[2026-06-20T12:47:27.201Z] IP: ::1 | UA: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.8655 | STATUS: SUCCESS | MSG: Admin access granted.
+[2026-06-20T12:49:14.645Z] IP: ::1 | UA: curl/8.19.0 | STATUS: FAILED_INVALID_CODE | MSG: Failed attempt 1/5
+[2026-06-20T13:07:37.988Z] IP: ::1 | UA: curl/8.19.0 | STATUS: SUCCESS | MSG: Admin access granted.
+[2026-06-20T14:41:22.342Z] IP: ::1 | UA: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.8655 | STATUS: FAILED_INVALID_CODE | MSG: Failed attempt 1/5
+[2026-06-20T14:41:22.389Z] IP: ::1 | UA: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-IN) WindowsPowerShell/5.1.26100.8655 | STATUS: FAILED_INVALID_CODE | MSG: Failed attempt 2/5
+[2026-06-20T19:36:22.132Z] IP: ::1 | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 | STATUS: SUCCESS | MSG: Admin access granted.
+[2026-06-20T19:41:21.548Z] IP: ::1 | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36 | STATUS: SUCCESS | MSG: Admin access granted.

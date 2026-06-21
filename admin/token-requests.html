@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Requests — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    body {
+      background: #FFFFFF !important;
+    }
+    .token-req-layout {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: var(--space-6) 0;
+    }
+    .duration-option {
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      padding: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.2s;
+      margin-bottom: 8px;
+    }
+    .duration-option:hover, .duration-option.active {
+      border-color: var(--gold-500);
+      background: rgba(201, 168, 76, 0.05);
+    }
+    .duration-radio {
+      accent-color: var(--gold-500);
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Token Requests</div>
+        <div class="topbar-breadcrumb"><span>Admin</span><span>›</span><span class="current">Token Requests</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="token-req-layout">
+        
+        <div class="page-header mb-6-rem">
+          <div>
+            <h1 class="page-title">Dealer Token Requests</h1>
+            <p class="page-subtitle">Approve or reject time-limited design & category catalog access requests</p>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex justify-between items-center mb-6 tab-border-bottom">
+          <div class="flex gap-4">
+            <button class="tab-btn-custom active" onclick="setTab('pending')" id="tab-pending">
+              Pending Requests <span class="badge badge-red ml-1 hidden" id="pending-count-badge">0</span>
+            </button>
+            <button class="tab-btn-custom" onclick="setTab('approved')" id="tab-approved">
+              Approved Tokens
+            </button>
+            <button class="tab-btn-custom" onclick="setTab('rejected')" id="tab-rejected">
+              Rejected Requests
+            </button>
+            <button class="tab-btn-custom" onclick="setTab('expired')" id="tab-expired">
+              Expired Tokens
+            </button>
+          </div>
+        </div>
+
+        <!-- Token Requests Table -->
+        <div class="table-card">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Dealer & Business</th>
+                  <th>Scope</th>
+                  <th>Reason</th>
+                  <th>Submitted At</th>
+                  <th id="status-header">Status</th>
+                  <th class="text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="token-requests-tbody">
+                <!-- JS filled -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal for Approving a Token (Duration Selection) -->
+<div class="modal-overlay" id="approve-modal">
+  <div class="modal modal-w-440">
+    <div class="modal-header">
+      <h3 class="modal-title">?✓ Approve Catalog Access Token</h3>
+      <button class="modal-close" onclick="closeApproveModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-desc-text">Select the validity duration for this access token. The dealer will gain instant catalog access for this duration.</p>
+      
+      <div class="duration-option active" onclick="selectDuration(4)">
+        <div>
+          <div class="duration-title">4 Hours Access</div>
+          <div class="duration-desc">Suitable for quick customer consults</div>
+        </div>
+        <input type="radio" name="duration" value="4" class="duration-radio" checked title="4 Hours Access">
+      </div>
+
+      <div class="duration-option" onclick="selectDuration(5)">
+        <div>
+          <div class="duration-title">5 Hours Access</div>
+          <div class="duration-desc">Standard duration for single-day previews</div>
+        </div>
+        <input type="radio" name="duration" value="5" class="duration-radio" title="5 Hours Access">
+      </div>
+
+      <div class="duration-option" onclick="selectDuration(24)">
+        <div>
+          <div class="duration-title">24 Hours (Full Day) Access</div>
+          <div class="duration-desc">Extended window for global/distant clients</div>
+        </div>
+        <input type="radio" name="duration" value="24" class="duration-radio" title="24 Hours Access">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeApproveModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmApproval()">Approve Request</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for Rejecting a Token -->
+<div class="modal-overlay" id="reject-modal">
+  <div class="modal modal-w-440">
+    <div class="modal-header">
+      <h3 class="modal-title">❌ Reject Catalog Access Request</h3>
+      <button class="modal-close" onclick="closeRejectModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Reason for Rejection <span class="required">*</span></label>
+        <textarea class="form-textarea decision-textarea" id="reject-reason" placeholder="Provide feedback to the dealer on why this catalog request is declined..." required></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeRejectModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmRejection()">Reject Request</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+  let adminSession = null;
+  let requests = [];
+  let currentTab = 'pending'; // 'pending', 'approved', 'rejected', 'expired'
+  let targetRequestId = null;
+  let selectedDurationHours = 4;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+    adminSession = SG.auth.current();
+
+    // Set avatar
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    loadRequests();
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadRequests();
+    });
+  });
+
+  async function loadRequests() {
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`/api/admin/token-requests`, {
+        headers: token ? { 'Authorization': 'Bearer ' + token } : {}
+      });
+
+      if (!res.ok) {
+        // Fallback to localStorage for offline/dev mode
+        const allReqs = SG.store.get('token_requests') || [];
+        requests = allReqs;
+        renderBadgeCount();
+        renderRequests();
+        return;
+      }
+
+      const data = await res.json();
+      if (data.success) {
+        // Normalise server response to match existing UI field names
+        requests = (data.requests || []).map(r => ({
+          ...r,
+          userName:    r.name        || r.userName    || r.email,
+          businessName: r.businessName || '',
+          reason:      r.message     || r.reason      || '',
+          submittedAt: r.requestedAt || r.submittedAt || '',
+          rejectReason: r.rejectionReason || r.rejectReason || '',
+          type:        r.type        || 'catalogue',
+          targetName:  r.targetName  || 'Catalogue',
+        }));
+      } else {
+        requests = SG.store.get('token_requests') || [];
+      }
+    } catch (_) {
+      // Network error – fall back to local store
+      requests = SG.store.get('token_requests') || [];
+    }
+
+    renderBadgeCount();
+    renderRequests();
+  }
+
+  function renderBadgeCount() {
+    const pendingCount = requests.filter(r => r.status === 'pending').length;
+    const badge = document.getElementById('pending-count-badge');
+    if (badge) {
+      badge.textContent = pendingCount;
+      badge.classList.toggle('hidden', pendingCount === 0);
+    }
+
+    // Update main nav pending tokens badge if present
+    document.querySelectorAll('[data-count="pending-tokens"]').forEach(el => {
+      el.textContent = pendingCount;
+      el.classList.toggle('hidden', pendingCount === 0);
+    });
+  }
+
+  function setTab(tabName) {
+    currentTab = tabName;
+    document.querySelectorAll('.tab-btn-custom').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    const activeBtn = document.getElementById('tab-' + tabName);
+    if (activeBtn) {
+      activeBtn.classList.add('active');
+    }
+
+    renderRequests();
+  }
+
+  function renderRequests() {
+    const tbody = document.getElementById('token-requests-tbody');
+    const filtered = requests.filter(r => r.status === currentTab);
+    const statusHeader = document.getElementById('status-header');
+
+    if (currentTab === 'approved') {
+      statusHeader.textContent = 'Active Duration / Expires';
+    } else if (currentTab === 'rejected') {
+      statusHeader.textContent = 'Rejection Reason';
+    } else if (currentTab === 'expired') {
+      statusHeader.textContent = 'Expired At';
+    } else {
+      statusHeader.textContent = 'Status';
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="text-center-muted-padding-48">
+            No requests found in this section.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(r => {
+      let statusDetailHtml = '';
+      if (currentTab === 'pending') {
+        statusDetailHtml = '<span class="badge badge-yellow">Pending Review</span>';
+      } else if (currentTab === 'approved') {
+        const leftMs = new Date(r.expiresAt) - new Date();
+        if (leftMs > 0) {
+          const hrs = Math.floor(leftMs / 3600000);
+          const mins = Math.floor((leftMs % 3600000) / 60000);
+          statusDetailHtml = `<div class="expires-active">Expires in ${hrs}h ${mins}m</div><div class="text-xs expires-date-sub">Until ${SG.time.formatFull(r.expiresAt)}</div>`;
+        } else {
+          statusDetailHtml = '<span class="badge badge-gray">Expired</span>';
+        }
+      } else if (currentTab === 'rejected') {
+        statusDetailHtml = `<span class="text-red-medium">${r.rejectReason || 'No reason specified'}</span>`;
+      } else if (currentTab === 'expired') {
+        statusDetailHtml = `<span class="text-sm-muted">${SG.time.formatFull(r.expiresAt)}</span>`;
+      }
+
+      let actionHtml = '—';
+      if (r.status === 'pending') {
+        actionHtml = `
+          <div class="flex gap-2 justify-end">
+            <button class="btn btn-sm btn-primary" onclick="openApproveModal('${r.id}')">Approve</button>
+            <button class="btn btn-sm btn-secondary btn-reject-action" onclick="openRejectModal('${r.id}')">Reject</button>
+          </div>
+        `;
+      }
+
+      const scopeName = r.type === 'category' ? `Category: ${SG.str.capitalize(r.targetName)}` : `Product: ${r.targetName}`;
+
+      return `
+        <tr>
+          <td><span class="code">${r.id}</span></td>
+          <td>
+            <div class="text-primary-bold">${r.userName}</div>
+            <div class="text-xs-muted-mt-2">${r.businessName}</div>
+          </td>
+          <td><strong>${scopeName}</strong></td>
+          <td class="reason-cell-truncate" title="${r.reason}">${r.reason}</td>
+          <td>${SG.time.formatFull(r.submittedAt)}</td>
+          <td>${statusDetailHtml}</td>
+          <td class="text-right">${actionHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function openApproveModal(id) {
+    targetRequestId = id;
+    selectedDurationHours = 4;
+    
+    // Reset selection styles
+    document.querySelectorAll('.duration-option').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.duration-radio').forEach(radio => {
+      radio.checked = false;
+      if (radio.value == 4) radio.checked = true;
+    });
+    document.querySelector('.duration-option:first-of-type').classList.add('active');
+
+    SG.modal.open('approve-modal');
+  }
+
+  function selectDuration(hours) {
+    selectedDurationHours = hours;
+    document.querySelectorAll('.duration-option').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.duration-radio').forEach(radio => {
+      radio.checked = false;
+      if (radio.value == hours) {
+        radio.checked = true;
+        radio.closest('.duration-option').classList.add('active');
+      }
+    });
+  }
+
+  function closeApproveModal() {
+    SG.modal.close('approve-modal');
+    targetRequestId = null;
+  }
+
+  async function confirmApproval() {
+    if (!targetRequestId) return;
+
+    const btn = document.querySelector('#approve-modal .btn-primary');
+    if (btn) { btn.disabled = true; btn.textContent = 'Issuing…'; }
+
+    // Map selectedDurationHours to days (for the new server API)
+    // Legacy UI uses hours; server API uses validityDays
+    const validityDays = Math.max(1, Math.round(selectedDurationHours / 24)) || 365;
+
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`/api/admin/token-requests/${targetRequestId}/approve`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        },
+        body: JSON.stringify({
+          validityDays,
+          tier: 'standard'
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Show the generated token prominently — it cannot be retrieved again
+        SG.toast.success(
+          'Token Issued ✓',
+          `Plain Token: ${data.plainToken} — Copy and share securely with the dealer.`,
+          12000
+        );
+        // Also alert so admin can copy it easily
+        setTimeout(() => {
+          alert(`ACCESS TOKEN ISSUED\n\nDealer: ${data.tokenPreview}\nToken: ${data.plainToken}\nExpires: ${new Date(data.expiresAt).toLocaleDateString()}\n\n⚠️ This token is shown ONLY once. Copy it now and share securely with the dealer.`);
+        }, 300);
+        SG.audit('TOKEN_REQUEST_APPROVED', targetRequestId, `Token: ${data.tokenPreview}`);
+        await loadRequests();
+      } else {
+        SG.toast.error('Approval Failed', data.error || 'Could not issue token.');
+      }
+    } catch (err) {
+      SG.toast.error('Network Error', 'Could not reach the server. Try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Approve Request'; }
+    }
+
+    closeApproveModal();
+  }
+
+  function openRejectModal(id) {
+    targetRequestId = id;
+    document.getElementById('reject-reason').value = '';
+    SG.modal.open('reject-modal');
+  }
+
+  function closeRejectModal() {
+    SG.modal.close('reject-modal');
+    targetRequestId = null;
+  }
+
+  async function confirmRejection() {
+    const reason = document.getElementById('reject-reason').value.trim();
+    if (!reason) {
+      SG.toast.error('Required', 'Please enter a rejection reason.');
+      return;
+    }
+
+    const btn = document.querySelector('#reject-modal .btn-danger');
+    if (btn) { btn.disabled = true; btn.textContent = 'Rejecting…'; }
+
+    try {
+      const token = localStorage.getItem('admin_token');
+      const res = await fetch(`/api/admin/token-requests/${targetRequestId}/reject`, {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          ...(token ? { 'Authorization': 'Bearer ' + token } : {})
+        },
+        body: JSON.stringify({ reason })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        SG.audit('TOKEN_REQUEST_REJECTED', targetRequestId, `Reason: ${reason}`);
+        SG.toast.warning('Token Request Rejected', 'The dealer request was declined.');
+        await loadRequests();
+      } else {
+        SG.toast.error('Rejection Failed', data.error || 'Could not reject request.');
+      }
+    } catch (err) {
+      SG.toast.error('Network Error', 'Could not reach the server. Try again.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Reject Request'; }
+    }
+
+    closeRejectModal();
+  }
+</script>
+</body>
+</html>
+

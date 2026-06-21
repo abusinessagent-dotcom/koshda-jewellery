@@ -1,0 +1,96 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Help & AI Assistant — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body class="help-page-body">
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="dealer-title-lg">💡 Platform Guide & AI Assistant</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="help-layout">
+        
+        <!-- Left: Platform FAQ guides -->
+        <div>
+          <h1 class="page-title mb-2">Help Center</h1>
+          <p class="page-subtitle mb-28px">Find immediate answers to operational and system policies</p>
+          
+          <div class="faq-list">
+            <div class="faq-item">
+              <div class="faq-question">💍 How do I request token access to premium collections?</div>
+              <div class="faq-answer">Navigate to "Token Requests" from the sidebar and click "Request New Token". Alternatively, view any restricted product detail card and click the "Request Token" button. Your request will be evaluated by an administrator and activated for a selected duration.</div>
+            </div>
+            
+            <div class="faq-item">
+              <div class="faq-question">📦 What is the minimum order quantity (MOQ)?</div>
+              <div class="faq-answer">Our minimum order quantity is exactly 1 piece per design for approved dealers, providing maximum catalog flexibility.</div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">🔐 How does device fingerprint tracking work?</div>
+              <div class="faq-answer">To protect our exclusive designs, each dealer token is bound to a limited number of browser sessions. If you reach your limit, you can manage and delete active device bindings under your Profile.</div>
+            </div>
+
+            <div class="faq-item">
+              <div class="faq-question">💬 How can I share products with customers?</div>
+              <div class="faq-answer">Bookmark designs into your "My Selections" panel, review the compiled order inquiry details, and click "Open WhatsApp" to share the formatted catalog interest message directly with our dispatch desk.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: AI Chatbot box -->
+        <div class="flex-col-gap-4">
+          <div class="card chatbot-container-card">
+            <div class="chatbot-header-bar">
+              <span class="font-size-20">🤖</span>
+              <div>
+                <div class="chatbot-title-text">Koshda AI Assistant</div>
+                <div class="chatbot-subtitle-text">Online &middot; Catalog Intel</div>
+              </div>
+            </div>
+            <iframe src="../ai/chat/chat-assistant.html" class="chatbot-iframe" title="Koshda AI Assistant"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+    const session = SG.auth.current();
+    const initials = session.avatar || SG.str.initials(session.name);
+    document.getElementById('topbar-avatar-dealer').textContent = initials;
+  });
+</script>
+</body>
+</html>
+

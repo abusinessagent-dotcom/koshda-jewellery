@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Cart — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div class="dealer-title-lg">🛒 Booking Cart</div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Booking Cart</h1>
+          <p class="page-subtitle">Review your selections and submit your booking</p>
+        </div>
+        <a href="product-list.html" class="btn btn-secondary">+ Add More Products</a>
+      </div>
+
+      <!-- Empty state -->
+      <div id="cart-empty" class="empty-state hidden">
+        <div class="empty-state-icon">🛒</div>
+        <h3>Your cart is empty</h3>
+        <p>Browse collections and add products to submit a booking.</p>
+        <a href="collections.html" class="btn btn-primary mt-5">Browse Collections</a>
+      </div>
+
+      <!-- Cart content -->
+      <div id="cart-content" class="cart-layout hidden">
+
+        <!-- Items -->
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="section-title">Selected Products</div>
+            <span id="cart-item-count" class="badge badge-gold">0 items</span>
+          </div>
+          <div id="cart-items-list"></div>
+
+          <!-- Overall Note -->
+          <div id="overall-note-container">
+            <label class="form-label">Overall Booking Note</label>
+            <textarea class="form-textarea" id="overall-note" placeholder="Add any general notes for this booking (urgency, client event date, special instructions…)" oninput="saveOverallNote()"></textarea>
+          </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="cart-summary">
+          <div class="cart-summary-title">Order Summary</div>
+
+          <!-- Booking limit warning -->
+          <div class="cart-limit-bar">
+            <div class="cart-limit-label">
+              <span>Items in cart</span>
+              <span id="cart-limit-text">0 / 5 max</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" id="cart-limit-fill"></div>
+            </div>
+          </div>
+
+          <!-- Open bookings warning -->
+          <div id="open-bk-warning"></div>
+
+          <!-- Summary points -->
+          <div class="cart-summary-details">
+            <div class="flex justify-between"><span class="text-muted">Items</span><span id="sum-items" class="font-semibold">0</span></div>
+            <div class="flex justify-between"><span class="text-muted">Booking Type</span><span class="font-semibold text-gold">Enquiry / Viewing</span></div>
+            <div class="flex justify-between"><span class="text-muted">Payment</span><span class="font-semibold">Discussed post-approval</span></div>
+          </div>
+
+          <div class="divider mb-5"></div>
+
+          <div class="alert alert-info text-sm mb-5">
+            <span>🛒</span>
+            <span>Submitting confirms your interest. The Koshda team will review and respond within 24 hours.</span>
+          </div>
+
+          <button class="btn btn-primary w-full justify-center btn-lg" onclick="submitCart()" id="submit-btn">
+            ? Submit Booking Request
+          </button>
+          <button class="btn btn-ghost btn-sm w-full justify-center mt-3 highlight-red" onclick="clearCart()">
+            ??? Clear Cart
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+let dealerSession;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+  dealerSession = SG.auth.current();
+  const initials = dealerSession.avatar || SG.str.initials(dealerSession.name);
+  { const el = document.getElementById('dl-avatar'); if (el) el.textContent = initials; }
+  { const el = document.getElementById('dl-name'); if (el) el.textContent = dealerSession.name; }
+  document.getElementById('topbar-avatar').textContent = initials;
+  renderCart();
+});
+
+function renderCart() {
+  const cart     = SG.booking.cart.get(dealerSession.id);
+  const products = SG.dal.safeGet('products') || [];
+  const items    = cart.items;
+
+  const empty   = document.getElementById('cart-empty');
+  const content = document.getElementById('cart-content');
+
+  if (!items.length) {
+    empty.classList.remove('hidden');
+    content.classList.add('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  content.classList.remove('hidden');
+
+  // Item count
+  const pct = (items.length / 5) * 100;
+  document.getElementById('cart-item-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+  document.getElementById('cart-limit-text').textContent = `${items.length} / 5 max`;
+  document.getElementById('cart-limit-fill').style.width = pct + '%';
+  document.getElementById('sum-items').textContent = items.length;
+
+  // Open bookings
+  const openBk = SG.booking.openBookingsCount(dealerSession.id);
+  const warn   = document.getElementById('open-bk-warning');
+  if (openBk > 0) {
+    warn.innerHTML = `<div class="alert alert-warning text-sm mb-4"><span>🛒</span><span>${openBk} open booking${openBk > 1 ? 's' : ''} already in progress.</span></div>`;
+  } else { warn.innerHTML = ''; }
+
+  // Overall note
+  document.getElementById('overall-note').value = cart.overallNote || '';
+
+  // Items list
+  const list = document.getElementById('cart-items-list');
+  list.innerHTML = items.map(item => {
+    const product = products.find(p => p.id === item.productId);
+    const imgSrc  = product?.images?.[0] || `https://placehold.co/70x70/1a1a2a/d4af37?text=??`;
+    return `
+    <div class="cart-item">
+      <div class="cart-item-image">
+        <img src="${imgSrc}" alt="${item.name}" onerror="this.src='https://placehold.co/70x70/1a1a2a/d4af37?text=??'">
+      </div>
+      <div class="cart-item-info">
+        <div class="cart-item-code">${item.code}</div>
+        <div class="cart-item-name">${item.name}</div>
+        ${product ? `<div class="text-sm text-muted">${product.material} · ${product.weight} · ${product.purity}</div>` : ''}
+        <div class="cart-item-note">
+          <textarea placeholder="Note for this item (optional)…" oninput="updateNote('${item.productId}', this.value)">${item.note || ''}</textarea>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm highlight-red flex-shrink-0" onclick="removeItem('${item.productId}')" style="align-self:flex-start;" title="Remove">?</button>
+    </div>`;
+  }).join('');
+}
+
+function removeItem(productId) {
+  SG.booking.cart.remove(dealerSession.id, productId);
+  renderCart();
+}
+
+function updateNote(productId, note) {
+  SG.booking.cart.updateNote(dealerSession.id, productId, note);
+}
+
+function saveOverallNote() {
+  SG.booking.cart.updateOverallNote(dealerSession.id, document.getElementById('overall-note').value);
+}
+
+function clearCart() {
+  SG.modal.confirm('Clear Cart', 'Remove all items from your booking cart?', () => {
+    SG.booking.cart.clear(dealerSession.id);
+    renderCart();
+    SG.toast.info('Cart Cleared', 'All items removed.');
+  }, true);
+}
+
+function submitCart() {
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner spinner-sm"></span> Submitting…';
+
+  setTimeout(() => {
+    const booking = SG.booking.submit(dealerSession.id);
+    btn.disabled = false;
+    btn.innerHTML = '? Submit Booking Request';
+    if (booking) {
+      sessionStorage.setItem('last_booking_id', booking.id);
+      sessionStorage.setItem('last_booking_ref', booking.ref);
+      window.location.href = 'booking-confirm.html';
+    }
+  }, 1000);
+}
+</script>
+</body>
+</html>
+

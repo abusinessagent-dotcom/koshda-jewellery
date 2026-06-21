@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Request Design Sample — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title">Request Design Sample</div>
+        <div class="topbar-breadcrumb">
+          <span>Dealer Portal</span><span>›</span><span>Samples</span><span>›</span><span class="current">Request Sample</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="dealer-content max-w-760">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Submit Sample Request</h1>
+          <p class="page-subtitle">Request a physical wax pattern, sterling silver master, or non-precious dummy model to verify fittings and designs.</p>
+        </div>
+        <div class="page-actions">
+          <a href="sample-history.html" class="btn btn-secondary btn-sm">🧪 Sample History</a>
+        </div>
+      </div>
+
+      <!-- Request Form Card -->
+      <div class="card">
+        <form id="sample-request-form" onsubmit="submitSampleRequest(event)">
+          <div class="grid gap-4 grid-cols-2">
+            <div class="form-group">
+              <label class="form-label" for="sample-product">Select Design Product</label>
+              <select id="sample-product" class="form-select" required>
+                <option value="">Select design...</option>
+                <!-- Populated via JS -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="sample-type">Sample Model Type</label>
+              <select id="sample-type" class="form-select" required>
+                <option value="3D Wax CAD">3D CAD Resin Wax Pattern</option>
+                <option value="Silver Master">925 Sterling Silver Master Model</option>
+                <option value="Dummy Base Metal">Non-Precious Brass Dummy Alloy</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group mt-3-val">
+            <label class="form-label" for="sample-address">Ship-To Address (Dealers Registered Location)</label>
+            <input type="text" id="sample-address" class="form-input" required>
+          </div>
+
+          <div class="form-group mt-3-val">
+            <label class="form-label" for="sample-note">Special Instructions / Size Specifications</label>
+            <textarea id="sample-note" class="form-input sample-note-textarea" placeholder="Specify customizations, wax density requirements, target ring sizes..."></textarea>
+          </div>
+
+          <div class="sample-form-footer">
+            <button type="button" class="btn btn-secondary" onclick="window.history.back()">Cancel</button>
+            <button type="submit" class="btn btn-primary">🧪 Submit Sample Ticket</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/dealer.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script>
+let session = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+
+  session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Set default address
+  document.getElementById('sample-address').value = `${session.businessName || ''}, ${session.city || ''}, ${session.state || ''}`;
+
+  // Populate products
+  const products = SG.dal.products.list(session.id);
+  const selectEl = document.getElementById('sample-product');
+  products.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = `${p.name} (${p.code})`;
+    selectEl.appendChild(opt);
+  });
+
+  // Pre-fill if URL param is set
+  const preSelectedId = SG.params.get('id');
+  if (preSelectedId) {
+    selectEl.value = preSelectedId;
+  }
+});
+
+function submitSampleRequest(e) {
+  e.preventDefault();
+  const productId = document.getElementById('sample-product').value;
+  const productText = document.getElementById('sample-product').options[document.getElementById('sample-product').selectedIndex].text;
+  const type = document.getElementById('sample-type').value;
+  const address = document.getElementById('sample-address').value.trim();
+  const note = document.getElementById('sample-note').value.trim();
+
+  if (!productId) {
+    SG.toast.error('Required Field', 'Please select a design code from the catalog.');
+    return;
+  }
+
+  const pCode = productText.substring(productText.indexOf('(') + 1, productText.indexOf(')'));
+  const pName = productText.substring(0, productText.indexOf(' ('));
+
+  const newRequest = {
+    id: 'sam-' + SG.uid.short(),
+    ref: SG.uid.sampleRef(),
+    dealerId: session.id,
+    dealerName: session.businessName || session.name,
+    productId,
+    productName: pName,
+    productCode: pCode,
+    type,
+    status: 'submitted',
+    requestedAt: SG.time.now(),
+    trackingRef: '',
+    address,
+    note
+  };
+
+  const samples = SG.store.get('samples') || [];
+  samples.unshift(newRequest);
+  SG.store.set('samples', samples);
+
+  // Notify admins
+  SG.dal._allowRawAccess = true;
+  let users = [];
+  try {
+    users = SG.dal.safeGet('users') || [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  const admins = users.filter(u => u.role === 'dealer_manager' || u.role === 'super_admin');
+  admins.forEach(a => {
+    SG.notify(a.id, 'sample_request', 'New Sample Model Request', `${session.businessName} requested a ${type} for ${pCode}.`, `admin/sample-requests.html`);
+  });
+
+  SG.audit('SAMPLE_REQUEST_SUBMITTED', newRequest.id, `${pCode} — ${type}`);
+  SG.toast.success('Ticket Submitted', 'Sample request is submitted successfully.');
+
+  setTimeout(() => {
+    window.location.href = 'sample-history.html';
+  }, 1500);
+}
+</script>
+</body>
+</html>
+

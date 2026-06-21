@@ -1,0 +1,191 @@
+﻿/* ============================================================
+   Koshda Jewellery House — About Page Styles (CSS)
+   ============================================================ */
+
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.about-container {
+  max-width: 1000px;
+  margin: 72px auto 0 auto;
+  padding: var(--space-8) var(--space-4);
+  flex: 1;
+}
+
+.about-hero {
+  text-align: center;
+  padding: var(--space-8) 0;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: var(--space-8);
+}
+
+.about-hero-title {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  background: linear-gradient(135deg, var(--gold-400), var(--gold-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.about-hero-desc {
+  color: var(--text-secondary);
+  font-size: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.about-section {
+  margin-bottom: var(--space-8);
+}
+
+.about-section-title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: var(--gold-400);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.about-section p {
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: var(--space-4);
+}
+
+.about-section p:last-child {
+  margin-bottom: 0;
+}
+
+.about-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-5);
+  margin-top: var(--space-4);
+}
+
+.about-item-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm);
+}
+
+.about-item-card:hover {
+  border-color: var(--gold-500);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.about-item-card .card-icon {
+  font-size: 24px;
+}
+
+.about-item-card strong {
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.about-item-card .card-highlight-title {
+  color: var(--gold-400);
+  font-size: 14px;
+}
+
+.about-item-card p {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.about-cta-card {
+  text-align: center;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-top: var(--space-8);
+  box-shadow: var(--shadow-sm);
+}
+
+.about-cta-card .cta-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.about-cta-card .cta-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.about-cta-card .cta-btn {
+  display: inline-flex;
+  padding: 10px 24px;
+}
+
+/* public navigation header */
+.nav-links {
+  display: flex;
+  gap: var(--space-5);
+  align-items: center;
+  margin-right: var(--space-5);
+}
+
+.nav-link {
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  color: var(--gold-500);
+}
+
+.public-footer {
+  background: var(--bg-card);
+  border-top: 1px solid var(--border-default);
+  padding: var(--space-6) 0;
+  text-align: center;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.public-footer .footer-copyright {
+  margin-bottom: 8px;
+}
+
+.public-footer a {
+  color: var(--gold-500);
+  text-decoration: none;
+  margin: 0 10px;
+}
+
+.public-footer a:hover {
+  text-decoration: underline;
+}
+

@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookings — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <style>
+    .booking-grid {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+    }
+    .booking-card-history {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-4);
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .booking-card-history:hover {
+      border-color: var(--gold-500);
+      transform: translateY(-2px);
+    }
+    .booking-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .booking-ref-gold {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold-400);
+      text-decoration: none;
+    }
+    .booking-ref-gold:hover {
+      color: var(--gold-300);
+    }
+    .admin-note-preview {
+      background: rgba(212, 175, 55, 0.05);
+      border-left: 3px solid var(--gold-500);
+      padding: var(--space-3) var(--space-4);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+      margin-bottom: var(--space-6);
+      overflow-x: auto;
+    }
+    .filter-tab {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--text-muted);
+      border-radius: var(--radius-full);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .filter-tab:hover {
+      color: var(--text-primary);
+      border-color: var(--border-default);
+    }
+    .filter-tab.active {
+      background: rgba(212, 175, 55, 0.1);
+      color: var(--gold-400);
+      border-color: var(--gold-500);
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title-rem">💎 My Booking History</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">My Bookings</h1>
+          <p class="page-subtitle">Track and review your submitted booking requests</p>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="grid grid-4 gap-5 mb-6" id="stats-row">
+        <div class="stat-card-admin">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-lbl">Total Bookings</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-num" id="stat-open">0</div>
+          <div class="stat-lbl">Open Bookings</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-num" id="stat-completed">0</div>
+          <div class="stat-lbl">Completed</div>
+        </div>
+        <div class="stat-card-admin">
+          <div class="stat-num" id="stat-cancelled">0</div>
+          <div class="stat-lbl">Cancelled</div>
+        </div>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="filter-tabs">
+        <button class="filter-tab active" onclick="setFilter('all', this)">All Bookings</button>
+        <button class="filter-tab" onclick="setFilter('open', this)">Open</button>
+        <button class="filter-tab" onclick="setFilter('completed', this)">Completed</button>
+        <button class="filter-tab" onclick="setFilter('cancelled', this)">Cancelled / Rejected</button>
+      </div>
+
+      <!-- Booking List Grid -->
+      <div class="booking-grid" id="bookings-list">
+        <div class="booking-loading">Loading bookings...</div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="bookings-empty" class="empty-state hidden booking-empty-rem">
+        <div class="empty-state-icon">📋</div>
+        <h3 id="empty-title">No bookings found</h3>
+        <p id="empty-subtitle">You have not submitted any booking requests yet.</p>
+        <a href="collections.html" class="btn btn-primary mt-5">Browse Catalogue</a>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let allBookings = [];
+  let currentFilter = 'all';
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+
+    session = SG.auth.current();
+
+    // Set UI identity
+    const initials = session.avatar || SG.str.initials(session.name);
+    { const el = document.getElementById('dealer-avatar'); if (el) el.textContent = initials; }
+    document.getElementById('topbar-avatar-dealer').textContent   = initials;
+    { const el = document.getElementById('dealer-name'); if (el) el.textContent = session.name; }
+    { const el = document.getElementById('dealer-tier'); if (el) el.textContent = SG.str.capitalize(session.tier || 'standard') + ' Dealer'; }
+
+    // Load bookings
+    loadBookings();
+    updateBadges();
+  });
+
+  function loadBookings() {
+    allBookings = SG.booking.forDealer(session.id);
+    renderStats();
+    renderBookings();
+  }
+
+  function renderStats() {
+    const total = allBookings.length;
+    const open = SG.booking.openBookingsCount(session.id);
+    const completed = allBookings.filter(b => b.status === 'completed').length;
+    const cancelled = allBookings.filter(b => b.status === 'cancelled' || b.status === 'rejected').length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-open').textContent = open;
+    document.getElementById('stat-completed').textContent = completed;
+    document.getElementById('stat-cancelled').textContent = cancelled;
+  }
+
+  function setFilter(filter, el) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderBookings();
+  }
+
+  function renderBookings() {
+    let filtered = [];
+    const openStatuses = ['submitted', 'under_review', 'confirmed', 'in_production', 'despatched'];
+
+    if (currentFilter === 'all') {
+      filtered = allBookings;
+    } else if (currentFilter === 'open') {
+      filtered = allBookings.filter(b => openStatuses.includes(b.status));
+    } else if (currentFilter === 'completed') {
+      filtered = allBookings.filter(b => b.status === 'completed');
+    } else if (currentFilter === 'cancelled') {
+      filtered = allBookings.filter(b => b.status === 'cancelled' || b.status === 'rejected');
+    }
+
+    const listContainer = document.getElementById('bookings-list');
+    const emptyContainer = document.getElementById('bookings-empty');
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = '';
+      listContainer.classList.add('hidden');
+      emptyContainer.classList.remove('hidden');
+
+      // Customize empty message based on filter
+      const titleEl = document.getElementById('empty-title');
+      const subtitleEl = document.getElementById('empty-subtitle');
+      if (currentFilter === 'open') {
+        titleEl.textContent = 'No open bookings';
+        subtitleEl.textContent = 'You have no active bookings under review or in production.';
+      } else if (currentFilter === 'completed') {
+        titleEl.textContent = 'No completed bookings';
+        subtitleEl.textContent = 'None of your bookings have reached the completed stage yet.';
+      } else if (currentFilter === 'cancelled') {
+        titleEl.textContent = 'No cancelled bookings';
+        subtitleEl.textContent = 'You have no cancelled or rejected bookings.';
+      } else {
+        titleEl.textContent = 'No bookings found';
+        subtitleEl.textContent = 'You have not submitted any booking requests yet.';
+      }
+    } else {
+      emptyContainer.classList.add('hidden');
+      listContainer.classList.remove('hidden');
+
+      listContainer.innerHTML = filtered.map(b => {
+        const itemText = b.items.length === 1 ? '1 design' : `${b.items.length} designs`;
+        
+        // Render custom status badge based on booking status
+        const badgeColorClass = getStatusBadgeClass(b.status);
+        const icon = SG.booking.statusIcon(b.status);
+        const formattedStatus = b.status.replace('_', ' ').toUpperCase();
+
+        return `
+          <div class="booking-card-history">
+            <div class="booking-card-header">
+              <div>
+                <a href="booking-detail.html?id=${b.id}" class="booking-ref-gold">${b.ref}</a>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">
+                  Submitted on: ${SG.time.formatFull(b.submittedAt)}
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+                <span class="badge ${badgeColorClass}" style="display:inline-flex;align-items:center;gap:4px;">
+                  <span>${icon}</span>
+                  <span>${formattedStatus}</span>
+                </span>
+                <span style="font-size:13px;font-weight:600;color:var(--text-secondary);">${itemText}</span>
+              </div>
+            </div>
+
+            <!-- Mini Pipeline Stepper -->
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <span style="font-size:11px;color:var(--text-muted);font-weight:600;">Booking Progress</span>
+              ${renderMiniStepper(b.status)}
+            </div>
+
+            ${b.adminNote ? `
+              <div class="admin-note-preview">
+                <strong>Message from Team:</strong> "${b.adminNote}"
+              </div>
+            ` : ''}
+
+            <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+              <a href="booking-detail.html?id=${b.id}" class="btn btn-secondary btn-sm">View Details →</a>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function getStatusBadgeClass(status) {
+    const map = {
+      submitted: 'badge-blue', // Use standard or secondary blue for submitted
+      under_review: 'badge-gold', // Yellow
+      confirmed: 'badge-blue', // Royal Blue
+      in_production: 'badge-purple', // Purple
+      despatched: 'badge-teal', // Teal
+      completed: 'badge-green', // Green
+      cancelled: 'badge-red', // Red
+      rejected: 'badge-red' // Red
+    };
+    return map[status] || 'badge-blue';
+  }
+
+  function renderMiniStepper(status) {
+    const steps = ['submitted', 'under_review', 'confirmed', 'in_production', 'despatched', 'completed'];
+    const currentIndex = steps.indexOf(status);
+    
+    if (currentIndex === -1) {
+      return `<div style="font-size:11px;color:var(--red-500);font-weight:600;margin-top:4px;">Booking ${status.toUpperCase()}</div>`;
+    }
+    
+    let html = '<div class="mini-stepper" style="display:flex;align-items:center;gap:4px;margin-top:4px;width:100%;max-width:240px;">';
+    for (let i = 0; i < steps.length; i++) {
+      const isStepActive = i <= currentIndex;
+      const isStepCurrent = i === currentIndex;
+      html += `<div class="mini-step" style="width:8px;height:8px;border-radius:50%;background:${isStepCurrent ? 'var(--gold-400)' : isStepActive ? 'var(--gold-600)' : 'var(--border-subtle)'};${isStepCurrent ? 'box-shadow:0 0 6px var(--gold-400)' : ''}" title="${steps[i].replace('_', ' ')}"></div>`;
+      
+      if (i < steps.length - 1) {
+        const isLineActive = i < currentIndex;
+        html += `<div class="mini-step-line" style="flex:1;height:2px;background:${isLineActive ? 'var(--gold-600)' : 'var(--border-subtle)'};"></div>`;
+      }
+    }
+    html += '</div>';
+    return html;
+  }
+
+  function updateBadges() {
+    const cartCount = SG.booking.cart.count(session.id);
+    const wishCount = SG.booking.wishlist.get(session.id).length;
+    const cartBadge = document.getElementById('cart-badge');
+    const wishBadge = document.getElementById('wishlist-badge');
+    if (cartBadge) { cartBadge.textContent = cartCount; cartBadge.classList.toggle('hidden', cartCount === 0); }
+    if (wishBadge) { wishBadge.textContent = wishCount; wishBadge.classList.toggle('hidden', wishCount === 0); }
+  }
+</script>
+</body>
+</html>
+

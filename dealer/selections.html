@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Selections — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <style>
+    body {
+      background: #FFFFFF !important;
+    }
+    .selections-layout {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: var(--space-6) 0;
+    }
+    .selections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: var(--space-6);
+      margin-bottom: var(--space-10);
+    }
+    .selection-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .selection-card:hover {
+      border-color: var(--gold-500);
+      box-shadow: var(--shadow-md);
+    }
+    .selection-img-wrap {
+      height: 200px;
+      background: #FAF9F6;
+      overflow: hidden;
+      position: relative;
+    }
+    .selection-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .selection-info {
+      padding: var(--space-4);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .selection-code {
+      font-size: 11px;
+      font-family: monospace;
+      color: var(--gold-600);
+      font-weight: 600;
+    }
+    .selection-name {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-top: 4px;
+    }
+    .selection-meta {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+    .remove-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(26,26,26,0.8);
+      border: none;
+      color: #FFFFFF;
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .remove-btn:hover {
+      background: var(--red-500);
+    }
+    
+    .share-box {
+      border: 1px solid var(--border-subtle);
+      border-radius: 8px;
+      padding: var(--space-6);
+      background: #FAF9F6;
+      margin-top: var(--space-10);
+    }
+    .preview-msg {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      padding: var(--space-4);
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+      color: var(--text-primary);
+      margin: var(--space-4) 0;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-title-rem">❤️ My Saved Selections</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="selections-layout">
+        
+        <div class="page-header page-header-rem">
+          <div>
+            <h1 class="page-title">My Selections</h1>
+            <p class="page-subtitle">Designs saved for WhatsApp order inquiries</p>
+          </div>
+          <div class="flex-gap-12">
+            <button class="btn btn-secondary btn-sm clear-selections-btn" onclick="clearSelections()">🗑️ Clear All</button>
+          </div>
+        </div>
+
+        <div id="selections-count" class="selections-count-rem">
+          Loading saved selections...
+        </div>
+
+        <!-- Selections Grid -->
+        <div class="selections-grid" id="selections-grid">
+          <!-- Filled by JS -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="selections-empty" class="empty-state hidden">
+          <div class="empty-state-icon">⭐</div>
+          <h3>No selections saved</h3>
+          <p>Browse products in the catalog and save them to list them here.</p>
+          <a href="search.html" class="btn btn-primary btn-mt-5">Browse Catalog</a>
+        </div>
+
+        <!-- WhatsApp sharing section -->
+        <div class="share-box hidden" id="share-box">
+          <h3 class="share-box-title">💬 Share Selections via WhatsApp</h3>
+          <p class="share-box-desc">Review the pre-formatted B2B message below. Sharing does not clear your saved selections list.</p>
+          
+          <div class="preview-msg" id="msg-preview">
+            <!-- Compiled message preview -->
+          </div>
+
+          <div class="flex-gap-12-mt-5">
+            <button class="btn btn-primary whatsapp-share-btn" onclick="shareWhatsApp()">
+              💬 Open WhatsApp
+            </button>
+            <button class="btn btn-secondary" onclick="copyMessage()">
+              📋 Copy Message
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let items = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+    session = SG.auth.current();
+
+    // Set avatar
+    const initials = session.avatar || SG.str.initials(session.name);
+    document.getElementById('topbar-avatar-dealer').textContent = initials;
+
+    loadSelections();
+  });
+
+  function loadSelections() {
+    const rawList = SG.booking.wishlist.get(session.id) || [];
+    const products = SG.dal.safeGet('products') || [];
+    items = [];
+
+    rawList.forEach(item => {
+      const prod = products.find(p => p.id === item.productId);
+      if (prod) {
+        items.push({
+          ...item,
+          product: prod
+        });
+      }
+    });
+
+    renderSelections();
+    compileMessage();
+  }
+
+  function renderSelections() {
+    const grid = document.getElementById('selections-grid');
+    const emptyState = document.getElementById('selections-empty');
+    const countText = document.getElementById('selections-count');
+    const shareBox = document.getElementById('share-box');
+
+    countText.textContent = `Showing ${items.length} design${items.length !== 1 ? 's' : ''}`;
+
+    if (items.length === 0) {
+      grid.innerHTML = '';
+      grid.classList.add('hidden');
+      emptyState.classList.remove('hidden');
+      shareBox.classList.add('hidden');
+    } else {
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+      shareBox.classList.remove('hidden');
+
+      grid.innerHTML = items.map(item => {
+        const p = item.product;
+        const imgSrc = p.images?.[0] || 'https://placehold.co/400x400/1a1a2a/d4af37?text=??';
+        return `
+          <div class="selection-card">
+            <button class="remove-btn" onclick="removeSelection('${p.id}')">?</button>
+            <div class="selection-img-wrap" onclick="window.location.href='product-detail.html?id=${p.id}'" style="cursor:pointer;">
+              <img src="${imgSrc}" alt="${sanitizeHTML(p.name)}">
+            </div>
+            <div class="selection-info">
+              <div class="selection-code">${sanitizeHTML(p.code)}</div>
+              <div class="selection-name" onclick="window.location.href='product-detail.html?id=${p.id}'" style="cursor:pointer;">${sanitizeHTML(p.name)}</div>
+              <div class="selection-meta">${sanitizeHTML(p.material)} · ${sanitizeHTML(p.weight)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function removeSelection(productId) {
+    SG.booking.wishlist.remove(session.id, productId);
+    loadSelections();
+    SG.toast.info('Item Removed', 'Design removed from selections.');
+  }
+
+  function clearSelections() {
+    SG.modal.confirm('Clear Selections', 'Are you sure you want to remove all selections?', () => {
+      items.forEach(item => {
+        SG.booking.wishlist.remove(session.id, item.product.id);
+      });
+      loadSelections();
+      SG.toast.info('Selections Cleared', 'All selections removed.');
+    }, true);
+  }
+
+  function getCompiledText() {
+    const dealerName = session.name;
+    const bizName = session.businessName || 'Fine Jewels Dealer';
+    let text = `Dear Koshda Jewellery House,\n\nI am ${dealerName} from *${bizName}*. I am interested in reviewing availability and ordering quotes for the following designs from the catalog:\n\n`;
+    
+    items.forEach((item, index) => {
+      text += `${index + 1}. *${item.product.name}* (Code: ${item.product.code})\n`;
+    });
+
+    text += `\nPlease let me know pricing estimates based on today's gold index.\n\nThank you,\nShared via Koshda B2B Catalogue`;
+    return text;
+  }
+
+  function compileMessage() {
+    if (items.length === 0) return;
+    document.getElementById('msg-preview').textContent = getCompiledText();
+  }
+
+  function shareWhatsApp() {
+    const text = getCompiledText();
+    const settings = SG.store.get('platform_settings') || SG.store.get('settings') || {};
+    const phone = settings.whatsappNumber || '919876543210';
+    
+    // Format URL encoding
+    const encoded = encodeURIComponent(text);
+    const url = `https://wa.me/${phone}?text=${encoded}`;
+    
+    window.open(url, '_blank');
+    SG.audit('SHARE_WHATSAPP', session.id, `Shared ${items.length} items to ${phone}`);
+  }
+
+  function copyMessage() {
+    const text = getCompiledText();
+    navigator.clipboard.writeText(text).then(() => {
+      SG.toast.success('Copied!', 'Message text copied to clipboard.');
+    }).catch(err => {
+      SG.toast.error('Copy Failed', 'Failed to copy text.');
+    });
+  }
+</script>
+</body>
+</html>
+

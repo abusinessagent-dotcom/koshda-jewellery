@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Token Requests — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body class="token-requests-page">
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="token-logs-title">🎫 Access Token Logs</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="token-req-layout">
+        
+        <div class="page-header mb-6">
+          <div>
+            <h1 class="page-title">Token Requests</h1>
+            <p class="page-subtitle">Manage time-limited access tokens for protected collections and designs</p>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="openRequestModal()">🎫 Request New Token</button>
+        </div>
+
+        <!-- Token Requests Table -->
+        <div class="table-card mt-6">
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Type & Scope</th>
+                  <th>Reason</th>
+                  <th>Submitted At</th>
+                  <th>Status</th>
+                  <th>Duration / Expires</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="token-requests-tbody">
+                <!-- JS filled -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal for Requesting a Token -->
+<div class="modal-overlay" id="request-token-modal">
+  <div class="modal max-w-480">
+    <div class="modal-header">
+      <h3 class="modal-title">🎫 Request Content Access Token</h3>
+      <button class="modal-close" onclick="closeRequestModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="token-request-form" class="flex-col-gap-4">
+        <div class="form-group">
+          <label class="form-label label-bold-margin">Select Protected Categories <span class="required">*</span></label>
+          <div class="grid-checkbox-categories" id="category-checkboxes-container">
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="RING" class="matrix-checkbox"> Rings
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="NECK" class="matrix-checkbox"> Necklaces
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="EARR" class="matrix-checkbox"> Earrings
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="BANG" class="matrix-checkbox"> Bangles
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="BRAC" class="matrix-checkbox"> Bracelets
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="PEND" class="matrix-checkbox"> Pendants
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="ANKL" class="matrix-checkbox"> Anklets
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="NOSE" class="matrix-checkbox"> Nose Rings
+            </label>
+            <label class="checkbox-label-style">
+              <input type="checkbox" name="req-categories" value="MAAG" class="matrix-checkbox"> Maang Tikkas
+            </label>
+            <label class="checkbox-label-unlimited">
+              <input type="checkbox" name="req-categories" value="UNLIMITED" id="unlimited-cat-cb" class="matrix-checkbox" onchange="toggleUnlimitedCategories(this.checked)"> <strong>🎫 Unlimited Category Access</strong>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Reason for Request <span class="required">*</span></label>
+          <textarea class="form-textarea" id="req-reason" placeholder="Explain your business interest or customer request..." required></textarea>
+        </div>
+
+        <div class="modal-footer-actions-row">
+          <button type="button" class="btn btn-secondary" onclick="closeRequestModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  let session = null;
+  let requests = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    if (!SG.auth.requireDealer()) return;
+    session = SG.auth.current();
+
+    // Set avatar
+    const initials = session.avatar || SG.str.initials(session.name);
+    document.getElementById('topbar-avatar-dealer').textContent = initials;
+
+    loadRequests();
+    
+    // Bind form submit
+    document.getElementById('token-request-form').addEventListener('submit', submitTokenRequest);
+  });
+
+  function loadRequests() {
+    const allReqs = SG.store.get('token_requests') || [];
+    requests = allReqs.filter(r => r.userId === session.id);
+    
+    // Check expiry on active tokens and automatically expire them
+    let updated = false;
+    const now = new Date();
+    requests.forEach(r => {
+      if (r.status === 'approved' && r.expiresAt && new Date(r.expiresAt) < now) {
+        r.status = 'expired';
+        updated = true;
+      }
+    });
+    
+    if (updated) {
+      SG.store.set('token_requests', allReqs);
+    }
+    
+    renderRequests();
+  }
+
+  function renderRequests() {
+    const tbody = document.getElementById('token-requests-tbody');
+    
+    if (requests.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7" class="table-empty-row">
+            No access token requests submitted yet.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = requests.map(r => {
+      let badgeCls = 'badge-yellow';
+      if (r.status === 'approved') badgeCls = 'badge-green';
+      if (r.status === 'rejected') badgeCls = 'badge-red';
+      if (r.status === 'expired') badgeCls = 'badge-gray';
+
+      let timeDisplay = '—';
+      if (r.status === 'approved') {
+        const leftMs = new Date(r.expiresAt) - new Date();
+        if (leftMs > 0) {
+          const hrs = Math.floor(leftMs / 3600000);
+          const mins = Math.floor((leftMs % 3600000) / 60000);
+          timeDisplay = `Expires in ${hrs}h ${mins}m`;
+        } else {
+          timeDisplay = 'Expired';
+        }
+      } else if (r.status === 'expired') {
+        timeDisplay = 'Expired ' + SG.time.format(r.expiresAt);
+      } else if (r.status === 'rejected') {
+        timeDisplay = r.rejectReason || 'No reason provided';
+      }
+
+      let actionHtml = '—';
+      if (r.status === 'expired' || r.status === 'rejected') {
+        actionHtml = `<button class="btn btn-sm btn-secondary" onclick="requestAgain('${r.type}', '${r.targetId}')">Request Again</button>`;
+      }
+
+      const scopeName = `Categories: ${r.targetName}`;
+
+      return `
+        <tr>
+          <td><span class="code">${r.id}</span></td>
+          <td><strong>${scopeName}</strong></td>
+          <td class="table-cell-ellipsis" title="${r.reason}">${r.reason}</td>
+          <td>${SG.time.formatFull(r.submittedAt)}</td>
+          <td><span class="badge ${badgeCls}">${SG.str.capitalize(r.status)}</span></td>
+          <td><span class="text-secondary-sm">${timeDisplay}</span></td>
+          <td>${actionHtml}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function openRequestModal() {
+    SG.modal.open('request-token-modal');
+  }
+
+  function closeRequestModal() {
+    SG.modal.close('request-token-modal');
+  }
+
+  function toggleUnlimitedCategories(checked) {
+    const checkboxes = document.querySelectorAll('input[name="req-categories"]');
+    checkboxes.forEach(cb => {
+      if (cb.id !== 'unlimited-cat-cb') {
+        cb.checked = checked;
+        cb.disabled = checked;
+      }
+    });
+  }
+
+  function submitTokenRequest(e) {
+    e.preventDefault();
+    const reason = document.getElementById('req-reason').value.trim();
+    
+    // Get all checked categories
+    const checkedBoxes = Array.from(document.querySelectorAll('input[name="req-categories"]:checked'));
+    if (checkedBoxes.length === 0) {
+      SG.toast.error('Selection Required', 'Please select at least one category.');
+      return;
+    }
+    
+    const isUnlimited = document.getElementById('unlimited-cat-cb').checked;
+    
+    let targetName = '';
+    if (isUnlimited) {
+      targetName = 'Unlimited Access';
+    } else {
+      const catMap = {
+        'RING': 'Rings',
+        'NECK': 'Necklaces',
+        'EARR': 'Earrings',
+        'BANG': 'Bangles',
+        'BRAC': 'Bracelets',
+        'PEND': 'Pendants',
+        'ANKL': 'Anklets',
+        'NOSE': 'Nose Rings',
+        'MAAG': 'Maang Tikkas'
+      };
+      targetName = checkedBoxes.map(cb => catMap[cb.value] || cb.value).join(', ');
+    }
+    
+    const targetId = isUnlimited ? 'UNLIMITED' : checkedBoxes.map(cb => cb.value).join(',');
+
+    const allReqs = SG.store.get('token_requests') || [];
+    const newReq = {
+      id: 'req-' + SG.uid.short(),
+      userId: session.id,
+      userName: session.name,
+      businessName: session.businessName,
+      type: 'category',
+      targetId,
+      targetName,
+      reason,
+      status: 'pending',
+      submittedAt: SG.time.now(),
+      approvedAt: null,
+      expiresAt: null,
+      rejectReason: null
+    };
+
+    allReqs.unshift(newReq);
+    SG.store.set('token_requests', allReqs);
+    
+    // Add admin notifications
+    const users = SG.dal.safeGet('users') || [];
+    const admins = users.filter(u => u.role === 'dealer_manager' || u.role === 'super_admin');
+    admins.forEach(a => {
+      SG.notify(a.id, 'token_request', 'New Token Request', `Dealer ${session.name} requested access to ${targetName}.`, `admin/token-requests.html`);
+    });
+
+    SG.notify(session.id, 'token_submitted', 'Token Request Submitted', `Your request for category access to ${targetName} has been sent for review.`, `dealer/token-requests.html`);
+    SG.audit('TOKEN_REQUEST_SUBMITTED', newReq.id, `Scope: Category - ${targetName}`);
+
+    closeRequestModal();
+    loadRequests();
+    
+    // Reset form
+    document.getElementById('token-request-form').reset();
+    toggleUnlimitedCategories(false);
+    SG.toast.success('Submitted', 'Token request submitted successfully.');
+  }
+
+  function requestAgain(type, scope) {
+    openRequestModal();
+    toggleUnlimitedCategories(false);
+    document.getElementById('token-request-form').reset();
+    
+    if (scope === 'UNLIMITED') {
+      const cb = document.getElementById('unlimited-cat-cb');
+      if (cb) {
+        cb.checked = true;
+        toggleUnlimitedCategories(true);
+      }
+    } else {
+      const codes = scope.split(',');
+      codes.forEach(code => {
+        const checkbox = document.querySelector(`input[name="req-categories"][value="${code}"]`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+  }
+</script>
+</body>
+</html>
+

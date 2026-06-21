@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Queue — Admin | Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Booking Queue</div>
+        <div class="topbar-breadcrumb"><span>Admin</span><span>›</span><span class="current">Bookings</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Booking Queue</h1>
+          <p class="page-subtitle">Process and manage dealer booking requests</p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-grid stats-grid-cols-6" id="bk-stats"></div>
+
+      <!-- Filters -->
+      <div class="flex gap-3 mb-5 flex-wrap">
+        <input type="text" class="form-input min-w-220" id="search-bk" placeholder="Search booking ref or dealer…" onInput="renderBookings()">
+        <select class="form-select w-auto" id="filter-status" title="Filter by booking status" onchange="renderBookings()">
+          <option value="">All Statuses</option>
+          <option value="submitted">Submitted</option>
+          <option value="under_review">Under Review</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in_production">In Production</option>
+          <option value="despatched">Despatched</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+        <select class="form-select w-auto" id="filter-sort" title="Sort order" onchange="renderBookings()">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('filter-status').value='submitted';renderBookings()">
+          🆕 New Only
+        </button>
+        <div class="flex-1"></div>
+        <div id="bk-count" class="count-label-muted"></div>
+      </div>
+
+      <!-- Table -->
+      <div class="table-card">
+        <div class="table-container table-container-flat">
+          <div class="table-scroll-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Booking Ref</th>
+                  <th>Dealer</th>
+                  <th>Items</th>
+                  <th>Status</th>
+                  <th>Submitted</th>
+                  <th>Exports</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="bookings-tbody">
+                <tr><td colspan="7" class="table-loading-cell-lg">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div id="pagination-wrap" class="mt-5"></div>
+    </div>
+  </main>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal-overlay" id="status-modal">
+  <div class="modal modal-w-500">
+    <div class="modal-header">
+      <h3 class="modal-title">Update Booking Status</h3>
+      <button class="modal-close">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Booking Ref</label>
+        <input class="form-input input-bg-secondary" id="modal-ref" readonly title="Booking Reference" placeholder="Booking Ref">
+      </div>
+      <div class="form-group">
+        <label class="form-label">New Status <span class="required">*</span></label>
+        <select class="form-select" id="modal-status" title="Select new booking status">
+          <option value="under_review">Under Review</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="in_production">In Production</option>
+          <option value="despatched">Despatched</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="rejected">Rejected</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Note to Dealer</label>
+        <textarea class="form-textarea textarea-h-80" id="modal-note" placeholder="Add a message for the dealer (optional)"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('status-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveStatus()">Update Status</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/booking.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script>
+let adminSession, selectedBookingId, currentPage = 1;
+const PER_PAGE = 15;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireAdmin()) return;
+  adminSession = SG.auth.current();
+  const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+  { const el = document.getElementById('admin-av'); if (el) el.textContent = initials; }
+  { const el = document.getElementById('admin-nm'); if (el) el.textContent = adminSession.name; }
+  { const el = document.getElementById('admin-rl'); if (el) el.textContent = adminSession.role.replace('_', ' '); }
+  { const el = document.getElementById('topbar-av'); if (el) el.textContent = initials; }
+
+  renderStats();
+  renderBookings();
+  SG.liveUpdate.start();
+  SG.events.on('live_update', () => { renderStats(); renderBookings(); });
+});
+
+function renderStats() {
+  const bookings = SG.dal.safeGet('bookings') || [];
+  const statuses = ['submitted','under_review','confirmed','in_production','despatched','completed'];
+  const labels   = ['New','In Review','Confirmed','Production','Despatched','Completed'];
+  const colors   = ['blue','yellow','green','orange','orange','gold'];
+  document.getElementById('bk-stats').innerHTML = statuses.map((s, i) => {
+    const count = bookings.filter(b => b.status === s).length;
+    return `<div class="stat-card-admin cursor-pointer" onclick="document.getElementById('filter-status').value='${s}';renderBookings()">
+      <div class="stat-num" style="color:var(--${colors[i]}-500,var(--gold-500))">${count}</div>
+      <div class="stat-lbl">${labels[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBookings() {
+  const search = document.getElementById('search-bk')?.value.toLowerCase() || '';
+  const status = document.getElementById('filter-status')?.value || '';
+  const sortBy = document.getElementById('filter-sort')?.value || 'newest';
+  const users  = SG.dal.safeGet('users') || [];
+
+  let all = SG.dal.safeGet('bookings') || [];
+  if (status) all = all.filter(b => b.status === status);
+  if (search) all = all.filter(b => b.ref.toLowerCase().includes(search) || (b.dealerName || '').toLowerCase().includes(search));
+  all = [...all].sort((a,b) => sortBy === 'newest' ? new Date(b.submittedAt) - new Date(a.submittedAt) : new Date(a.submittedAt) - new Date(b.submittedAt));
+
+  const paginated = SG.paginate(all, currentPage, PER_PAGE);
+  document.getElementById('bk-count').textContent = `${all.length} booking${all.length !== 1 ? 's' : ''}`;
+
+  const exported = SG.store.get('sheets_exported') || [];
+  const tbody    = document.getElementById('bookings-tbody');
+
+  // Update nav badge
+  const newCount = (SG.dal.safeGet('bookings') || []).filter(b => b.status === 'submitted').length;
+  document.querySelectorAll('[data-count="new-bookings"]').forEach(el => { el.textContent = newCount; el.style.display = newCount > 0 ? '' : 'none'; });
+
+  if (!paginated.data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" class="table-loading-cell-lg">No bookings match your filter</td></tr>';
+    document.getElementById('pagination-wrap').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = paginated.data.map(b => {
+    const isExp = exported.includes(b.id);
+    return `
+    <tr>
+      <td>
+        <div class="code cursor-pointer" onclick="window.location.href='booking-detail.html?id=${b.id}'">${b.ref}</div>
+        <div class="time-label">${SG.time.relative(b.submittedAt)}</div>
+      </td>
+      <td>
+        <div class="dealer-name-title">${b.dealerName}</div>
+      </td>
+      <td>
+        <div class="items-count-lbl">${b.items.length} item${b.items.length !== 1 ? 's' : ''}</div>
+        <div class="items-list-lbl">${b.items.map(i => i.name).join(', ').slice(0,50)}${b.items.map(i=>i.name).join(', ').length > 50 ? '…' : ''}</div>
+      </td>
+      <td>${SG.statusBadge(b.status)}</td>
+      <td>${SG.time.format(b.submittedAt)}</td>
+      <td>
+        ${isExp ? '<span class="badge badge-green" title="Exported to Google Sheets">📤 Exported</span>' : '<span class="badge badge-gray">—</span>'}
+        ${b.shippingRef ? `<div class="shipping-ref-lbl mt-1">📦 ${b.shippingRef}</div>` : ''}
+      </td>
+      <td>
+        <div class="flex gap-2">
+          <button class="btn btn-sm btn-primary" onclick="openStatusModal('${b.id}')">Update</button>
+          <button class="btn btn-sm btn-ghost" onclick="window.location.href='booking-detail.html?id=${b.id}'">View ?</button>
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+
+  SG.renderPagination('pagination-wrap', currentPage, paginated.pages, (page) => {
+    currentPage = page;
+    renderBookings();
+  });
+}
+
+function openStatusModal(bookingId) {
+  selectedBookingId = bookingId;
+  const bookings = SG.dal.safeGet('bookings') || [];
+  const booking  = bookings.find(b => b.id === bookingId);
+  if (!booking) return;
+  document.getElementById('modal-ref').value = booking.ref;
+  document.getElementById('modal-status').value = booking.status;
+  document.getElementById('modal-note').value = '';
+  SG.modal.open('status-modal');
+}
+
+function saveStatus() {
+  const newStatus = document.getElementById('modal-status').value;
+  const note      = document.getElementById('modal-note').value.trim();
+  if (!newStatus) { SG.toast.error('Required', 'Please select a status.'); return; }
+
+  const success = SG.booking.updateStatus(selectedBookingId, newStatus, note, adminSession.id);
+  if (success) {
+    SG.modal.close('status-modal');
+    SG.toast.success('Status Updated', `Booking moved to: ${newStatus.replace('_', ' ')}`);
+    renderStats();
+    renderBookings();
+  }
+}
+</script>
+</body>
+</html>
+

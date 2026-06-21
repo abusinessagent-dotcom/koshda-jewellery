@@ -1,0 +1,20 @@
+[
+  {
+    "id": "adm-SUPERADMIN",
+    "name": "Super Administrator",
+    "email": "admin@koshda.in",
+    "password": "$2b$10$Z8X1vlhyl0UDylF7rA0HHOmWA8JdBWjV8azV7XglBA20FHpC.Oxce",
+    "role": "super_admin",
+    "status": "approved",
+    "createdAt": "2026-06-19T15:26:00.000Z"
+  },
+  {
+    "id": "adm-RAMNIWAS",
+    "name": "Ramniwas Admin",
+    "email": "ramniwasd208@gmail.com",
+    "password": "$2b$10$UZbhQUOuVfd5RYtDirOxJeP3PnQsasHCod7xb1IcRwYGkjJyitZ2O",
+    "role": "super_admin",
+    "status": "approved",
+    "createdAt": "2026-06-19T15:26:00.000Z"
+  }
+]

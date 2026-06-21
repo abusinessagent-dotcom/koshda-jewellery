@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bulk Product Upload — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+  <style>
+    .review-table-container {
+      margin-top: 20px;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      background: var(--bg-card);
+    }
+    .review-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .review-table th, .review-table td {
+      padding: 12px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: top;
+    }
+    .review-table th {
+      background: rgba(0,0,0,0.15);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .review-table tr:hover {
+      background: rgba(255,255,255,0.01);
+    }
+    .review-thumb {
+      width: 50px;
+      height: 50px;
+      border-radius: 4px;
+      object-fit: cover;
+      border: 1px solid var(--border-subtle);
+    }
+    .review-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .review-stat-item {
+      padding: 16px;
+      border-radius: var(--radius-md);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+    .review-stat-num {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--gold-400);
+      margin-bottom: 4px;
+    }
+    .review-stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .row-error-list {
+      margin: 4px 0 0 0;
+      padding-left: 16px;
+      color: var(--red-400);
+      font-size: 11px;
+      list-style-type: disc;
+    }
+  </style>
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Bulk Upload System</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Catalogue</span><span>›</span><span class="current">Bulk Upload</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+          <!-- Content Area -->
+    <div class="admin-content" style="display: flex; justify-content: center; align-items: flex-start; padding: var(--space-6) var(--space-4);">
+      <div class="card" style="width: 100%; max-width: 1100px; padding: var(--space-6); background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); box-shadow: 0 10px 30px rgba(0,0,0,0.25);">
+        
+        <div style="text-align: center; margin-bottom: var(--space-6);">
+          <h1 class="page-title" style="font-size: 28px; color: var(--gold-400); margin-bottom: 8px;">Upload Your Products</h1>
+          <p class="page-subtitle" style="font-size: 14px; color: var(--text-muted);">Upload an images folder, fill in details in the spreadsheet, and click upload.</p>
+        </div>
+
+        <!-- Folder Selection Area -->
+        <div class="folder-upload-area mb-5" id="folder-drop-zone" style="position: relative; border: 2px dashed var(--gold-600); border-radius: var(--radius-md); padding: var(--space-6); text-align: center; background: rgba(212,175,55,0.02); transition: all 0.3s ease; cursor: pointer; margin-bottom: var(--space-5);">
+          <input type="file" id="folder-input" webkitdirectory directory multiple class="hidden" style="display: none;" onchange="handleFolderSelect(event)">
+          
+          <div id="upload-prompt">
+            <div style="font-size: 40px; margin-bottom: 12px;">📁</div>
+            <button type="button" class="btn btn-primary btn-lg" onclick="document.getElementById('folder-input').click()" style="padding: 12px 28px; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Choose Folder</button>
+            <p style="font-size: 12px; color: var(--text-muted); margin-top: 12px;">Select the local folder containing product images to start</p>
+          </div>
+
+          <div id="upload-success" style="display: none; flex-direction: column; align-items: center; justify-content: center;">
+            <div style="font-size: 32px; color: var(--green-400); margin-bottom: 8px;">✔</div>
+            <div id="detected-folder-name" style="font-weight: 700; font-size: 16px; color: var(--text-primary); margin-bottom: 4px;">Folder Selected</div>
+            <div id="detected-files-count" style="font-size: 13px; color: var(--gold-400); font-weight: 600;">0 files detected</div>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('folder-input').click()" style="margin-top: 12px; padding: 6px 14px; font-size: 11px;">Change Folder</button>
+          </div>
+        </div>
+
+        <!-- Spreadsheet UI Wrapper (Initially Hidden until folder selected) -->
+        <div id="spreadsheet-section" style="display: none; flex-direction: column; gap: var(--space-5);">
+          
+          <!-- Bulk Text Paste Section -->
+          <div class="paste-section" style="background: var(--bg-secondary); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: var(--space-4);">
+            <div style="font-weight: 600; font-size: 13px; color: var(--text-primary); margin-bottom: var(--space-2); display: flex; justify-content: space-between; align-items: center;">
+              <span>📝 Bulk Paste Data (Format: Title | Category | Weight | Description | Type)</span>
+              <span style="font-size: 11px; font-weight: normal; color: var(--text-muted);">Separate rows by newlines</span>
+            </div>
+            <div style="display: flex; gap: 12px;">
+              <textarea id="paste-textarea" placeholder="Example:&#10;Gold Ring | rings | 10g | Premium traditional ring | Bridal&#10;Diamond Choker | necklaces | 25g | Luxury heritage choker | Heritage" style="flex: 1; height: 80px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 12px; font-family: monospace; font-size: 12px; resize: none;"></textarea>
+              <button type="button" class="btn btn-secondary" onclick="handleBulkPaste()" style="height: auto; padding: 0 20px; font-size: 13px; font-weight: 600;">Fill Grid</button>
+            </div>
+          </div>
+
+          <!-- Spreadsheet Grid -->
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <div style="font-weight: 600; font-size: 14px; color: var(--gold-400);">Spreadsheet Editor</div>
+            <div class="sheet-container" style="overflow-x: auto; max-width: 100%; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); background: #f8f9fa;">
+              <table class="sheet-table" style="width: 100%; border-collapse: collapse; font-family: 'Inter', sans-serif; font-size: 13px; background: white;">
+                <thead>
+                  <tr style="background: #f1f3f4; border-bottom: 2px solid #dcdcdc;">
+                    <th style="width: 60px; text-align: center; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">A</th>
+                    <th style="min-width: 180px; text-align: left; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">B</th>
+                    <th style="min-width: 160px; text-align: left; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">C</th>
+                    <th style="min-width: 100px; text-align: left; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">D</th>
+                    <th style="min-width: 250px; text-align: left; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">E</th>
+                    <th style="min-width: 120px; text-align: left; border: 1px solid #dcdcdc; padding: 8px; color: #3c4043; font-weight: 600;">F</th>
+                  </tr>
+                  <tr style="background: #f8f9fa; border-bottom: 1px solid #dcdcdc; font-size: 11px;">
+                    <th style="border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Image ID</th>
+                    <th style="text-align: left; border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Title *</th>
+                    <th style="text-align: left; border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Category *</th>
+                    <th style="text-align: left; border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Weight *</th>
+                    <th style="text-align: left; border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Description *</th>
+                    <th style="text-align: left; border: 1px solid #dcdcdc; padding: 6px; color: #5f6368; font-weight: 600;">Type (Optional)</th>
+                  </tr>
+                </thead>
+                <tbody id="sheet-body">
+                  <!-- Generated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="upload-center-wrapper">
+            <button type="button" class="upload-center-btn" onclick="handleUploadSubmit()">UPLOAD PRODUCTS</button>
+          </div>
+
+        </div>
+
+        <!-- Progress Overlay (Initially Hidden) -->
+        <div id="progress-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+          <div style="width: 80px; height: 80px; border: 5px solid var(--border-subtle); border-top-color: var(--gold-400); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px;"></div>
+          <div id="progress-text" style="font-size: 18px; font-weight: 600; color: var(--gold-400); text-align: center; margin-bottom: 8px;">Processing Folder...</div>
+          <div id="progress-subtext" style="font-size: 13px; color: var(--text-muted); text-align: center;">Converting images to WebP format</div>
+          <style>
+            @keyframes spin {
+              to { transform: rotate(360deg); }
+            }
+            .cell-error {
+              background-color: rgba(234, 67, 53, 0.1) !important;
+              outline: 2px solid #ea4335 !important;
+              outline-offset: -2px;
+            }
+            .sheet-input {
+              width: 100%;
+              height: 100%;
+              border: none;
+              padding: 8px 12px;
+              font-size: 13px;
+              background: transparent;
+              color: #202124;
+              box-sizing: border-box;
+            }
+            .sheet-input:focus {
+              outline: 2px solid var(--gold-500);
+              background: white;
+              z-index: 10;
+            }
+            .sheet-select {
+              width: 100%;
+              height: 100%;
+              border: none;
+              background: transparent;
+              padding: 0 8px;
+              font-size: 13px;
+              color: #202124;
+              outline: none;
+              box-sizing: border-box;
+            }
+            .sheet-select:focus {
+              outline: 2px solid var(--gold-500);
+              background: white;
+            }
+          </style>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+let selectedFiles = [];
+let folderName = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'catalogue_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Drag and drop listeners
+  const dropZone = document.getElementById('folder-drop-zone');
+  if (dropZone) {
+    dropZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--gold-400)';
+      dropZone.style.background = 'rgba(212,175,55,0.08)';
+    });
+    dropZone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--gold-600)';
+      dropZone.style.background = 'rgba(212,175,55,0.02)';
+    });
+    dropZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropZone.style.borderColor = 'var(--gold-600)';
+      dropZone.style.background = 'rgba(212,175,55,0.02)';
+      
+      const files = Array.from(e.dataTransfer.files);
+      if (files.length > 0) {
+        processFiles(files);
+      }
+    });
+  }
+});
+
+function processFiles(files) {
+  const imageFiles = files.filter(file => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    return ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'tiff'].includes(ext);
+  });
+
+  imageFiles.sort((a, b) => a.name.localeCompare(b.name));
+
+  if (imageFiles.length === 0) {
+    SG.toast.error('No Images Found', 'Please drop or select a folder containing supported image files (PNG, JPG, JPEG, WebP, etc.).');
+    return;
+  }
+
+  let detectedFolder = 'Selected Folder';
+  const firstPath = imageFiles[0].webkitRelativePath || imageFiles[0].name;
+  if (firstPath.includes('/')) {
+    detectedFolder = firstPath.split('/')[0];
+  } else if (imageFiles[0].name !== firstPath) {
+    detectedFolder = 'Dropped Folder';
+  }
+
+  selectedFiles = imageFiles;
+  folderName = detectedFolder;
+
+  document.getElementById('detected-folder-name').textContent = folderName;
+  document.getElementById('detected-files-count').textContent = `✔ ${selectedFiles.length} files detected`;
+  
+  document.getElementById('upload-prompt').style.display = 'none';
+  document.getElementById('upload-success').style.display = 'flex';
+
+  renderSpreadsheet(selectedFiles.length);
+}
+
+function handleFolderSelect(event) {
+  const files = Array.from(event.target.files);
+  processFiles(files);
+}
+
+function renderSpreadsheet(rowCount) {
+  const tbody = document.getElementById('sheet-body');
+  tbody.innerHTML = '';
+
+  for (let i = 0; i < rowCount; i++) {
+    const file = selectedFiles[i];
+    const baseName = file.name.substring(0, file.name.lastIndexOf('.'));
+    const initialTitle = baseName.replace(/[-_]/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+
+    const tr = document.createElement('tr');
+    tr.id = `row-${i}`;
+    tr.innerHTML = `
+      <td class="col-id" style="text-align: center; background: #f1f3f4; color: #5f6368; font-weight: bold; border: 1px solid #dcdcdc; padding: 8px;">${String(i + 1).padStart(2, '0')}</td>
+      <td style="border: 1px solid #dcdcdc;"><input type="text" class="sheet-input cell-title" value="${initialTitle}" oninput="validateCell(this, 'title')"></td>
+      <td style="border: 1px solid #dcdcdc;">
+        <select class="sheet-select cell-category" onchange="validateCell(this, 'category')">
+          <option value="" disabled>Select Category</option>
+          <option value="RING" ${guessCategoryFromTitle(initialTitle) === 'RING' ? 'selected' : ''}>Rings</option>
+          <option value="NECK" ${guessCategoryFromTitle(initialTitle) === 'NECK' ? 'selected' : ''}>Necklaces</option>
+          <option value="EARR" ${guessCategoryFromTitle(initialTitle) === 'EARR' ? 'selected' : ''}>Earrings</option>
+          <option value="BANG" ${guessCategoryFromTitle(initialTitle) === 'BANG' ? 'selected' : ''}>Bangles</option>
+          <option value="BRAC" ${guessCategoryFromTitle(initialTitle) === 'BRAC' ? 'selected' : ''}>Bracelets</option>
+          <option value="PEND" ${guessCategoryFromTitle(initialTitle) === 'PEND' ? 'selected' : ''}>Pendants</option>
+          <option value="ANKL" ${guessCategoryFromTitle(initialTitle) === 'ANKL' ? 'selected' : ''}>Anklets</option>
+          <option value="MAAG" ${guessCategoryFromTitle(initialTitle) === 'MAAG' ? 'selected' : ''}>Maang Tikka</option>
+          <option value="SETT" ${guessCategoryFromTitle(initialTitle) === 'SETT' ? 'selected' : ''}>Bridal Set</option>
+        </select>
+      </td>
+      <td style="border: 1px solid #dcdcdc;"><input type="text" class="sheet-input cell-weight" placeholder="e.g. 10g" oninput="validateCell(this, 'weight')"></td>
+      <td style="border: 1px solid #dcdcdc;"><input type="text" class="sheet-input cell-description" value="Premium gold jewellery design" oninput="validateCell(this, 'description')"></td>
+      <td style="border: 1px solid #dcdcdc;"><input type="text" class="sheet-input cell-type" placeholder="e.g. Bridal (optional)"></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById('spreadsheet-section').style.display = 'flex';
+  
+  const inputs = tbody.querySelectorAll('.sheet-input, .sheet-select');
+  inputs.forEach(input => {
+    if (input.classList.contains('cell-title')) validateCell(input, 'title');
+    if (input.classList.contains('cell-category')) validateCell(input, 'category');
+    if (input.classList.contains('cell-weight')) validateCell(input, 'weight');
+    if (input.classList.contains('cell-description')) validateCell(input, 'description');
+  });
+}
+
+function guessCategoryFromTitle(title) {
+  const lower = title.toLowerCase();
+  if (lower.includes('ring')) return 'RING';
+  if (lower.includes('neck') || lower.includes('choker')) return 'NECK';
+  if (lower.includes('earr') || lower.includes('stud') || lower.includes('jhumka')) return 'EARR';
+  if (lower.includes('bang') || lower.includes('kada')) return 'BANG';
+  if (lower.includes('brac') || lower.includes('wrist')) return 'BRAC';
+  if (lower.includes('pend')) return 'PEND';
+  if (lower.includes('ankl') || lower.includes('payal')) return 'ANKL';
+  if (lower.includes('maag') || lower.includes('tikka')) return 'MAAG';
+  if (lower.includes('bridal') || lower.includes('set')) return 'SETT';
+  return 'RING';
+}
+
+function matchCategoryCode(text) {
+  const lower = (text || '').toLowerCase().trim();
+  if (lower.includes('ring')) return 'RING';
+  if (lower.includes('neck') || lower.includes('choker')) return 'NECK';
+  if (lower.includes('earr') || lower.includes('stud') || lower.includes('jhumka')) return 'EARR';
+  if (lower.includes('bang') || lower.includes('kada')) return 'BANG';
+  if (lower.includes('brac') || lower.includes('wrist')) return 'BRAC';
+  if (lower.includes('pend')) return 'PEND';
+  if (lower.includes('ankl') || lower.includes('payal')) return 'ANKL';
+  if (lower.includes('maag') || lower.includes('tikka')) return 'MAAG';
+  if (lower.includes('bridal') || lower.includes('set')) return 'SETT';
+  
+  const codes = ['RING', 'NECK', 'EARR', 'BANG', 'BRAC', 'PEND', 'ANKL', 'MAAG', 'SETT'];
+  const matched = codes.find(c => lower === c.toLowerCase());
+  if (matched) return matched;
+  return '';
+}
+
+function validateCell(element, validationType) {
+  const val = element.value.trim();
+  let isValid = true;
+
+  if (validationType === 'title' || validationType === 'description' || validationType === 'category') {
+    isValid = val !== '';
+  } else if (validationType === 'weight') {
+    const WEIGHT_REGEX = /^\d+(\.\d+)?g$/;
+    isValid = WEIGHT_REGEX.test(val);
+  }
+
+  const cell = element.closest('td');
+  if (cell) {
+    if (!isValid) {
+      cell.classList.add('cell-error');
+    } else {
+      cell.classList.remove('cell-error');
+    }
+  }
+
+  return isValid;
+}
+
+function handleBulkPaste() {
+  const textVal = document.getElementById('paste-textarea').value.trim();
+  if (!textVal) {
+    SG.toast.error('No Data', 'Please paste data to import.');
+    return;
+  }
+
+  const lines = textVal.split('\n');
+  const tbody = document.getElementById('sheet-body');
+  const rows = tbody.querySelectorAll('tr');
+
+  lines.forEach((line, idx) => {
+    if (idx >= rows.length) return;
+    
+    const tokens = line.split('|').map(t => t.trim());
+    const row = rows[idx];
+    
+    if (tokens[0]) {
+      const inputTitle = row.querySelector('.cell-title');
+      inputTitle.value = tokens[0];
+      validateCell(inputTitle, 'title');
+    }
+    
+    if (tokens[1]) {
+      const selectCategory = row.querySelector('.cell-category');
+      const matchedCode = matchCategoryCode(tokens[1]);
+      if (matchedCode) {
+        selectCategory.value = matchedCode;
+      }
+      validateCell(selectCategory, 'category');
+    }
+    
+    if (tokens[2]) {
+      const inputWeight = row.querySelector('.cell-weight');
+      inputWeight.value = tokens[2];
+      validateCell(inputWeight, 'weight');
+    }
+    
+    if (tokens[3]) {
+      const inputDesc = row.querySelector('.cell-description');
+      inputDesc.value = tokens[3];
+      validateCell(inputDesc, 'description');
+    }
+    
+    if (tokens[4]) {
+      const inputType = row.querySelector('.cell-type');
+      inputType.value = tokens[4];
+    }
+  });
+
+  SG.toast.success('Grid Updated', `Imported data for up to ${lines.length} rows.`);
+}
+
+function convertToWebP(file) {
+  return new Promise((resolve, reject) => {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'webp') {
+      resolve(file);
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const newName = file.name.substring(0, file.name.lastIndexOf('.')) + '.webp';
+            const webpFile = new File([blob], newName, { type: 'image/webp' });
+            resolve(webpFile);
+          } else {
+            reject(new Error('Canvas conversion to WebP failed'));
+          }
+        }, 'image/webp', 0.85);
+      };
+      img.onerror = () => reject(new Error('Failed to load image file'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleUploadSubmit() {
+  if (selectedFiles.length === 0) {
+    SG.toast.error('Folder Required', 'Please select a folder containing images.');
+    return;
+  }
+
+  const tbody = document.getElementById('sheet-body');
+  const rows = tbody.querySelectorAll('tr');
+
+  let hasErrors = false;
+  const metadata = [];
+
+  rows.forEach((row, idx) => {
+    const titleEl = row.querySelector('.cell-title');
+    const categoryEl = row.querySelector('.cell-category');
+    const weightEl = row.querySelector('.cell-weight');
+    const descEl = row.querySelector('.cell-description');
+    const typeEl = row.querySelector('.cell-type');
+
+    const isTitleValid = validateCell(titleEl, 'title');
+    const isCategoryValid = validateCell(categoryEl, 'category');
+    const isWeightValid = validateCell(weightEl, 'weight');
+    const isDescValid = validateCell(descEl, 'description');
+
+    if (!isTitleValid || !isCategoryValid || !isWeightValid || !isDescValid) {
+      hasErrors = true;
+    }
+
+    const imageId = String(idx + 1).padStart(2, '0') + '.webp';
+
+    metadata.push({
+      image: imageId,
+      title: titleEl.value.trim(),
+      category: categoryEl.value,
+      weight: weightEl.value.trim(),
+      description: descEl.value.trim(),
+      type: typeEl.value.trim()
+    });
+  });
+
+  if (hasErrors) {
+    SG.toast.error('Validation Errors', 'Please fix the highlighted errors in the spreadsheet before uploading.');
+    return;
+  }
+
+  const overlay = document.getElementById('progress-overlay');
+  const progressText = document.getElementById('progress-text');
+  overlay.style.display = 'flex';
+
+  try {
+    progressText.textContent = 'Preparing files for upload...';
+
+    // Rename files sequentially client-side so they match row metadata index exactly
+    const preparedFiles = [];
+    selectedFiles.forEach((file, idx) => {
+      const origExt = file.name.substring(file.name.lastIndexOf('.'));
+      const sequentialName = String(idx + 1).padStart(2, '0') + origExt;
+      const renamedFile = new File([file], sequentialName, { type: file.type });
+      preparedFiles.push(renamedFile);
+    });
+
+    const formData = new FormData();
+    formData.append('metadata', JSON.stringify(metadata));
+    
+    preparedFiles.forEach(file => {
+      formData.append('files', file);
+    });
+
+    progressText.textContent = 'Uploading files to server...';
+
+    let useServer = false;
+    let uploadedCount = 0;
+
+    try {
+      const res = await SG.auth.fetch('/api/admin/products/bulk-upload-folder', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        useServer = true;
+        uploadedCount = data.count;
+        SG.toast.success('Upload Successful', `Successfully uploaded ${uploadedCount} products.`);
+      } else {
+        throw new Error(data.error || 'Server upload failed');
+      }
+    } catch (err) {
+      console.warn('Server upload failed or offline. Falling back to local storage.', err);
+      
+      if (!SG.images) {
+        throw new Error('Local IndexedDB image storage is not loaded.');
+      }
+
+      progressText.textContent = 'Saving images locally (converting to WebP)...';
+
+      const collections = SG.dal.safeGet('collections') || [];
+      const existingProducts = SG.dal.safeGet('products') || [];
+      const newProducts = [];
+      const nowStr = SG.time.now();
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const entry = metadata[i];
+        
+        let webpFile;
+        try {
+          webpFile = await convertToWebP(file);
+        } catch (e) {
+          webpFile = file;
+        }
+
+        const fileExt = webpFile.name.substring(webpFile.name.lastIndexOf('.'));
+        const finalKey = `${Date.now()}-${String(i + 1).padStart(2, '0')}${fileExt}`;
+
+        await SG.images.save(finalKey, webpFile);
+
+        let col = collections.find(c => c.id === entry.category || c.name.toLowerCase() === entry.category.toLowerCase()) || { id: 'col-002', name: 'Contemporary Daily' };
+        
+        const prdId = 'prd-bulk-' + SG.uid.short();
+        const prdCode = String(i + 1).padStart(2, '0') + '-' + SG.uid.short().toUpperCase();
+        const prdName = entry.title;
+        
+        const categoryLabels = {
+          RING: 'Rings', NECK: 'Necklaces', EARR: 'Earrings',
+          BANG: 'Bangles', BRAC: 'Bracelets', PEND: 'Pendants',
+          ANKL: 'Anklets', MAAG: 'Maang Tikka', SETT: 'Bridal Set'
+        };
+        const categoryLabel = categoryLabels[entry.category.toUpperCase()] || entry.category;
+
+        const localProduct = {
+          id: prdId,
+          code: prdCode,
+          name: prdName,
+          collectionId: col.id,
+          collectionName: col.name,
+          category: entry.category.toUpperCase(),
+          categoryLabel: categoryLabel,
+          material: 'Gold',
+          purity: '22 Karat',
+          weight: entry.weight,
+          price: 0,
+          description: entry.description,
+          type: entry.type || '',
+          images: ['idxdb:' + finalKey],
+          status: 'active',
+          uploadedAt: nowStr,
+          searchKeywords: [prdName.toLowerCase(), prdCode.toLowerCase(), categoryLabel.toLowerCase()]
+        };
+
+        newProducts.push(localProduct);
+      }
+
+      SG.dal._allowRawAccess = true;
+      try {
+        const updated = [...newProducts, ...existingProducts];
+        SG.store.set('products', updated);
+      } finally {
+        SG.dal._allowRawAccess = false;
+      }
+
+      SG.toast.success('Offline Import Successful', `Imported ${newProducts.length} new designs to local browser storage.`);
+      SG.audit('PRODUCTS_BULK_UPLOADED', 'bulk-folder-offline', `Count: ${newProducts.length}`);
+      useServer = true;
+      uploadedCount = newProducts.length;
+    }
+
+    if (useServer) {
+      setTimeout(() => {
+        window.location.href = 'catalogue.html';
+      }, 1500);
+    }
+
+  } catch (err) {
+    console.error(err);
+    SG.toast.error('Upload Failed', err.message || 'An error occurred during upload.');
+  } finally {
+    overlay.style.display = 'none';
+  }
+}
+</script>
+</body>
+</html>

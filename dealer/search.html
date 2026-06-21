@@ -1,0 +1,433 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Catalogue — Koshda B2B</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+<div class="filter-overlay" id="filter-overlay" onclick="toggleFilterDrawer()"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <main class="dealer-main">
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="topbar-sub-greeting">Catalogue Search</div>
+      </div>
+      <div class="topbar-actions">
+        <a href="cart.html" class="icon-btn relative">🛒<span class="notif-dot hidden notif-dot-gold" id="cart-dot"></span></a>
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="dealer-content">
+      
+      <!-- Hero Search Container -->
+      <div class="hero-search-container">
+        <div class="hero-search-title">Discover Designs</div>
+        <div class="hero-search-subtitle">Search using keywords or experience our simulated AI Semantic Search</div>
+        
+        <div class="hero-search-box">
+          <div class="hero-search-input-wrap">
+            <span class="hero-search-icon">🔍</span>
+            <input type="text" id="search-input" class="hero-search-input" placeholder="Type design code, material, keywords (e.g., Kundan Bridal Necklace)..." onkeyup="if(event.key==='Enter') executeSearch()">
+            <button class="hero-search-clear hidden" id="search-clear-btn" onclick="clearSearch()">×</button>
+          </div>
+          <button class="btn btn-primary hero-search-btn" onclick="executeSearch()">Search</button>
+        </div>
+      </div>
+
+      <!-- Tab Switching -->
+      <div class="tabs tabs-border-bottom" data-tabs>
+        <button class="tab-btn active" id="tab-keyword" onclick="switchTab('keyword')">📋 Keyword Match</button>
+        <button class="tab-btn" id="tab-ai" onclick="switchTab('ai')">✨ AI Semantic Search <span class="badge badge-gold coming-soon-badge">Coming Soon</span></button>
+      </div>
+
+      <button class="btn btn-secondary filter-drawer-btn" onclick="toggleFilterDrawer()">☰ Filters</button>
+
+      <!-- Search Core Layout -->
+      <div class="search-layout">
+        
+        <!-- Sidebar filters -->
+        <aside class="filter-sidebar" id="filter-sidebar">
+          <div class="flex-between-align-center-mb-5">
+            <div class="filters-header-title">FILTERS</div>
+            <button class="btn btn-sm btn-ghost filter-drawer-btn" onclick="toggleFilterDrawer()">×</button>
+          </div>
+
+          <!-- Dynamic Categories -->
+          <div class="filter-group">
+            <div class="filter-group-title">Category</div>
+            <div id="filter-category-list">
+              <!-- JS Filled -->
+            </div>
+          </div>
+
+          <!-- Dynamic Materials -->
+          <div class="filter-group">
+            <div class="filter-group-title">Material</div>
+            <div id="filter-material-list">
+              <!-- JS Filled -->
+            </div>
+          </div>
+
+          <!-- Dynamic Styles -->
+          <div class="filter-group">
+            <div class="filter-group-title">Style</div>
+            <div id="filter-style-list">
+              <!-- JS Filled -->
+            </div>
+          </div>
+          
+          <button class="btn btn-ghost btn-sm btn-clear-filters" onclick="resetFilters()">Clear All Filters</button>
+        </aside>
+
+        <!-- Right Results Panel -->
+        <div>
+          <!-- Sorting & Count Header -->
+          <div class="flex-between-align-center-wrap-gap-3">
+            <div class="font-13-muted" id="result-count">Showing 0 results</div>
+            <div class="flex-align-center-gap-2">
+              <span class="font-12-muted">Sort by:</span>
+              <select class="form-select sort-select-custom" id="sort-select" onchange="executeSearch()" title="Sort results">
+                <option value="relevance">Relevance</option>
+                <option value="newest">Newest Arrivals</option>
+                <option value="code-asc">Product Code A–Z</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- AI Search Pipeline Log Box (Hidden during standard keyword search) -->
+          <div id="ai-pipeline-wrap" class="hidden">
+            <div class="ai-pipeline-header">🛠️ AI Vector Pipeline Execution Trail</div>
+            <div class="ai-pipeline-box" id="ai-pipeline-log"></div>
+          </div>
+
+          <!-- Products Grid -->
+          <div class="product-grid" id="product-grid"></div>
+
+          <!-- Empty State -->
+          <div class="hidden empty-state empty-state-search" id="empty-state">
+            <div class="empty-state-icon empty-state-icon-large-search">🔍</div>
+            <h3 class="text-white-mb-1">No products matched</h3>
+            <p class="font-13-muted-mb-3">Try adjusting your keywords or filters. Suggested searches: <a href="#" onclick="fillSuggested('Bridal')" class="gold-highlight">Bridal</a>, <a href="#" onclick="fillSuggested('Minimalist')" class="gold-highlight">Minimalist</a>, <a href="#" onclick="fillSuggested('Temple')" class="gold-highlight">Temple</a>.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js" integrity="sha512-DNI/FJdkfyeuPUal7lDkRVg0mFY2n4IZJJYqPbQWLL0COxLi6G6nmf5gr1vW1Bd4wYC09hOvZVsSclfXxUTU/w==" crossorigin="anonymous" defer></script>
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/totp.js" defer></script>
+<script src="../public/assets/js/device-manager.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script src="../public/assets/js/google-sheets.js" defer></script>
+<script src="../public/assets/js/whatsapp.js" defer></script>
+<script src="../ai/ai-search.js" defer></script>
+<script>
+let dealerSession, allProducts = [], currentTab = 'keyword';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+  dealerSession = SG.auth.current();
+
+  // Load sidebar components
+  SG.components.loadAll();
+
+  // Setup Dynamic Filters derived from product seed data
+  initFilters();
+
+  // Load URL parameters (?q=)
+  const urlQuery = SG.params.get('q');
+  if (urlQuery) {
+    document.getElementById('search-input').value = urlQuery;
+    document.getElementById('search-clear-btn').classList.remove('hidden');
+  }
+
+  // Restore checkbox filters from query params
+  restoreFilterStateFromUrl();
+
+  executeSearch();
+  updateCartBadge();
+});
+
+function initFilters() {
+  // Enforce retrieval via secure DAL permitted list
+  allProducts = SG.auth.permittedProducts(dealerSession.id) || [];
+
+  const categories = new Set();
+  const materials = new Set();
+  const styles = new Set();
+
+  allProducts.forEach(p => {
+    if (p.category) categories.add(p.category);
+    if (p.material) materials.add(p.material);
+    if (p.styleNotes || p.style) styles.add(p.styleNotes || p.style);
+  });
+
+  // Map category code to human labels
+  const catLabels = { NECK: 'Necklaces', EARR: 'Earrings', BANG: 'Bangles', RING: 'Rings', BRAC: 'Bracelets', PEND: 'Pendants', ANKL: 'Anklets', MAAG: 'Maang Tikka', SETT: 'Sets' };
+
+  document.getElementById('filter-category-list').innerHTML = Array.from(categories).map(cat => `
+    <label class="filter-checkbox-label">
+      <input type="checkbox" name="category" value="${cat}" onchange="executeSearch(true)">
+      ${catLabels[cat] || cat}
+    </label>
+  `).join('');
+
+  document.getElementById('filter-material-list').innerHTML = Array.from(materials).map(mat => `
+    <label class="filter-checkbox-label">
+      <input type="checkbox" name="material" value="${mat}" onchange="executeSearch(true)">
+      ${mat === '22K' ? '22K Gold' : mat === '18K' ? '18K Gold' : mat}
+    </label>
+  `).join('');
+
+  document.getElementById('filter-style-list').innerHTML = Array.from(styles).map(style => `
+    <label class="filter-checkbox-label">
+      <input type="checkbox" name="style" value="${style}" onchange="executeSearch(true)">
+      ${style}
+    </label>
+  `).join('');
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-keyword').classList.toggle('active', tab === 'keyword');
+  document.getElementById('tab-ai').classList.toggle('active', tab === 'ai');
+  document.getElementById('ai-pipeline-wrap').classList.toggle('hidden', tab !== 'ai');
+  executeSearch();
+}
+
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('search-clear-btn').classList.add('hidden');
+  executeSearch(true);
+}
+
+function fillSuggested(term) {
+  document.getElementById('search-input').value = term;
+  document.getElementById('search-clear-btn').classList.remove('hidden');
+  executeSearch(true);
+}
+
+async function executeSearch(updateUrl = false) {
+  const query = document.getElementById('search-input').value.trim();
+  const clearBtn = document.getElementById('search-clear-btn');
+  if (clearBtn) {
+    if (query) {
+      clearBtn.classList.remove('hidden');
+    } else {
+      clearBtn.classList.add('hidden');
+    }
+  }
+
+  // Get selected filters
+  const categories = Array.from(document.querySelectorAll('input[name="category"]:checked')).map(c => c.value);
+  const materials = Array.from(document.querySelectorAll('input[name="material"]:checked')).map(c => c.value);
+  const styles = Array.from(document.querySelectorAll('input[name="style"]:checked')).map(c => c.value);
+  const sortBy = document.getElementById('sort-select').value;
+
+  // Preserve state in query parameters
+  if (updateUrl) {
+    const params = {};
+    if (query) params.q = query;
+    if (categories.length) params.cat = categories.join(',');
+    if (materials.length) params.mat = materials.join(',');
+    if (styles.length) params.style = styles.join(',');
+    SG.params.set(params);
+  }
+
+  let finalResults = [];
+
+  if (currentTab === 'keyword') {
+    // ── Keyword Matching ──
+    let filtered = allProducts;
+    if (query) {
+      filtered = SG.filterItems(filtered, query, ['name', 'code', 'searchKeywords', 'category', 'material', 'styleNotes', 'description']);
+    }
+    
+    // Apply checkbox filters
+    if (categories.length) filtered = filtered.filter(p => categories.includes(p.category));
+    if (materials.length) filtered = filtered.filter(p => materials.includes(p.material));
+    if (styles.length) filtered = filtered.filter(p => styles.includes(p.styleNotes || p.style));
+
+    finalResults = filtered.map(p => ({
+      product: p,
+      similarity_score: 1.0,
+      match_explanation: 'Keyword matched'
+    }));
+
+    // Keyword sorting
+    if (sortBy === 'newest') {
+      finalResults.sort((a, b) => new Date(b.product.uploadedAt || 0) - new Date(a.product.uploadedAt || 0));
+    } else if (sortBy === 'code-asc') {
+      finalResults.sort((a, b) => a.product.code.localeCompare(b.product.code));
+    }
+  } else {
+    // ── AI Semantic Search Pipeline ──
+    const searchString = query || "Bridal Heritage everyday gold designs"; // Default query context
+    const aiResponse = await SG.aiSearch.search(searchString, dealerSession.id);
+    
+    // Hydrate pipeline execution logs in UI
+    const pipelineLogs = aiResponse.pipeline_log;
+    document.getElementById('ai-pipeline-log').innerHTML = pipelineLogs.map(l => `<div>${l}</div>`).join('');
+
+    let filtered = aiResponse.results;
+    // Apply filters on top of AI search results
+    if (categories.length) filtered = filtered.filter(r => categories.includes(r.product.category));
+    if (materials.length) filtered = filtered.filter(r => materials.includes(r.product.material));
+    if (styles.length) filtered = filtered.filter(r => styles.includes(r.product.styleNotes || r.product.style));
+
+    finalResults = filtered;
+
+    // AI sorting
+    if (sortBy === 'newest') {
+      finalResults.sort((a, b) => new Date(b.product.uploadedAt || 0) - new Date(a.product.uploadedAt || 0));
+    } else if (sortBy === 'code-asc') {
+      finalResults.sort((a, b) => a.product.code.localeCompare(b.product.code));
+    } else {
+      // Relevance: sort by AI confidence score
+      finalResults.sort((a, b) => b.similarity_score - a.similarity_score);
+    }
+  }
+
+  renderResults(finalResults);
+}
+
+function renderResults(results) {
+  const grid = document.getElementById('product-grid');
+  const empty = document.getElementById('empty-state');
+  const countLabel = document.getElementById('result-count');
+
+  countLabel.textContent = `Showing ${results.length} result(s)`;
+
+  if (!results.length) {
+    grid.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  grid.innerHTML = results.map(r => {
+    const p = r.product;
+    const isNewClass = p.isNew ? '' : 'hidden';
+    const inWishlist = SG.booking.wishlist.has(dealerSession.id, p.id);
+    
+    return `
+      <div class="product-card" onclick="window.location.href='product-detail.html?id=${p.id}'">
+        <div class="product-card-image">
+          <img src="${p.images?.[0] || 'https://placehold.co/400x400/1a1a2a/d4af37?text=💍'}" alt="${sanitizeHTML(p.name)}">
+          <div class="product-card-overlay">
+            <div class="product-card-actions">
+              <button class="product-action-btn" onclick="event.stopPropagation();addToCart('${p.id}')" title="Add to Cart">🛒</button>
+              <button class="product-action-btn ${inWishlist ? 'in-wishlist' : ''}" onclick="event.stopPropagation();toggleWishlist('${p.id}', this)" title="Add to Wishlist">❤️</button>
+            </div>
+          </div>
+          <span class="product-new-badge ${isNewClass}">New</span>
+        </div>
+        <div class="product-card-info">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="product-code">${sanitizeHTML(p.code)}</div>
+            ${currentTab === 'ai' ? `<span class="search-match-percent">Match: ${Math.round(r.similarity_score * 100)}%</span>` : ''}
+          </div>
+          <div class="product-name">${sanitizeHTML(p.name)}</div>
+          <div class="product-meta">
+            <span>${sanitizeHTML(p.material)}</span> · <span>${sanitizeHTML(p.weight)}</span>
+          </div>
+          <div class="search-match-explanation">
+            ${sanitizeHTML(r.match_explanation)}
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function addToCart(productId) {
+  const p = allProducts.find(prod => prod.id === productId);
+  if (p) {
+    SG.booking.cart.add(dealerSession.id, p);
+    updateCartBadge();
+  }
+}
+
+function toggleWishlist(productId, btnEl) {
+  const p = allProducts.find(prod => prod.id === productId);
+  if (!p) return;
+  
+  const has = SG.booking.wishlist.has(dealerSession.id, productId);
+  if (has) {
+    SG.booking.wishlist.remove(dealerSession.id, productId);
+    btnEl.classList.remove('in-wishlist');
+  } else {
+    SG.booking.wishlist.add(dealerSession.id, p);
+    btnEl.classList.add('in-wishlist');
+  }
+}
+
+function updateCartBadge() {
+  const count = SG.booking.cart.count(dealerSession.id);
+  const badge = document.getElementById('cart-badge');
+  const dot = document.getElementById('cart-dot');
+  
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count === 0);
+  }
+  if (dot) {
+    dot.classList.toggle('hidden', count === 0);
+  }
+}
+
+function toggleFilterDrawer() {
+  document.getElementById('filter-sidebar').classList.toggle('open');
+  document.getElementById('filter-overlay').classList.toggle('open');
+}
+
+// Reset checkbox states and update results
+function resetFilters() {
+  document.querySelectorAll('.filter-sidebar input[type="checkbox"]').forEach(cb => cb.checked = false);
+  executeSearch(true);
+}
+
+function restoreFilterStateFromUrl() {
+  const cats = SG.params.get('cat')?.split(',') || [];
+  const mats = SG.params.get('mat')?.split(',') || [];
+  const styles = SG.params.get('style')?.split(',') || [];
+
+  cats.forEach(c => {
+    const el = document.querySelector(`.filter-sidebar input[value="${c}"][name="category"]`);
+    if (el) el.checked = true;
+  });
+  mats.forEach(m => {
+    const el = document.querySelector(`.filter-sidebar input[value="${m}"][name="material"]`);
+    if (el) el.checked = true;
+  });
+  styles.forEach(s => {
+    const el = document.querySelector(`.filter-sidebar input[value="${s}"][name="style"]`);
+    if (el) el.checked = true;
+  });
+}
+</script>
+</body>
+</html>
+

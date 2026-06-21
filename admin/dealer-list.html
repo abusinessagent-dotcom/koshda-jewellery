@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dealers Directory — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    /* Skeleton Loading Styles */
+    .skeleton-row td div {
+      height: 18px;
+      background: linear-gradient(90deg, #1c1829 25%, #2d293d 50%, #1c1829 75%);
+      background-size: 200% 100%;
+      animation: loading-skeleton 1.5s infinite;
+      border-radius: var(--radius-sm);
+    }
+    @keyframes loading-skeleton {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Dealers Directory</div>
+        <div class="topbar-breadcrumb"><span>Admin</span><span>›</span><span class="current">Dealers</span></div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Dealers Directory</h1>
+          <p class="page-subtitle">Manage approved dealer accounts, credentials, and settings</p>
+        </div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="stats-grid" id="stats-grid" style="margin-bottom:var(--space-6);">
+        <!-- Filled dynamically -->
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-4);">
+        <div class="flex gap-4 items-center flex-wrap">
+          <div style="flex:1;min-width:260px;">
+            <input type="text" class="form-input" id="search-input" placeholder="Search by business, name, email, or city…" oninput="handleFilters()">
+          </div>
+          <div style="width:160px;">
+            <select class="form-select" id="status-filter" title="Filter by dealer status" onchange="handleFilters()">
+              <option value="">All Statuses</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending Review</option>
+              <option value="paused">Paused</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+          <div style="width:160px;">
+            <select class="form-select" id="tier-filter" title="Filter by dealer tier" onchange="handleFilters()">
+              <option value="">All Tiers</option>
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="exclusive">Exclusive</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Table Card -->
+      <div class="table-card">
+        <div class="table-container">
+          <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table id="dealers-table">
+              <thead>
+                <tr>
+                  <th>Business Name</th>
+                  <th>Contact Details</th>
+                  <th>Location</th>
+                  <th>Tier</th>
+                  <th>Status</th>
+                  <th>Last Login</th>
+                  <th>Engagement</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dealers-tbody">
+                <!-- Loaded dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Suspension Reason Modal -->
+<div class="modal-overlay" id="suspend-modal">
+  <div class="modal" style="max-width:460px;">
+    <div class="modal-header">
+      <h3 class="modal-title">Suspend Dealer</h3>
+      <button class="modal-close" onclick="closeSuspendModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Reason for Suspension <span class="required">*</span></label>
+        <textarea class="form-textarea" id="suspend-reason" placeholder="e.g. Multiple NDA policy violations detected." style="min-height:90px;"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeSuspendModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmSuspension()">🚫 Suspend Dealer</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Dialog system elements -->
+<div class="modal-overlay" id="_sg_confirm_modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="_sg_modal_title">Confirm Action</h3>
+      <button class="modal-close" onclick="SG.modal.close('_sg_confirm_modal')">×</button>
+    </div>
+    <div class="modal-body" id="_sg_modal_body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="SG.modal.close('_sg_confirm_modal')">Cancel</button>
+      <button class="btn btn-primary" id="_sg_modal_btn">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let dealers = [];
+  let suspendTargetId = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Auth check
+    if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+
+    // Load admin header avatar / data
+    const session = SG.auth.current();
+    const initials = session.avatar || SG.str.initials(session.name);
+    { const el = document.getElementById('admin-av'); if (el) el.textContent = initials; }
+    { const el = document.getElementById('topbar-av'); if (el) el.textContent = initials; }
+
+    // 2. Loading skeleton display (400ms)
+    renderSkeleton();
+    setTimeout(() => {
+      loadData();
+      renderStats();
+      renderTable();
+      SG.liveUpdate.start();
+      SG.events.on('live_update', () => {
+        loadData();
+        renderStats();
+        renderTable();
+      });
+    }, 400);
+  });
+
+  function loadData() {
+    SG.dal._allowRawAccess = true;
+    try {
+      const users = SG.dal.safeGet('users') || [];
+      dealers = users.filter(u => u.role === 'dealer');
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+  }
+
+  function renderSkeleton() {
+    const tbody = document.getElementById('dealers-tbody');
+    let rowsHtml = '';
+    for (let i = 0; i < 5; i++) {
+      rowsHtml += `
+        <tr class="skeleton-row">
+          <td><div style="width:140px;"></div></td>
+          <td><div style="width:160px;margin-bottom:4px;"></div><div style="width:100px;"></div></td>
+          <td><div style="width:90px;"></div></td>
+          <td><div style="width:60px;"></div></td>
+          <td><div style="width:70px;"></div></td>
+          <td><div style="width:80px;"></div></td>
+          <td><div style="width:110px;"></div></td>
+          <td><div style="width:130px;float:right;"></div></td>
+        </tr>`;
+    }
+    tbody.innerHTML = rowsHtml;
+  }
+
+  function renderStats() {
+    const total = dealers.length;
+    const active = dealers.filter(d => d.status === 'approved').length;
+    const pending = dealers.filter(d => d.status === 'pending').length;
+    const suspended = dealers.filter(d => d.status === 'suspended').length;
+
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-blue"><div style="font-size:18px">👥</div></div>
+          <span class="badge badge-gray">Dealers</span>
+        </div>
+        <div class="stat-num">${total}</div>
+        <div class="stat-lbl">Total Dealers</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-green"><div style="font-size:18px">?</div></div>
+          <span class="badge badge-green">Approved</span>
+        </div>
+        <div class="stat-num">${active}</div>
+        <div class="stat-lbl">Active Accounts</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-yellow"><div style="font-size:18px">⏸️</div></div>
+          ${pending > 0 ? `<span class="badge badge-red">Review</span>` : `<span class="badge badge-gray">Clear</span>`}
+        </div>
+        <div class="stat-num" style="${pending > 0 ? 'color:var(--yellow-500)' : ''}">${pending}</div>
+        <div class="stat-lbl">Pending Review</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-header">
+          <div class="stat-icon-admin stat-icon-red"><div style="font-size:18px">🚫</div></div>
+          <span class="badge badge-gray">Restricted</span>
+        </div>
+        <div class="stat-num">${suspended}</div>
+        <div class="stat-lbl">Suspended Dealers</div>
+      </div>
+    `;
+
+    // Update global nav count badges
+    document.querySelectorAll('[data-count="pending-regs"]').forEach(el => {
+      el.textContent = pending;
+      el.style.display = pending > 0 ? '' : 'none';
+    });
+  }
+
+  function renderTable() {
+    const search = document.getElementById('search-input').value.toLowerCase();
+    const status = document.getElementById('status-filter').value;
+    const tier = document.getElementById('tier-filter').value;
+
+    let filtered = dealers;
+
+    if (status) filtered = filtered.filter(d => d.status === status);
+    if (tier) filtered = filtered.filter(d => d.tier === tier);
+    if (search) {
+      filtered = filtered.filter(d => 
+        (d.businessName || '').toLowerCase().includes(search) ||
+        (d.name || '').toLowerCase().includes(search) ||
+        (d.email || '').toLowerCase().includes(search) ||
+        (d.city || '').toLowerCase().includes(search)
+      );
+    }
+
+    const tbody = document.getElementById('dealers-tbody');
+    if (!filtered.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="8" style="text-align:center;padding:50px;color:var(--text-muted);">
+            <div style="font-size:32px;margin-bottom:12px;">👥</div>
+            <strong>No dealers found</strong><br>
+            <span class="text-sm">Try adjusting your filters or search terms.</span>
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map(d => {
+      const token = SG.tokenMgr.forDealer(d.id);
+      const relativeLogin = d.lastLogin ? SG.time.relative(d.lastLogin) : 'Never';
+      
+      // Determine badge classes
+      let tierClass = 'badge-standard';
+      if (d.tier === 'premium') tierClass = 'badge-premium';
+      if (d.tier === 'exclusive') tierClass = 'badge-exclusive';
+
+      let statusClass = 'badge-gray';
+      if (d.status === 'approved') statusClass = 'badge-green';
+      if (d.status === 'pending') statusClass = 'badge-yellow';
+      if (d.status === 'suspended') statusClass = 'badge-red';
+      if (d.status === 'paused') statusClass = 'badge-orange';
+
+      // Dynamic action buttons
+      let actionButtons = '';
+      if (d.status === 'pending') {
+        actionButtons += `<button class="btn btn-sm btn-primary" onclick="triggerApproval('${d.id}')">Approve</button>`;
+      } else if (d.status === 'approved') {
+        actionButtons += `<button class="btn btn-sm btn-danger" onclick="triggerSuspension('${d.id}')">Suspend</button>`;
+      }
+      actionButtons += `<button class="btn btn-sm btn-ghost" onclick="viewProfile('${d.id}')">View Profile</button>`;
+
+      return `
+        <tr>
+          <td>
+            <div style="font-weight:600;color:var(--text-primary);">${d.businessName || '—'}</div>
+            <div class="text-xs" style="color:var(--text-muted);">ID: ${d.id}</div>
+          </td>
+          <td>
+            <div style="font-weight:500;">${d.name}</div>
+            <div class="text-sm" style="color:var(--text-muted);">${d.email} · ${d.phone}</div>
+          </td>
+          <td>${d.city}, ${d.state}</td>
+          <td><span class="badge ${tierClass}">${SG.str.capitalize(d.tier || 'standard')}</span></td>
+          <td><span class="badge ${statusClass}">${SG.str.capitalize(d.status || 'pending')}</span></td>
+          <td>${relativeLogin}</td>
+          <td>
+            <div class="flex items-center gap-2">
+              <div style="width:80px;background:#2d293d;height:6px;border-radius:99px;overflow:hidden;">
+                <div style="width:${d.engagementScore || 0}%;background:var(--gold-500);height:100%;"></div>
+              </div>
+              <span class="text-xs" style="color:var(--text-primary);font-weight:600;">${d.engagementScore || 0}%</span>
+            </div>
+          </td>
+          <td style="text-align:right;">
+            <div class="flex gap-2 justify-end">
+              ${actionButtons}
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function handleFilters() {
+    renderTable();
+  }
+
+  function triggerApproval(dealerId) {
+    const dealer = dealers.find(d => d.id === dealerId);
+    if (!dealer) return;
+
+    SG.modal.confirm(
+      'Approve Dealer',
+      `Are you sure you want to approve **${dealer.businessName}**? This will issue an access token and send an automatic activation notification.`,
+      () => {
+        const tempPass = SG.admin.approveDealer(dealerId, dealer.tier || 'standard');
+        if (tempPass) {
+          SG.modal.alert(
+            'Dealer Approved Successfully',
+            `Account for <strong>${dealer.businessName}</strong> has been approved and activated.<br><br>` +
+            `A temporary security credential was generated:<br>` +
+            `<div class="temp-pass-display">${tempPass}</div>` +
+            `Please share this password securely with the dealer. They will be prompted to update it upon their first login.`,
+            () => {
+              loadData();
+              renderStats();
+              renderTable();
+            }
+          );
+        } else {
+          SG.toast.error('Approval Error', 'An error occurred during approval.');
+        }
+      }
+    );
+  }
+
+  function triggerSuspension(dealerId) {
+    suspendTargetId = dealerId;
+    document.getElementById('suspend-reason').value = '';
+    SG.modal.open('suspend-modal');
+  }
+
+  function closeSuspendModal() {
+    SG.modal.close('suspend-modal');
+    suspendTargetId = null;
+  }
+
+  function confirmSuspension() {
+    const reason = document.getElementById('suspend-reason').value.trim();
+    if (!reason) {
+      SG.toast.error('Required', 'Please enter a reason for suspension.');
+      return;
+    }
+
+    const dealer = dealers.find(d => d.id === suspendTargetId);
+    if (dealer) {
+      SG.admin.suspendDealer(suspendTargetId, reason);
+      SG.toast.warning('Account Suspended', `${dealer.businessName} has been suspended.`);
+      closeSuspendModal();
+      loadData();
+      renderStats();
+      renderTable();
+    }
+  }
+
+  function viewProfile(dealerId) {
+    window.location.href = `dealer-profile.html?id=${dealerId}`;
+  }
+</script>
+</body>
+</html>
+

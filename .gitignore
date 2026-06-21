@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Environment & secrets
+.env
+
+# Logs
+logs/
+*.log
+
+# Temporary uploads
+uploads/csv-temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Build artifacts
+dist/
+build/
+
+# Image optimization source files
+images/*.jpg
+images/*.jpeg
+images/*.png
+# Converted WebP output (regeneratable)
+webp/*.webp

@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Application Review — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--gold-500);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 4px;
+      transition: opacity 0.2s;
+    }
+    .copy-btn:hover {
+      opacity: 0.8;
+    }
+    .verification-checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: var(--space-3);
+      transition: background-color 0.2s;
+    }
+    .verification-checkbox-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .doc-viewer-card {
+      background: rgba(0,0,0,0.2);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      border: 1px dashed var(--border-subtle);
+      text-align: center;
+      margin-bottom: var(--space-4);
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Application Review</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Registrations</span><span>›</span><span class="current" id="breadcrumb-biz-name">Loading...</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          ??<span class="notif-dot notif-count hidden"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header profile-header-border">
+        <div class="flex-align-center-gap-16">
+          <div class="avatar avatar-xl" id="profile-avatar">👤</div>
+          <div>
+            <h1 class="page-title" id="profile-biz-name">Business Name</h1>
+            <p class="page-subtitle" id="profile-owner-sub">Owner Name · Location</p>
+          </div>
+        </div>
+        <div class="page-actions" id="days-waiting-wrap">
+          <!-- Days Waiting filled by JS -->
+        </div>
+      </div>
+
+      <div class="grid gap-6 grid-cols-details">
+        <!-- Left Column: Business details & documents -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Detail List Card -->
+          <div class="card grid grid-2 gap-4">
+            <div>
+              <div class="text-meta-label">Business / Owner</div>
+              <div class="text-meta-value" id="detail-owner">—</div>
+            </div>
+            <div>
+              <div class="text-meta-label">Status</div>
+              <div id="detail-status">—</div>
+            </div>
+            <div>
+              <div class="text-meta-label">Email Address</div>
+              <div class="text-meta-value" id="detail-email">—</div>
+            </div>
+            <div>
+              <div class="text-meta-label">Phone Number</div>
+              <div class="text-meta-value" id="detail-phone">—</div>
+            </div>
+            <div>
+              <div class="text-meta-label">PAN Number</div>
+              <div class="text-meta-value-flex">
+                <span id="detail-pan">—</span>
+                <button class="copy-btn" id="copy-pan-btn" onclick="copyValue('detail-pan', 'PAN')">📋 Copy</button>
+              </div>
+            </div>
+            <div>
+              <div class="text-meta-label">Registered Date</div>
+              <div class="text-meta-value" id="detail-reg-date">—</div>
+            </div>
+            <div>
+              <div class="text-meta-label">Categories Requested</div>
+              <div class="flex-wrap-gap-4" id="detail-categories">—</div>
+            </div>
+          </div>
+
+          <!-- Document Previews -->
+          <div class="card">
+            <h3 class="section-title mb-4-rem">📁 Document Attachments</h3>
+            <div class="doc-viewer-card">
+              <div class="doc-title">PAN Card Scan</div>
+              <div class="doc-filename">pan_card_copy.png</div>
+              <button class="btn btn-secondary btn-sm" onclick="simulatePdf('PAN Card')">👁️ View Document</button>
+            </div>
+            <div class="doc-viewer-card">
+              <div class="doc-title">Shop Front / Store Photograph</div>
+              <div class="doc-filename">store_facade.jpg</div>
+              <button class="btn btn-secondary btn-sm" onclick="simulatePdf('Shop Photo')">👁️ View Photograph</button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Document Checklist & Action Panel -->
+        <div class="flex-col-gap-6">
+          
+          <!-- Checklist Card -->
+          <div class="card">
+            <h3 class="section-title mb-4-rem">? Document Verification Checklist</h3>
+            <p class="checklist-intro">Verify each document against official databases prior to approval.</p>
+            
+            <div class="verification-checkbox-item">
+              <input type="checkbox" id="chk-pan" onchange="saveChecklistState()">
+              <div>
+                <label for="chk-pan" class="checklist-label">PAN Details Verified</label>
+                <div class="checklist-hint">Verify match with Income Tax Department records</div>
+              </div>
+            </div>
+
+            <div class="verification-checkbox-item">
+              <input type="checkbox" id="chk-photo" onchange="saveChecklistState()">
+              <div>
+                <label for="chk-photo" class="checklist-label">Shop Facade Verified</label>
+                <div class="checklist-hint">Ensure physical store exists and displays clear name branding</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions & Decision Panel -->
+          <div class="card" id="actions-panel">
+            <h3 class="section-title mb-4-rem">⚙️ Application Decision</h3>
+            
+            <div id="unauthorized-message" class="alert alert-warning hidden mb-4-rem">
+              <span>⚠️</span>
+              <span>Only Super Admin or Dealer Manager accounts possess authority to approve or reject dealer applications.</span>
+            </div>
+
+            <div id="authorized-controls">
+              <div class="form-group">
+                <label class="form-label">Assign Subscription Tier</label>
+                <select class="form-select" id="decision-tier" title="Assign Subscription Tier">
+                  <option value="standard">🔵 Standard Tier</option>
+                  <option value="premium">? Premium Tier</option>
+                  <option value="exclusive">💎 Exclusive Tier</option>
+                </select>
+                <p class="form-hint form-hint-sm">Select tier. This sets their initial catalogue collection rules.</p>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Decision Note / Rejection Reason</label>
+                <textarea class="form-textarea decision-textarea" id="decision-note" placeholder="Enter review notes or rejection reasons here…"></textarea>
+              </div>
+
+              <div class="flex gap-4 mt-6-rem">
+                <button class="btn btn-danger btn-flex-center" onclick="triggerReject()">❌ Reject</button>
+                <button class="btn btn-primary btn-flex-center" onclick="triggerApprove()">✓ Approve & Issue</button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession, dealerId, dealerUser;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Role verification
+    if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+    adminSession = SG.auth.current();
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    dealerId = SG.params.get('id');
+    if (!dealerId) {
+      SG.toast.error('Missing ID', 'No dealer ID provided in URL.');
+      setTimeout(() => window.location.href = 'registration-queue.html', 1500);
+      return;
+    }
+
+    SG.components.loadAll();
+    loadApplicationDetails();
+    
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadApplicationDetails();
+    });
+  });
+
+  function loadApplicationDetails() {
+    dealerUser = SG.auth.getUser(dealerId);
+    if (!dealerUser) {
+      SG.toast.error('Dealer Not Found', `Dealer with ID ${dealerId} does not exist.`);
+      setTimeout(() => window.location.href = 'registration-queue.html', 1500);
+      return;
+    }
+
+    // Update texts
+    document.getElementById('breadcrumb-biz-name').textContent = dealerUser.businessName;
+    document.getElementById('profile-biz-name').textContent = dealerUser.businessName;
+    document.getElementById('profile-owner-sub').textContent = `${dealerUser.name} · ${dealerUser.city}, ${dealerUser.state}`;
+    document.getElementById('profile-avatar').textContent = dealerUser.avatar || SG.str.initials(dealerUser.name);
+
+    document.getElementById('detail-owner').textContent = dealerUser.name;
+    document.getElementById('detail-status').innerHTML = SG.statusBadge(dealerUser.status);
+    document.getElementById('detail-email').textContent = dealerUser.email;
+    document.getElementById('detail-phone').textContent = dealerUser.phone || '—';
+    document.getElementById('detail-pan').textContent = dealerUser.pan || 'ABCDE1234F';
+    document.getElementById('detail-reg-date').textContent = SG.time.formatFull(dealerUser.registeredAt);
+
+    if (dealerUser.categories && dealerUser.categories.length) {
+      document.getElementById('detail-categories').innerHTML = dealerUser.categories.map(c => `
+        <span class="badge badge-gray">${SG.str.capitalize(c)}</span>
+      `).join('');
+    } else {
+      document.getElementById('detail-categories').textContent = 'None';
+    }
+
+    // Days waiting calculation
+    const daysAgo = SG.time.daysAgo(dealerUser.registeredAt);
+    document.getElementById('days-waiting-wrap').innerHTML = `
+      <span class="badge badge-yellow badge-waiting">⏳ ${daysAgo} Days Waiting</span>
+    `;
+
+    // Load checklist checkboxes
+    const storedChecklist = localStorage.getItem('doc_verif_' + dealerId);
+    if (storedChecklist) {
+      try {
+        const obj = JSON.parse(storedChecklist);
+        document.getElementById('chk-pan').checked = !!obj.pan;
+        document.getElementById('chk-photo').checked = !!obj.photo;
+      } catch (e) {}
+    }
+
+    // Role permissions for Actions and inputs
+    const isAuthorized = adminSession.role === 'super_admin' || adminSession.role === 'dealer_manager';
+    if (!isAuthorized) {
+      document.getElementById('unauthorized-message').classList.remove('hidden');
+      // Disable inputs
+      document.getElementById('decision-tier').disabled = true;
+      document.getElementById('decision-note').disabled = true;
+      document.getElementById('chk-pan').disabled = true;
+      document.getElementById('chk-photo').disabled = true;
+      // Hide or disable buttons
+      document.querySelectorAll('#authorized-controls button').forEach(b => b.disabled = true);
+    }
+
+    // If not pending, disable everything as it is already processed
+    if (dealerUser.status !== 'pending') {
+      document.getElementById('decision-tier').disabled = true;
+      document.getElementById('decision-note').disabled = true;
+      document.getElementById('chk-pan').disabled = true;
+      document.getElementById('chk-photo').disabled = true;
+      document.querySelectorAll('#authorized-controls button').forEach(b => b.classList.add('hidden'));
+      
+      const processedMsg = document.createElement('div');
+      processedMsg.className = 'alert alert-info mt-3-rem';
+      processedMsg.innerHTML = `<span>✔️</span> <span>Application has already been processed and is <strong>${SG.str.capitalize(dealerUser.status)}</strong>.</span>`;
+      document.getElementById('authorized-controls').appendChild(processedMsg);
+    }
+  }
+
+  function saveChecklistState() {
+    const pan = document.getElementById('chk-pan').checked;
+    const photo = document.getElementById('chk-photo').checked;
+    localStorage.setItem('doc_verif_' + dealerId, JSON.stringify({ pan, photo }));
+  }
+
+  function copyValue(elementId, label) {
+    const text = document.getElementById(elementId).textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      SG.toast.success('Copied!', `${label} copied to clipboard.`);
+    }).catch(() => {
+      SG.toast.error('Copy Failed', 'Unable to copy text.');
+    });
+  }
+
+  function simulatePdf(docType) {
+    SG.toast.info('Document Display', `Simulating document inspection window for ${docType}.`);
+    window.open(`data:application/pdf;base64,JVBERi0xLjQKJdPr6eEKMSAwIG9iaik8PC9UeXBlL0NhdGFsb2cvUGFnZXMgMiAwIFI+PmVuZG9iag==`, '_blank');
+  }
+
+  function triggerApprove() {
+    const tier = document.getElementById('decision-tier').value;
+    const note = document.getElementById('decision-note').value.trim();
+
+    // Verify all checklists are ticked
+    const pan = document.getElementById('chk-pan').checked;
+    const photo = document.getElementById('chk-photo').checked;
+
+    if (!pan || !photo) {
+      SG.toast.error('Checklist Incomplete', 'Please verify and check all document requirements before approving.');
+      return;
+    }
+
+    SG.modal.confirm(
+      'Approve Dealer Application',
+      `Are you sure you want to approve **${dealerUser.businessName}**? This will issue their access token and activate the account.`,
+      () => {
+        const tempPass = SG.admin.approveDealer(dealerId, tier, note);
+        if (tempPass) {
+          SG.modal.alert(
+            'Dealer Approved Successfully',
+            `Account for <strong>${dealerUser.businessName}</strong> has been approved and activated.<br><br>` +
+            `A temporary security credential was generated:<br>` +
+            `<div class="temp-pass-display">${tempPass}</div>` +
+            `Please share this password securely with the dealer. They will be prompted to update it upon their first login.`,
+            () => { window.location.href = 'registration-queue.html'; }
+          );
+        } else {
+          SG.toast.error('Approval Error', 'An error occurred during approval.');
+        }
+      }
+    );
+  }
+
+  function triggerReject() {
+    const note = document.getElementById('decision-note').value.trim();
+    if (!note) {
+      SG.toast.error('Reason Required', 'Please enter a rejection reason in the Decision Note box.');
+      return;
+    }
+
+    SG.modal.confirm(
+      'Reject Application',
+      `Are you sure you want to reject this application? This action is permanent.`,
+      () => {
+        const success = SG.admin.rejectDealer(dealerId, note);
+        if (success) {
+          SG.toast.warning('Application Rejected', 'The registration has been rejected.');
+          setTimeout(() => window.location.href = 'registration-queue.html', 1500);
+        } else {
+          SG.toast.error('Rejection Error', 'An error occurred during rejection.');
+        }
+      },
+      true
+    );
+  }
+</script>
+</body>
+</html>
+

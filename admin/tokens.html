@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tokens Portal — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    .token-row-btn {
+      background: none;
+      border: none;
+      color: var(--gold-500);
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      font-size: 13px;
+    }
+    .token-row-btn:hover {
+      color: var(--gold-400);
+    }
+    .device-detail-row table {
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin: 8px 0;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Token Lifecycle Manager</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Tokens</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count hidden"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header mb-6-rem">
+        <div>
+          <h1 class="page-title">Access Token Directory</h1>
+          <p class="page-subtitle">Configure subscription lifetimes, extend token expirations, and audit device bindings</p>
+        </div>
+      </div>
+
+      <!-- Expiry Alerts Banner -->
+      <div id="expiry-alert-banner" class="hidden mb-6-rem">
+        <!-- Alert content populated by JS -->
+      </div>
+
+      <!-- Stats Grid (5 Cards) -->
+      <div class="stats-grid stats-grid-cols-5" id="token-stats-grid">
+        <!-- JS populated stats -->
+      </div>
+
+      <!-- Main Layout Grid -->
+      <div class="grid gap-6 grid-cols-sidebar-340">
+        
+        <!-- Left: Tokens Table -->
+        <div class="table-card">
+          <div class="table-container table-container-flat">
+            <div class="overflow-x-touch">
+              <table id="tokens-table">
+                <thead>
+                  <tr>
+                    <th>Dealer Account</th>
+                    <th>Tier</th>
+                    <th>Expiration Progress</th>
+                    <th>Expiration Date</th>
+                    <th>Status</th>
+                    <th>Devices</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="tokens-tbody">
+                  <!-- JS populated rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Issue Token Form -->
+        <div class="flex-col-gap-6">
+          <div class="card">
+            <h3 class="section-title mb-4-rem">?? Issue New Access Token</h3>
+            
+            <div class="form-group">
+              <label class="form-label" for="issue-dealer-select">Approved Dealer</label>
+              <select class="form-select" id="issue-dealer-select" title="Approved Dealer">
+                <!-- Options populated dynamically (active ones filtered out) -->
+              </select>
+              <p class="form-hint form-hint-sm">Dealers with existing active tokens are automatically filtered out.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="issue-tier-select">Subscription Tier</label>
+              <select class="form-select" id="issue-tier-select" title="Subscription Tier">
+                <option value="standard">🔵 Standard Tier</option>
+                <option value="premium">? Premium Tier</option>
+                <option value="exclusive">💎 Exclusive Tier</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="issue-validity">Token Validity (Days)</label>
+              <input type="number" class="form-input" id="issue-validity" value="365" min="1" max="1000" title="Token Validity in Days">
+            </div>
+
+            <button class="btn btn-primary btn-full-width-mt-4" onclick="submitIssueToken()">
+              ? Generate Token
+            </button>
+          </div>
+
+          <!-- Quick Actions/Help Info -->
+          <div class="card">
+            <h3 class="section-title mb-8">?? Security Policy</h3>
+            <p class="security-policy-desc">Tokens allow dealers to bypass daily login MFA requirements and securely inspect our private designs. If a device signature is unlinked, that dealer must verify their browser on their next connection.</p>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/device-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession;
+  let tokens = [];
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Auth Check
+    if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+    adminSession = SG.auth.current();
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    SG.components.loadAll();
+    loadData();
+    renderStats();
+    renderTable();
+    populateDealerSelect();
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadData();
+      renderStats();
+      renderTable();
+      populateDealerSelect();
+    });
+    
+    SG.events.on('token_updated', () => {
+      loadData();
+      renderStats();
+      renderTable();
+      populateDealerSelect();
+    });
+  });
+
+  function loadData() {
+    tokens = SG.tokenMgr.getAll() || [];
+  }
+
+  function renderStats() {
+    const total = tokens.length;
+    const active = tokens.filter(t => SG.tokenMgr.getStatus(t) === 'active').length;
+    const expiring = tokens.filter(t => SG.tokenMgr.getStatus(t) === 'expiring').length;
+    const expired = tokens.filter(t => SG.tokenMgr.getStatus(t) === 'expired').length;
+    const revoked = tokens.filter(t => SG.tokenMgr.getStatus(t) === 'revoked').length;
+
+    // Render Stats
+    document.getElementById('token-stats-grid').innerHTML = `
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--blue-500)">${total}</div>
+        <div class="stat-lbl">Total Tokens</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--green-500)">${active}</div>
+        <div class="stat-lbl">Active</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--yellow-500)">${expiring}</div>
+        <div class="stat-lbl">Expiring Soon</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--red-500)">${expired}</div>
+        <div class="stat-lbl">Expired</div>
+      </div>
+      <div class="stat-card-admin">
+        <div class="stat-num" style="color:var(--gray-500)">${revoked}</div>
+        <div class="stat-lbl">Revoked</div>
+      </div>
+    `;
+
+    // Render Expiry Alert Banner
+    const expiringTokens = tokens.filter(t => SG.tokenMgr.getStatus(t) === 'expiring');
+    const banner = document.getElementById('expiry-alert-banner');
+    if (expiringTokens.length > 0) {
+      const tokensListHtml = expiringTokens.map(t => `
+        <strong>${t.businessName}</strong> (expires in ${SG.tokenMgr.daysLeft(t)} days)
+      `).join(', ');
+
+      banner.className = 'alert alert-warning mb-6-rem';
+      banner.innerHTML = `
+        <span>??</span>
+        <span><strong>Access Expirations Impending:</strong> The following tokens expire within 14 days: ${tokensListHtml}. Please coordinate renewals.</span>
+      `;
+      banner.classList.remove('hidden');
+    } else {
+      banner.classList.add('hidden');
+    }
+  }
+
+  function renderTable() {
+    const tbody = document.getElementById('tokens-tbody');
+    if (!tbody) return;
+    
+    if (!tokens.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="text-center-muted-padding">No access tokens issued yet.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = tokens.map(t => {
+      const status = SG.tokenMgr.getStatus(t);
+      const days = SG.tokenMgr.daysLeft(t);
+      const pct = SG.tokenMgr.expiryProgress(t);
+      
+      let fill = 'var(--green-500)';
+      if (status === 'expiring') fill = 'var(--yellow-500)';
+      if (status === 'expired') fill = 'var(--red-500)';
+      if (status === 'revoked') fill = 'var(--gray-500)';
+
+      let statusClass = 'badge-green';
+      if (status === 'expiring') statusClass = 'badge-yellow';
+      if (status === 'expired') statusClass = 'badge-red';
+      if (status === 'revoked') statusClass = 'badge-gray';
+
+      return `
+        <tr data-token-id="${t.id}">
+          <td>
+            <div class="text-primary-bold">${t.businessName}</div>
+            <div class="text-sm text-sm-muted">${t.dealerName} · ${t.dealerCity}</div>
+          </td>
+          <td>${SG.statusBadge(t.tier)}</td>
+          <td>
+            <div class="w-120">
+              <div class="token-expiry-bar"><div class="token-expiry-fill" style="width:${pct}%;background:${fill};"></div></div>
+              <div class="text-xs text-sm-muted mt-3-rem">${days}d left</div>
+            </div>
+          </td>
+          <td>${SG.time.format(t.expiresAt)}</td>
+          <td><span class="badge ${statusClass}">${SG.str.capitalize(status)}</span></td>
+          <td>
+            <button class="token-row-btn" onclick="toggleDeviceRow('${t.id}')">
+              📱 ${t.devices?.length || 0} Devices
+            </button>
+          </td>
+          <td>
+            <div class="flex gap-2 justify-end">
+              <button class="btn btn-sm btn-secondary" onclick="SG.tokenMgr.openExtendModal('${t.id}')">Extend</button>
+              ${status !== 'revoked' ? `<button class="btn btn-sm btn-danger" onclick="SG.tokenMgr.confirmRevoke('${t.id}')">Revoke</button>` : '—'}
+            </div>
+          </td>
+        </tr>
+        <tr id="device-row-${t.id}" class="device-detail-row hidden">
+          <td colspan="7" class="device-detail-cell">
+            <div id="device-details-${t.id}"></div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  function toggleDeviceRow(tokenId) {
+    const row = document.getElementById('device-row-' + tokenId);
+    if (!row) return;
+    
+    if (row.classList.contains('hidden')) {
+      row.classList.remove('hidden');
+      renderDeviceList(tokenId);
+    } else {
+      row.classList.add('hidden');
+    }
+  }
+
+  function renderDeviceList(tokenId) {
+    const token = tokens.find(t => t.id === tokenId);
+    const container = document.getElementById('device-details-' + tokenId);
+    if (!token || !container) return;
+
+    const devices = SG.deviceMgr.listForDealer(token.dealerId);
+    if (!devices.length) {
+      container.innerHTML = `<div class="text-xs-muted-padding-8">No authorized devices registered for this token.</div>`;
+      return;
+    }
+
+    const rows = devices.map(d => {
+      const shortUA = d.userAgent.split(') ').pop() || d.userAgent;
+      return `
+        <tr class="device-tr-row">
+          <td class="fingerprint-cell">${d.fingerprint}</td>
+          <td class="ua-cell">${shortUA}</td>
+          <td class="time-cell">${SG.time.formatFull(d.registeredAt)}</td>
+          <td class="time-cell">${SG.time.relative(d.lastSeen)}</td>
+          <td class="text-right">
+            <button class="btn btn-sm btn-danger btn-ghost btn-remove-device" onclick="removeDeviceBinding('${token.dealerId}', '${d.id}', '${tokenId}')">Remove</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    container.innerHTML = `
+      <div class="device-header-title">Authorized Device Signatures (${devices.length})</div>
+      <table class="device-table">
+        <thead>
+          <tr class="device-thead-tr">
+            <th>Fingerprint</th>
+            <th>Browser / OS</th>
+            <th>Bound On</th>
+            <th>Last Active</th>
+            <th class="text-right">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${rows}
+        </tbody>
+      </table>
+    `;
+  }
+
+  function removeDeviceBinding(dealerId, deviceId, tokenId) {
+    SG.modal.confirm(
+      'Remove Device Binding',
+      'De-authorize this device browser signature? The dealer will be required to re-verify upon next connection from this browser.',
+      () => {
+        const success = SG.deviceMgr.remove(dealerId, deviceId);
+        if (success) {
+          SG.toast.success('Device Revoked', 'The device fingerprint signature has been removed.');
+          // Reload everything
+          loadData();
+          renderStats();
+          renderTable();
+          renderDeviceList(tokenId);
+        } else {
+          SG.toast.error('Error', 'Unable to remove device signature.');
+        }
+      },
+      true
+    );
+  }
+
+  function populateDealerSelect() {
+    const select = document.getElementById('issue-dealer-select');
+    select.innerHTML = '<option value="">Select a dealer…</option>';
+    
+    // Find dealers who don't have an active or expiring token
+    const activeDealerIds = tokens
+      .filter(t => {
+        const status = SG.tokenMgr.getStatus(t);
+        return status === 'active' || status === 'expiring';
+      })
+      .map(t => t.dealerId);
+
+    // Fetch approved dealers
+    let users = [];
+    SG.dal._allowRawAccess = true;
+    try {
+      users = SG.dal.safeGet('users') || [];
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+    
+    const approvedDealers = users.filter(u => u.role === 'dealer' && u.status === 'approved');
+    const availableDealers = approvedDealers.filter(d => !activeDealerIds.includes(d.id));
+
+    availableDealers.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d.id;
+      opt.textContent = `${d.businessName} (${d.name})`;
+      select.appendChild(opt);
+    });
+  }
+
+  function submitIssueToken() {
+    const dealerId = document.getElementById('issue-dealer-select').value;
+    const tier = document.getElementById('issue-tier-select').value;
+    const validityDays = parseInt(document.getElementById('issue-validity').value) || 365;
+
+    if (!dealerId) {
+      SG.toast.error('Dealer Required', 'Please select an approved dealer to issue a token to.');
+      return;
+    }
+
+    const token = SG.admin.issueToken(dealerId, tier, validityDays);
+    if (token) {
+      SG.toast.success('Token Generated', `Access token successfully created.`);
+      loadData();
+      renderStats();
+      renderTable();
+      populateDealerSelect();
+    } else {
+      SG.toast.error('Error', 'Could not generate access token.');
+    }
+  }
+</script>
+</body>
+</html>
+

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Edit Design Specifications — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Design Management</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span>Catalogue</span><span>›</span><span class="current">Edit Product</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content" style="max-width:800px;">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Edit Design Specs</h1>
+          <p class="page-subtitle">Update design weights, gold purity levels, or imagery properties.</p>
+        </div>
+        <div class="page-actions">
+          <a href="catalogue.html" class="btn btn-secondary btn-sm">← Back to Catalogue</a>
+        </div>
+      </div>
+
+      <!-- Form Card -->
+      <div class="card">
+        <form id="edit-product-form" onsubmit="updateProduct(event)">
+          <input type="hidden" id="product-id">
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;">
+            <div class="form-group">
+              <label class="form-label" for="product-code">BIS Product Code (Read-Only)</label>
+              <input type="text" id="product-code" class="form-input" disabled style="background:var(--bg-secondary);color:var(--text-disabled)">
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="product-name">Design Name</label>
+              <input type="text" id="product-name" class="form-input" required>
+            </div>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr 1fr;" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="product-collection">Collection</label>
+              <select id="product-collection" class="form-select" required>
+                <!-- Loaded via JS -->
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label" for="product-weight">Net Gold Weight (g)</label>
+              <input type="text" id="product-weight" class="form-input" placeholder="e.g. 14.2g" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-purity">Gold Purity Grade</label>
+              <select id="product-purity" class="form-select" required>
+                <option value="22 Karat">22 Karat (916 Hallmarked)</option>
+                <option value="18 Karat">18 Karat (750 Hallmarked)</option>
+                <option value="14 Karat">14 Karat (585 Hallmarked)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="product-image">Primary Image URL</label>
+            <input type="url" id="product-image" class="form-input" required>
+            <div style="margin-top:8px;text-align:center;">
+              <img id="image-preview" src="" alt="Preview" style="max-height:160px;object-fit:cover;border-radius:6px;border:1px solid var(--border-subtle);display:none;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="product-desc">Short Description</label>
+            <textarea id="product-desc" class="form-input" style="height:80px;resize:none;" required></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top:12px;">
+            <label class="form-label" for="product-ai-desc">AI Generated Description Detail</label>
+            <textarea id="product-ai-desc" class="form-input" style="height:120px;resize:none;"></textarea>
+          </div>
+
+          <div class="grid gap-4" style="grid-template-columns: 1fr 1fr;" style="margin-top:12px;">
+            <div class="form-group">
+              <label class="form-label" for="product-occasions">Occasions (Semicolon separated)</label>
+              <input type="text" id="product-occasions" class="form-input" placeholder="Wedding; Engagement; Party">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="product-keywords">Search Keywords (Comma separated)</label>
+              <input type="text" id="product-keywords" class="form-input" placeholder="gold, sapphire, traditional">
+            </div>
+          </div>
+
+          <div style="margin-top:24px;display:flex;justify-content:flex-end;gap:12px;border-top:1px solid var(--border-subtle);padding-top:16px;">
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='catalogue.html'">Cancel</button>
+            <button type="submit" class="btn btn-primary">?? Save Specifications</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script>
+let productId = '';
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'catalogue_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Populate Collections Dropdown
+  const collections = SG.dal.safeGet('collections') || [];
+  const colSelect = document.getElementById('product-collection');
+  collections.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.name;
+    colSelect.appendChild(opt);
+  });
+
+  productId = SG.params.get('id');
+  if (!productId) {
+    SG.toast.error('No ID Parameter', 'Redirecting back to catalogue.');
+    setTimeout(() => window.location.href = 'catalogue.html', 1500);
+    return;
+  }
+
+  loadProductDetails(session.id);
+
+  // Image preview live update
+  document.getElementById('product-image').addEventListener('input', (e) => {
+    const preview = document.getElementById('image-preview');
+    if (e.target.value) {
+      preview.src = e.target.value;
+      preview.style.display = 'inline-block';
+    } else {
+      preview.style.display = 'none';
+    }
+  });
+});
+
+function loadProductDetails(adminId) {
+  try {
+    const product = SG.dal.products.get(adminId, productId);
+    if (!product) {
+      SG.toast.error('Not Found', 'The requested product record could not be loaded.');
+      setTimeout(() => window.location.href = 'catalogue.html', 1500);
+      return;
+    }
+
+    document.getElementById('product-id').value = product.id;
+    document.getElementById('product-code').value = product.code;
+    document.getElementById('product-name').value = product.name;
+    document.getElementById('product-collection').value = product.collectionId;
+    document.getElementById('product-weight').value = product.weight;
+    document.getElementById('product-purity').value = product.purity;
+    document.getElementById('product-desc').value = product.description;
+    document.getElementById('product-ai-desc').value = product.aiDescription || '';
+    document.getElementById('product-occasions').value = (product.occasions || []).join('; ');
+    document.getElementById('product-keywords').value = (product.searchKeywords || []).join(', ');
+
+    const imgUrl = product.images?.[0] || '';
+    if (imgUrl) {
+      const preview = document.getElementById('image-preview');
+      preview.src = imgUrl;
+      preview.style.display = 'inline-block';
+      document.getElementById('product-image').value = imgUrl;
+    }
+  } catch(e) {
+    SG.toast.error('Access Blocked', e.message);
+  }
+}
+
+function updateProduct(e) {
+  e.preventDefault();
+  const name = document.getElementById('product-name').value.trim();
+  const collectionId = document.getElementById('product-collection').value;
+  const collectionName = document.getElementById('product-collection').options[document.getElementById('product-collection').selectedIndex].text;
+  const weight = document.getElementById('product-weight').value.trim();
+  const purity = document.getElementById('product-purity').value;
+  const image = document.getElementById('product-image').value.trim();
+  const description = document.getElementById('product-desc').value.trim();
+  const aiDescription = document.getElementById('product-ai-desc').value.trim();
+  const occasionsRaw = document.getElementById('product-occasions').value;
+  const keywordsRaw = document.getElementById('product-keywords').value;
+
+  const occasions = occasionsRaw.split(';').map(o => o.trim()).filter(Boolean);
+  const searchKeywords = keywordsRaw.split(',').map(k => k.trim()).filter(Boolean);
+
+  SG.dal._allowRawAccess = true;
+  try {
+    const products = SG.dal.safeGet('products') || [];
+    const index = products.findIndex(p => p.id === productId);
+    
+    if (index >= 0) {
+      products[index] = {
+        ...products[index],
+        name,
+        collectionId,
+        collectionName,
+        weight,
+        purity,
+        description,
+        aiDescription,
+        occasions,
+        searchKeywords,
+        images: [image, ...products[index].images.slice(1)]
+      };
+
+      SG.store.set('products', products);
+      SG.toast.success('Design Saved', `"${name}" was successfully updated.`);
+      SG.audit('PRODUCT_SPEC_UPDATED', productId, `Updated weight: ${weight}, purity: ${purity}`);
+      
+      setTimeout(() => {
+        window.location.href = 'catalogue.html';
+      }, 1500);
+    } else {
+      SG.toast.error('Error', 'Product ID could not be matched.');
+    }
+  } catch(err) {
+    SG.toast.error('Write Refused', err.message);
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+}
+</script>
+</body>
+</html>
+

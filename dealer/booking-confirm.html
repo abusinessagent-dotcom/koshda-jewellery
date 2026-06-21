@@ -1,0 +1,239 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Confirmed — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <style>
+    body {
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+    }
+    body.loaded {
+      opacity: 1;
+    }
+    .confirm-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-8) 0;
+      min-height: calc(100vh - 120px);
+    }
+    .confirm-card {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-default);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      text-align: center;
+      box-shadow: var(--shadow-xl);
+    }
+    .success-checkmark {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto var(--space-6) auto;
+      position: relative;
+    }
+    .checkmark-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(34, 197, 94, 0.1);
+      border: 4px solid var(--green-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: scale-bounce 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+    .checkmark-icon {
+      font-size: 38px;
+      color: var(--green-500);
+      line-height: 80px;
+      font-weight: bold;
+    }
+    @keyframes scale-bounce {
+      0% { transform: scale(0); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .booking-ref-confirm {
+      font-family: var(--font-mono);
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--gold-500);
+      margin: var(--space-4) 0;
+      letter-spacing: 0.05em;
+    }
+    .button-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: var(--space-6);
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main Content -->
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div>
+        <div class="dealer-title-lg">🎉 Booking Success</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="avatar" id="topbar-avatar-dealer">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content">
+      <div class="confirm-container">
+        <div class="confirm-card">
+          <!-- CSS Bouncing Checkmark -->
+          <div class="success-checkmark">
+            <div class="checkmark-circle">
+              <span class="checkmark-icon">✓</span>
+            </div>
+          </div>
+
+          <h2 class="confirm-title">Booking Request Received</h2>
+          <p class="confirm-subtitle">Thank you for submitting your booking enquiry.</p>
+
+          <div class="confirm-info-box">
+            <div class="ref-label">Booking Reference</div>
+            <div class="booking-ref-confirm" id="booking-ref-code">SG-XXXXXX</div>
+            
+            <div class="confirm-meta-row">
+              <span>Items:</span>
+              <span id="booking-items-count" class="bold-primary">0 designs</span>
+            </div>
+          </div>
+
+          <!-- WhatsApp Status Badge -->
+          <div class="mb-6">
+            <span class="badge badge-green whatsapp-badge">
+              <span class="icon-14">💬</span>
+              <span>WhatsApp sent to: <strong id="masked-phone">+91 ******9999</strong></span>
+            </span>
+          </div>
+
+          <div class="confirm-description">
+            Your booking request has been successfully submitted to Koshda Jewellery House. We will review your selections and get in touch with you within 24 hours.
+          </div>
+
+          <!-- Actions -->
+          <div class="button-stack">
+            <button id="track-btn" class="btn btn-primary btn-confirm">
+              🔍 Track This Booking
+            </button>
+            <button onclick="window.location.href='product-list.html'" class="btn btn-secondary btn-confirm">
+              💍 Continue Browsing
+            </button>
+            <button onclick="window.location.href='booking-history.html'" class="btn btn-ghost btn-confirm">
+              📋 View All Orders
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Require dealer auth
+    if (!SG.auth.requireDealer()) return;
+
+    // Fade in page
+    document.body.classList.add('loaded');
+
+    const session = SG.auth.current();
+    const user = SG.auth.getUser(session.id);
+
+    // Set topbar avatar
+    const initials = session.avatar || SG.str.initials(session.name);
+    const topbarAvatar = document.getElementById('topbar-avatar-dealer');
+    if (topbarAvatar) topbarAvatar.textContent = initials;
+
+    // Set active page to booking history page
+    SG.components.setActivePage('booking-history.html');
+
+    // Read ref and id from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    let bookingRef = urlParams.get('ref');
+    let bookingId = urlParams.get('id');
+
+    // Fallback to sessionStorage if not provided in URL
+    if (!bookingRef) {
+      bookingRef = sessionStorage.getItem('last_booking_ref');
+    }
+    if (!bookingId) {
+      bookingId = sessionStorage.getItem('last_booking_id');
+    }
+
+    // Set fallback display if completely missing
+    if (!bookingRef) bookingRef = 'SG-XXXXXX';
+    
+    document.getElementById('booking-ref-code').textContent = bookingRef;
+
+    // Load booking record if possible to get correct item count
+    let itemCount = 0;
+    if (bookingId) {
+      const bookings = SG.booking.forDealer(session.id);
+      const b = bookings.find(item => item.id === bookingId);
+      if (b) {
+        itemCount = b.items.length;
+      }
+    }
+    
+    // Set item count text
+    document.getElementById('booking-items-count').textContent = `${itemCount} design${itemCount !== 1 ? 's' : ''}`;
+
+    // Set phone number masking
+    const phone = user?.phone;
+    document.getElementById('masked-phone').textContent = maskPhone(phone);
+
+    // Action button to track booking
+    const trackBtn = document.getElementById('track-btn');
+    trackBtn.addEventListener('click', () => {
+      if (bookingId) {
+        window.location.href = `booking-detail.html?id=${bookingId}`;
+      } else {
+        window.location.href = 'booking-history.html';
+      }
+    });
+  });
+
+  function maskPhone(phone) {
+    if (!phone) return '+91 ******9999';
+    let clean = phone.replace(/[\s-]/g, '');
+    if (clean.startsWith('+')) {
+      const countryCode = clean.slice(0, 3); // e.g. +91
+      const last4 = clean.slice(-4);
+      return `${countryCode} ******${last4}`;
+    } else {
+      const last4 = clean.slice(-4);
+      return `+91 ******${last4}`;
+    }
+  }
+</script>
+</body>
+</html>
+

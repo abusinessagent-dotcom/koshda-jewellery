@@ -1,0 +1,37 @@
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T18:16:11.111+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3000,"productsLoaded":30,"service":"koshda-b2b","startup_ms":16,"timestamp":"2026-06-20T18:16:11.120+05:30"}
+{"duration_ms":10,"ip":"::1","level":"warn","message":"HTTP request error","method":"GET","service":"koshda-b2b","status":404,"timestamp":"2026-06-20T18:16:55.184+05:30","url":"/admin/login.html"}
+{"ip":"::1","level":"info","message":"Admin access key verified successfully","service":"koshda-b2b","timestamp":"2026-06-20T18:17:27.201+05:30"}
+{"duration_ms":15,"ip":"::1","level":"info","message":"POST /verify-admin-access","method":"POST","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T18:17:27.204+05:30","url":"/verify-admin-access"}
+{"duration_ms":1,"ip":"::1","level":"warn","message":"HTTP request error","method":"POST","service":"koshda-b2b","status":401,"timestamp":"2026-06-20T18:19:14.646+05:30","url":"/verify-admin-access"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T18:37:15.261+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3000,"productsLoaded":30,"service":"koshda-b2b","startup_ms":15,"timestamp":"2026-06-20T18:37:15.270+05:30"}
+{"ip":"::1","level":"info","message":"Admin access key verified successfully","service":"koshda-b2b","timestamp":"2026-06-20T18:37:37.989+05:30"}
+{"duration_ms":17,"ip":"::1","level":"info","message":"POST /verify-admin-access","method":"POST","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T18:37:37.993+05:30","url":"/verify-admin-access"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T20:08:16.604+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3000,"productsLoaded":30,"service":"koshda-b2b","startup_ms":17,"timestamp":"2026-06-20T20:08:16.612+05:30"}
+{"duration_ms":6,"ip":"::1","level":"info","message":"GET /","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:11:14.690+05:30","url":"/"}
+{"duration_ms":1,"ip":"::1","level":"info","message":"GET /css/style.css","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:11:14.725+05:30","url":"/css/style.css"}
+{"duration_ms":1,"ip":"::1","level":"info","message":"GET /js/app.js","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:11:14.759+05:30","url":"/js/app.js"}
+{"duration_ms":1,"ip":"::1","level":"info","message":"GET /public/assets/css/style.css","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:11:14.805+05:30","url":"/public/assets/css/style.css"}
+{"duration_ms":14,"ip":"::1","level":"warn","message":"HTTP request error","method":"POST","service":"koshda-b2b","status":401,"timestamp":"2026-06-20T20:11:22.346+05:30","url":"/verify-admin-access"}
+{"duration_ms":2,"ip":"::1","level":"warn","message":"HTTP request error","method":"POST","service":"koshda-b2b","status":401,"timestamp":"2026-06-20T20:11:22.391+05:30","url":"/api/auth/verify-secret"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T20:17:01.157+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3000,"productsLoaded":30,"service":"koshda-b2b","startup_ms":12,"timestamp":"2026-06-20T20:17:01.163+05:30"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T20:34:50.290+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3001,"productsLoaded":30,"service":"koshda-b2b","startup_ms":19,"timestamp":"2026-06-20T20:34:50.302+05:30"}
+{"duration_ms":4,"ip":"::1","level":"warn","message":"HTTP request error","method":"GET","service":"koshda-b2b","status":401,"timestamp":"2026-06-20T20:34:50.501+05:30","url":"/api/products"}
+{"duration_ms":4,"ip":"::1","level":"warn","message":"HTTP request error","method":"GET","service":"koshda-b2b","status":403,"timestamp":"2026-06-20T20:34:50.518+05:30","url":"/api/products"}
+{"duration_ms":10,"ip":"::1","level":"info","message":"GET /api/products","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:34:50.531+05:30","url":"/api/products"}
+{"duration_ms":2,"ip":"::1","level":"info","message":"GET /api/products","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:34:50.535+05:30","url":"/api/products"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T20:49:26.897+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3001,"productsLoaded":30,"service":"koshda-b2b","startup_ms":16,"timestamp":"2026-06-20T20:49:26.907+05:30"}
+{"duration_ms":7,"ip":"::1","level":"warn","message":"HTTP request error","method":"GET","service":"koshda-b2b","status":404,"timestamp":"2026-06-20T20:49:27.030+05:30","url":"/config/image-config.js"}
+{"duration_ms":3,"ip":"::1","level":"info","message":"GET /config/config.js","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:49:27.043+05:30","url":"/config/config.js"}
+{"duration_ms":13,"ip":"::1","level":"info","message":"GET /api/products","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:49:27.064+05:30","url":"/api/products"}
+{"level":"info","message":"Loaded 30 products from data/products.json","service":"koshda-b2b","timestamp":"2026-06-20T20:53:49.857+05:30"}
+{"adminEmail":"admin@koshda.in","environment":"development","level":"info","message":"Server started","port":3001,"productsLoaded":30,"service":"koshda-b2b","startup_ms":11,"timestamp":"2026-06-20T20:53:49.863+05:30"}
+{"duration_ms":5,"ip":"::1","level":"warn","message":"HTTP request error","method":"GET","service":"koshda-b2b","status":404,"timestamp":"2026-06-20T20:53:49.942+05:30","url":"/config/image-config.js"}
+{"duration_ms":3,"ip":"::1","level":"info","message":"GET /config/config.js","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:53:49.954+05:30","url":"/config/config.js"}
+{"duration_ms":13,"ip":"::1","level":"info","message":"GET /api/products","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:53:49.973+05:30","url":"/api/products"}
+{"duration_ms":2,"ip":"::1","level":"info","message":"GET /x9k2p7-admin/public/assets/css/style.css","method":"GET","service":"koshda-b2b","status":200,"timestamp":"2026-06-20T20:53:49.976+05:30","url":"/x9k2p7-admin/public/assets/css/style.css"}

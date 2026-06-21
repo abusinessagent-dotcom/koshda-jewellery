@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Command Centre — Secure Gate</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="stylesheet" href="/public/assets/css/style.css">
+  <link rel="stylesheet" href="/public/assets/css/components.css">
+  <link rel="stylesheet" href="/public/assets/css/admin.css">
+  <link rel="stylesheet" href="/public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔐</text></svg>">
+  
+  <style>
+    :root {
+      --bg-cyber: #0A0A0E;
+      --card-cyber: rgba(18, 18, 24, 0.75);
+      --gold-glowing: #D4AF37;
+      --border-glowing: rgba(212, 175, 55, 0.25);
+    }
+    
+    body.cyber-gate-body {
+      background-color: var(--bg-cyber);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(212, 175, 55, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.05) 0px, transparent 50%);
+      color: #E2E8F0;
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      box-sizing: border-box;
+      margin: 0;
+    }
+
+    .cyber-card {
+      background: var(--card-cyber);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glowing);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8), 0 0 20px 0 rgba(212, 175, 55, 0.05);
+      padding: 40px;
+      width: 100%;
+      max-width: 440px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    .cyber-logo-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      display: inline-block;
+      filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.4));
+    }
+
+    .cyber-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      font-weight: 600;
+      color: #FFFFFF;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+
+    .cyber-subtitle {
+      color: #94A3B8;
+      font-size: 13px;
+      line-height: 1.5;
+      margin-bottom: 28px;
+    }
+
+    .form-group-cyber {
+      text-align: left;
+      margin-bottom: 24px;
+    }
+
+    .form-label-cyber {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--gold-glowing);
+      margin-bottom: 8px;
+    }
+
+    .input-wrapper-cyber {
+      position: relative;
+    }
+
+    .input-cyber {
+      width: 100%;
+      background: rgba(10, 10, 14, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      color: #FFFFFF;
+      padding: 12px 48px 12px 16px;
+      font-size: 16px;
+      letter-spacing: 0.05em;
+      box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+
+    .input-cyber:focus {
+      outline: none;
+      border-color: var(--gold-glowing);
+      box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+    }
+
+    .eye-toggle-cyber {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #94A3B8;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-cyber {
+      background: linear-gradient(135deg, #D4AF37 0%, #AA820A 100%);
+      border: none;
+      border-radius: 8px;
+      color: #0A0A0E;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 14px 24px;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-cyber:hover:not(:disabled) {
+      box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
+      filter: brightness(1.1);
+    }
+
+    .btn-cyber:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .alert-cyber {
+      font-size: 11px;
+      line-height: 1.5;
+      background: rgba(212, 175, 55, 0.04);
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      border-radius: 6px;
+      padding: 10px 12px;
+      color: #E2E8F0;
+      margin-bottom: 24px;
+    }
+
+    .badge-attempts {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: rgba(212, 175, 55, 0.08);
+      color: var(--gold-glowing);
+      border: 1px solid rgba(212, 175, 55, 0.2);
+      margin-top: 8px;
+    }
+
+    .badge-attempts.warning {
+      background: rgba(239, 68, 68, 0.08);
+      color: #EF4444;
+      border-color: rgba(239, 68, 68, 0.2);
+    }
+
+    .error-msg-cyber {
+      color: #EF4444;
+      font-size: 12px;
+      margin-top: 12px;
+      font-weight: 600;
+      line-height: 1.4;
+    }
+
+    .spinner-cyber {
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #0A0A0E;
+      border-radius: 50%;
+      width: 14px;
+      height: 14px;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .shake-anim {
+      animation: shake 0.35s ease;
+    }
+  </style>
+</head>
+<body class="cyber-gate-body">
+<div id="toast-container"></div>
+
+<div class="cyber-card" id="gate-container">
+  <div class="cyber-logo-icon">🔐</div>
+  <h1 class="cyber-title">Security Console</h1>
+  <p class="cyber-subtitle">Enter the administrator access key to proceed</p>
+  
+  <div class="alert-cyber">
+    🛡️ Unauthorized entry is strictly prohibited. All attempts, IP addresses, and session activities are cryptographically recorded in the system audit logs.
+  </div>
+
+  <form id="access-form" autocomplete="off" onsubmit="handleVerify(event)">
+    <div class="form-group-cyber">
+      <label class="form-label-cyber" for="access-code">Secret Access Key</label>
+      <div class="input-wrapper-cyber">
+        <input 
+          type="password" 
+          id="access-code" 
+          name="code" 
+          class="input-cyber" 
+          placeholder="••••••••••••••••" 
+          required 
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <button type="button" class="eye-toggle-cyber" id="eye-btn" onclick="toggleVisibility()" aria-label="Toggle Code Visibility">👁️</button>
+      </div>
+      <div class="text-center" id="attempts-container">
+        <span class="badge-attempts" id="attempts-badge">5 attempts remaining</span>
+      </div>
+    </div>
+
+    <button type="submit" class="btn-cyber" id="submit-btn">Verify Access Key</button>
+    <div class="error-msg-cyber" id="error-box"></div>
+  </form>
+</div>
+
+<script src="/public/assets/js/utils.js" defer></script>
+<script src="/public/assets/js/auth.js" defer></script>
+<script>
+  let failedCount = 0;
+  
+  document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('access-code');
+    if (input) input.focus();
+  });
+
+  function toggleVisibility() {
+    const input = document.getElementById('access-code');
+    const btn = document.getElementById('eye-btn');
+    if (input.type === 'password') {
+      input.type = 'text';
+      btn.textContent = '🔒';
+    } else {
+      input.type = 'password';
+      btn.textContent = '👁️';
+    }
+  }
+
+  async function handleVerify(e) {
+    e.preventDefault();
+    const input = document.getElementById('access-code');
+    const submitBtn = document.getElementById('submit-btn');
+    const errorBox = document.getElementById('error-box');
+    const attemptsBadge = document.getElementById('attempts-badge');
+    const gateContainer = document.getElementById('gate-container');
+
+    const code = input.value;
+    if (!code) return;
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-cyber"></span> Verifying Key...';
+    errorBox.textContent = '';
+    
+    try {
+      // Use standard fetch directly for verification to handle brute force / IP blocks correctly
+      const res = await fetch('/verify-admin-access', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        // Session token is set in the secure HTTP-only 'admin_token' cookie by the server.
+        // Client-side localStorage token persistence is removed to mitigate XSS risks.
+        
+        // Save session
+        sessionStorage.setItem('jp_admin_secret_verified', 'true');
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_refresh_token');
+        if (typeof SG !== 'undefined' && SG.session) {
+          SG.session.set(result.user);
+          localStorage.setItem(`active_session_${result.user.id}`, result.user.sessionId);
+        }
+        
+        submitBtn.innerHTML = '✅ Access Approved';
+        
+        // Dynamic path redirect
+        const adminPath = window.location.pathname.split('/').filter(Boolean)[0] || 'x9k2p7-admin';
+        setTimeout(() => {
+          window.location.href = '/' + adminPath + '/dashboard.html';
+        }, 600);
+      } else {
+        // Validation failure or lockout
+        errorBox.textContent = result.error || 'Failed to authenticate.';
+        
+        // Handle remaining attempts display
+        failedCount++;
+        const remaining = Math.max(0, 5 - failedCount);
+        
+        if (res.status === 429) {
+          // Locked out
+          attemptsBadge.textContent = 'IP BLOCKED';
+          attemptsBadge.classList.add('warning');
+          input.disabled = true;
+          submitBtn.disabled = true;
+        } else {
+          // Normal failure
+          attemptsBadge.textContent = `${remaining} attempt(s) remaining`;
+          if (remaining <= 2) {
+            attemptsBadge.classList.add('warning');
+          }
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Verify Access Key';
+          input.value = '';
+          input.focus();
+        }
+
+        // Shake effect on failure
+        gateContainer.classList.remove('shake-anim');
+        gateContainer.offsetHeight; // reflow trigger
+        gateContainer.classList.add('shake-anim');
+      }
+    } catch (err) {
+      console.error('Secret verification error:', err);
+      errorBox.textContent = 'An error occurred during secure validation. Please check your connection.';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Verify Access Key';
+    }
+  }
+</script>
+</body>
+</html>

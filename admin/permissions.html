@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Permissions Matrix — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <style>
+    .matrix-checkbox {
+      transform: scale(1.1);
+      cursor: pointer;
+    }
+    .audit-list-item {
+      padding: var(--space-2) 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .audit-list-item:last-child {
+      border-bottom: none;
+    }
+    .dealer-row-checkbox {
+      margin-right: 8px;
+    }
+  </style>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Catalogue Permissions</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Permissions</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="live-indicator" id="live-indicator"><div class="live-dot"></div> Live</div>
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-av">AM</div>
+      </div>
+    </header>
+
+    <div class="admin-content">
+      <div class="page-header" style="margin-bottom:var(--space-6);">
+        <div>
+          <h1 class="page-title">Permissions Manager</h1>
+          <p class="page-subtitle">Configure collection access rights and subscriptions across approved dealers</p>
+        </div>
+      </div>
+
+      <!-- Search & Bulk Controls Grid -->
+      <div class="card" style="margin-bottom:var(--space-6);padding:var(--space-4);">
+        <div class="flex gap-4 items-center justify-between flex-wrap">
+          <!-- Filters -->
+          <div class="flex gap-3 items-center flex-wrap" style="flex:1;min-width:300px;">
+            <input type="text" class="form-input" id="matrix-search" placeholder="Search dealer or city…" oninput="handleSearch()" style="max-width:280px;">
+            <select class="form-select" id="matrix-tier-filter" title="Filter by dealer tier" onchange="handleSearch()" style="width:auto;">
+              <option value="">All Tiers</option>
+              <option value="standard">Standard</option>
+              <option value="premium">Premium</option>
+              <option value="exclusive">Exclusive</option>
+            </select>
+          </div>
+
+          <!-- Bulk Operations -->
+          <div class="flex gap-2 items-center">
+            <span style="font-size:12px;color:var(--text-muted);font-weight:600;" id="selection-count">0 selected</span>
+            <select class="form-select" id="bulk-action-select" title="Bulk permission action" style="width:auto;font-size:12px;padding:6px 12px;" disabled>
+              <option value="">Bulk Action...</option>
+              <option value="grant-all">Grant All Collections</option>
+              <option value="revoke-all">Revoke All Collections</option>
+            </select>
+            <button class="btn btn-secondary btn-sm" id="bulk-execute-btn" onclick="executeBulkAction()" disabled>Execute</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Columns Grid -->
+      <div class="grid gap-6" style="grid-template-columns: 1fr 340px;">
+        
+        <!-- Left: Matrix Table -->
+        <div class="table-card">
+          <div class="table-container" style="border:none;border-radius:0;">
+            <table id="matrix-table">
+              <thead>
+                <tr id="matrix-thead-row">
+                  <th style="width:40px;"><input type="checkbox" id="select-all-dealers" title="Select all dealers" onchange="toggleSelectAllDealers(this.checked)"></th>
+                  <th>Approved Dealer</th>
+                  <th>Tier</th>
+                  <!-- Collections headers inserted dynamically -->
+                </tr>
+              </thead>
+              <tbody id="matrix-tbody">
+                <!-- Matrix Rows filled dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right: Audits & Legend -->
+        <div style="display:flex;flex-direction:column;gap:var(--space-6);">
+          
+          <!-- Legend Card -->
+          <div class="card">
+            <h3 class="section-title" style="margin-bottom:12px;">Subscription Norms</h3>
+            <div style="font-size:12px;color:var(--text-secondary);display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="badge badge-standard">Standard</span>
+                <span>Bridal Heritage, Contemporary Daily</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="badge badge-premium">Premium</span>
+                <span>Temple Traditional (+ Standard items)</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="badge badge-exclusive">Exclusive</span>
+                <span>Festive Statement (+ All others)</span>
+              </div>
+              <div class="alert alert-info" style="margin-top:12px;font-size:11px;padding:8px 12px;line-height:1.4;">
+                <span>??</span>
+                <span>Granting access to an <strong>Exclusive</strong> collection to a <strong>Standard</strong> tier dealer triggers a security override warning and logs to the audit log.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Permission Logs Card -->
+          <div class="card">
+            <h3 class="section-title" style="margin-bottom:12px;">?? Recent Permission Actions</h3>
+            <div id="permission-audit-list">
+              <!-- Logs filled dynamically -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Special Permission Override Warn Modal -->
+<div class="modal-overlay" id="_sg_override_modal">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-header">
+      <h3 class="modal-title" style="color:var(--yellow-500)">?? Permission Policy Override</h3>
+      <button class="modal-close" onclick="closeOverrideModal()">×</button>
+    </div>
+    <div class="modal-body" style="font-size:14px;color:var(--text-secondary);line-height:1.5;">
+      <p>You are granting access to the exclusive collection <strong id="override-col-name" style="color:var(--text-primary);">[Collection]</strong> for a standard tier dealer <strong id="override-dealer-name" style="color:var(--text-primary);">[Dealer]</strong>.</p>
+      <p style="margin-top:12px;color:var(--red-400);font-weight:600;">This action overrides standard subscription boundaries.</p>
+      <p style="margin-top:8px;">Please verify administrative intent. This action will be logged under a <strong style="color:var(--text-primary);">PERMISSION_OVERRIDE</strong> event code in the security audit trail.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeOverrideModal()">Cancel Action</button>
+      <button class="btn btn-primary" style="background:var(--yellow-600);border-color:var(--yellow-500);" id="btn-confirm-override">Authorize Override</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/token-manager.js" defer></script>
+<script src="/js/live-update.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+  let adminSession;
+  let dealers = [];
+  let collections = [];
+  let selectedDealerIds = new Set();
+  
+  // Pending override tracking
+  let pendingOverrideParams = null;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Auth Check
+    if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+    adminSession = SG.auth.current();
+
+    // Access guard redirect for analytics_viewer role
+    if (adminSession.role === 'analytics_viewer') {
+      SG.toast.error('Access Denied', 'Analytics Viewers are not authorized to manage permissions.');
+      setTimeout(() => window.location.href = 'dashboard.html', 1500);
+      return;
+    }
+
+    const initials = adminSession.avatar || SG.str.initials(adminSession.name);
+    document.getElementById('topbar-av').textContent = initials;
+
+    SG.components.loadAll();
+    loadMatrixData();
+    renderMatrix();
+    renderPermissionLogs();
+
+    SG.liveUpdate.start();
+    SG.events.on('live_update', () => {
+      loadMatrixData();
+      renderMatrix();
+      renderPermissionLogs();
+    });
+  });
+
+  function loadMatrixData() {
+    SG.dal._allowRawAccess = true;
+    try {
+      const users = SG.dal.safeGet('users') || [];
+      dealers = users.filter(u => u.role === 'dealer' && u.status === 'approved');
+      collections = SG.dal.safeGet('collections') || [];
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+  }
+
+  function renderMatrix() {
+    const search = document.getElementById('matrix-search').value.toLowerCase();
+    const tier = document.getElementById('matrix-tier-filter').value;
+
+    let filteredDealers = dealers;
+    if (tier) filteredDealers = filteredDealers.filter(d => d.tier === tier);
+    if (search) {
+      filteredDealers = filteredDealers.filter(d => 
+        (d.businessName || '').toLowerCase().includes(search) ||
+        (d.name || '').toLowerCase().includes(search) ||
+        (d.city || '').toLowerCase().includes(search)
+      );
+    }
+
+    // Dynamic headers
+    const theadRow = document.getElementById('matrix-thead-row');
+    // Clear old headers (keep first 3 columns)
+    while (theadRow.cells.length > 3) {
+      theadRow.deleteCell(3);
+    }
+    // Add collections
+    collections.forEach(col => {
+      const th = document.createElement('th');
+      th.style.textAlign = 'center';
+      th.innerHTML = `
+        <div style="font-weight:600;color:var(--text-primary);font-size:12px;">${col.name}</div>
+        <div style="font-size:10px;color:var(--text-muted);font-weight:normal;margin-top:2px;">
+          ${col.coverEmoji} ${col.code}
+        </div>
+      `;
+      theadRow.appendChild(th);
+    });
+
+    // Body
+    const tbody = document.getElementById('matrix-tbody');
+    if (!filteredDealers.length) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="${3 + collections.length}" style="text-align:center;padding:50px;color:var(--text-muted);">
+            No active approved dealers found.
+          </td>
+        </tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filteredDealers.map(d => {
+      const isSelected = selectedDealerIds.has(d.id) ? 'checked' : '';
+      let tierClass = 'badge-standard';
+      if (d.tier === 'premium') tierClass = 'badge-premium';
+      if (d.tier === 'exclusive') tierClass = 'badge-exclusive';
+
+      // Build checkboxes cells
+      const cellsHtml = collections.map(col => {
+        const hasAccess = SG.auth.canAccessCollection(d.id, col.id);
+        const checked = hasAccess ? 'checked' : '';
+        return `
+          <td style="text-align:center;">
+            <input type="checkbox" class="matrix-checkbox" ${checked} onchange="handleCheckboxToggle('${d.id}', '${col.id}', this)">
+          </td>
+        `;
+      }).join('');
+
+      return `
+        <tr>
+          <td>
+            <input type="checkbox" class="dealer-row-checkbox" ${isSelected} onchange="handleDealerSelect('${d.id}', this.checked)">
+          </td>
+          <td>
+            <div style="font-weight:600;color:var(--text-primary);">${d.businessName || '—'}</div>
+            <div style="font-size:11px;color:var(--text-muted);">${d.name} · ${d.city}</div>
+          </td>
+          <td>
+            <span class="badge ${tierClass}">${SG.str.capitalize(d.tier || 'standard')}</span>
+          </td>
+          ${cellsHtml}
+        </tr>
+      `;
+    }).join('');
+
+    updateSelectionUI();
+  }
+
+  function handleDealerSelect(dealerId, isChecked) {
+    if (isChecked) {
+      selectedDealerIds.add(dealerId);
+    } else {
+      selectedDealerIds.delete(dealerId);
+    }
+    updateSelectionUI();
+  }
+
+  function toggleSelectAllDealers(isChecked) {
+    const search = document.getElementById('matrix-search').value.toLowerCase();
+    const tier = document.getElementById('matrix-tier-filter').value;
+
+    let filtered = dealers;
+    if (tier) filtered = filtered.filter(d => d.tier === tier);
+    if (search) {
+      filtered = filtered.filter(d => 
+        (d.businessName || '').toLowerCase().includes(search) ||
+        (d.name || '').toLowerCase().includes(search) ||
+        (d.city || '').toLowerCase().includes(search)
+      );
+    }
+
+    filtered.forEach(d => {
+      if (isChecked) {
+        selectedDealerIds.add(d.id);
+      } else {
+        selectedDealerIds.delete(d.id);
+      }
+    });
+
+    renderMatrix();
+  }
+
+  function updateSelectionUI() {
+    const size = selectedDealerIds.size;
+    document.getElementById('selection-count').textContent = `${size} selected`;
+    
+    const actionSelect = document.getElementById('bulk-action-select');
+    const executeBtn = document.getElementById('bulk-execute-btn');
+
+    if (size > 0) {
+      actionSelect.disabled = false;
+      executeBtn.disabled = false;
+    } else {
+      actionSelect.disabled = true;
+      executeBtn.disabled = true;
+      actionSelect.value = '';
+    }
+  }
+
+  function handleCheckboxToggle(dealerId, collectionId, checkboxEl) {
+    const dealer = dealers.find(d => d.id === dealerId);
+    const col = collections.find(c => c.id === collectionId);
+    if (!dealer || !col) return;
+
+    const isChecked = checkboxEl.checked;
+
+    if (isChecked) {
+      // INTERCEPT POLICY CHECK: Standard-to-Exclusive check
+      // Exclusive Collection has accessTiers = ['exclusive'] (or is col-004 in seeds)
+      const isExclusive = col.accessTiers && col.accessTiers.length === 1 && col.accessTiers[0] === 'exclusive';
+      const isStandardDealer = dealer.tier === 'standard';
+
+      if (isExclusive && isStandardDealer) {
+        // Intercept and show override warning modal
+        checkboxEl.checked = false; // Revert checkbox visually first
+        pendingOverrideParams = { dealerId, collectionId, checkboxEl };
+        openOverrideModal(dealer.businessName, col.name);
+        return;
+      }
+
+      // Safe grant
+      SG.admin.grantPermission(dealerId, collectionId);
+      SG.toast.success('Permission Updated', `Granted ${col.name} to ${dealer.businessName}`);
+    } else {
+      // Revoke
+      SG.admin.revokePermission(dealerId, collectionId);
+      SG.toast.warning('Permission Updated', `Revoked ${col.name} for ${dealer.businessName}`);
+    }
+    
+    renderPermissionLogs();
+  }
+
+  function openOverrideModal(dealerName, colName) {
+    document.getElementById('override-dealer-name').textContent = dealerName;
+    document.getElementById('override-col-name').textContent = colName;
+    SG.modal.open('_sg_override_modal');
+
+    document.getElementById('btn-confirm-override').onclick = () => {
+      if (pendingOverrideParams) {
+        const { dealerId, collectionId, checkboxEl } = pendingOverrideParams;
+        
+        // Grant permission
+        SG.admin.grantPermission(dealerId, collectionId);
+        
+        // Audit specifically as PERMISSION_OVERRIDE
+        const dl = dealers.find(d => d.id === dealerId);
+        const cl = collections.find(c => c.id === collectionId);
+        SG.audit('PERMISSION_OVERRIDE', dealerId, `Granted Exclusive collection ${cl.name} to Standard dealer ${dl.businessName}`);
+        
+        checkboxEl.checked = true; // Set checkbox visual checked
+        SG.toast.gold('Policy Overridden', `Exclusive collection ${cl.name} authorized for Standard dealer.`);
+      }
+      closeOverrideModal();
+      renderPermissionLogs();
+    };
+  }
+
+  function closeOverrideModal() {
+    SG.modal.close('_sg_override_modal');
+    pendingOverrideParams = null;
+  }
+
+  function handleSearch() {
+    renderMatrix();
+  }
+
+  function executeBulkAction() {
+    const action = document.getElementById('bulk-action-select').value;
+    if (!action) return;
+
+    SG.modal.confirm(
+      'Bulk Action Confirmation',
+      `Apply bulk permission update to the ${selectedDealerIds.size} selected dealers?`,
+      () => {
+        let count = 0;
+        selectedDealerIds.forEach(dealerId => {
+          collections.forEach(col => {
+            if (action === 'grant-all') {
+              // Note: bulk grants skip standard-to-exclusive intercept to prevent mass modalling,
+              // but we log overrides if they happen.
+              const dealer = dealers.find(d => d.id === dealerId);
+              const isExclusive = col.accessTiers && col.accessTiers.length === 1 && col.accessTiers[0] === 'exclusive';
+              if (isExclusive && dealer.tier === 'standard') {
+                SG.admin.grantPermission(dealerId, col.id);
+                SG.audit('PERMISSION_OVERRIDE', dealerId, `Bulk Granted Exclusive collection ${col.name} to Standard dealer ${dealer.businessName}`);
+              } else {
+                SG.admin.grantPermission(dealerId, col.id);
+              }
+              count++;
+            } else if (action === 'revoke-all') {
+              SG.admin.revokePermission(dealerId, col.id);
+              count++;
+            }
+          });
+        });
+
+        SG.toast.success('Bulk Success', `Processed ${count} permissions.`);
+        selectedDealerIds.clear();
+        renderMatrix();
+        renderPermissionLogs();
+      }
+    );
+  }
+
+  function renderPermissionLogs() {
+    const logs = SG.store.get('audit_log') || [];
+    // Filter by PERMISSION_ code
+    const permLogs = logs.filter(l => l.event && l.event.startsWith('PERMISSION_'))
+                         .sort((a,b) => new Date(b.at) - new Date(a.at))
+                         .slice(0, 10);
+
+    const container = document.getElementById('permission-audit-list');
+    if (!permLogs.length) {
+      container.innerHTML = `<div style="font-size:12px;color:var(--text-muted);padding:10px 0;">No permission events logged.</div>`;
+      return;
+    }
+
+    container.innerHTML = permLogs.map(l => {
+      let badgeCls = 'badge-gray';
+      if (l.event === 'PERMISSION_GRANTED') badgeCls = 'badge-green';
+      if (l.event === 'PERMISSION_REVOKED') badgeCls = 'badge-red';
+      if (l.event === 'PERMISSION_OVERRIDE') badgeCls = 'badge-yellow';
+
+      return `
+        <div class="audit-list-item">
+          <div>
+            <div style="font-weight:600;color:var(--text-primary);display:flex;align-items:center;gap:6px;">
+              <span class="badge ${badgeCls}" style="font-size:9px;padding:1px 4px;">${l.event.replace('PERMISSION_', '')}</span>
+            </div>
+            <div style="color:var(--text-secondary);margin-top:2px;font-size:11px;">
+              ${l.entityDesc}
+            </div>
+          </div>
+          <div style="font-size:10px;color:var(--text-muted);white-space:nowrap;">
+            ${SG.time.relative(l.at)}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+</script>
+</body>
+</html>
+

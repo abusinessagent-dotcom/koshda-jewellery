@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Details — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <div class="lightbox-content">
+    <button class="lightbox-close" onclick="closeLightbox()">?</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">‹</button>
+    <img id="lightbox-img" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">›</button>
+  </div>
+</div>
+
+<div class="dealer-layout">
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <main class="dealer-main">
+    <header class="dealer-topbar">
+      <div class="topbar-nav-back-row">
+        <button onclick="history.back()" class="btn btn-ghost btn-sm">← Back</button>
+        <div id="topbar-product-code" class="topbar-product-code-lbl"></div>
+      </div>
+      <div class="topbar-actions">
+        <a href="cart.html" class="icon-btn relative">🛒<span class="notif-dot notif-dot-gold hidden" id="cart-dot"></span></a>
+        <div class="avatar" id="topbar-avatar">RK</div>
+      </div>
+    </header>
+
+    <div class="dealer-content" id="product-page">
+      <div class="loading-product-wrapper">Loading product…</div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal for Requesting a Token -->
+<div class="modal-overlay modal-overlay-token" id="request-token-modal">
+  <div class="modal max-w-480">
+    <div class="modal-header">
+      <h3 class="modal-title">🔑 Request Category Access Token</h3>
+      <button class="modal-close" onclick="closeRequestModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="token-request-form" class="flex-col-gap-4">
+        <input type="hidden" id="req-scope-type" value="category">
+        
+        <div class="form-group">
+          <label class="form-label" for="req-category-display">Requesting Access Category</label>
+          <input type="text" class="form-input input-category-readonly" id="req-category-display" readonly title="Requesting Access Category">
+          <input type="hidden" id="req-category">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Reason for Request <span class="required">*</span></label>
+          <textarea class="form-textarea" id="req-reason" placeholder="Explain your business interest or customer request..." required></textarea>
+        </div>
+
+        <div class="modal-footer-actions-row">
+          <button type="button" class="btn btn-secondary" onclick="closeRequestModal()">Cancel</button>
+          <button type="submit" class="btn btn-filled-gold">Submit Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/watermark.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+let dealerSession = null;
+let product = null;
+let currentImg = 0;
+
+async function detectProductImages(p) {
+  const code = p.code;
+  const images = [];
+  
+  // Resolve category folder
+  let categoryFolder = 'bridal';
+  const codeLower = code.toLowerCase();
+  if (codeLower.startsWith('rg-') || codeLower.includes('-ring-')) {
+    categoryFolder = 'rings';
+  } else if (codeLower.startsWith('er-') || codeLower.includes('-earr-')) {
+    categoryFolder = 'earrings';
+  } else if (codeLower.startsWith('nk-') || codeLower.includes('-neck-')) {
+    categoryFolder = 'necklaces';
+  } else if (codeLower.startsWith('br-') || codeLower.includes('-sett-')) {
+    categoryFolder = 'bridal';
+  }
+
+  const checkImage = (url) => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => resolve(false);
+    img.src = url;
+  });
+
+  // Probe uploads sequentially up to 50
+  for (let index = 1; index <= 50; index++) {
+    const url = `../uploads/${categoryFolder}/${code}-${index}.webp`;
+    const exists = await checkImage(url);
+    if (exists) {
+      images.push(url);
+    } else {
+      // Check png/jpg if webp is not found for index 1
+      if (index === 1) {
+        const pngUrl = `../uploads/${categoryFolder}/${code}-${index}.png`;
+        const jpgUrl = `../uploads/${categoryFolder}/${code}-${index}.jpg`;
+        if (await checkImage(pngUrl)) {
+          images.push(pngUrl);
+          continue;
+        }
+        if (await checkImage(jpgUrl)) {
+          images.push(jpgUrl);
+          continue;
+        }
+      }
+      break;
+    }
+  }
+
+  if (images.length === 0) {
+    if (p.images && p.images.length > 0) {
+      return p.images;
+    }
+    return [`https://placehold.co/800x800/1a1a2a/d4af37?text=${encodeURIComponent(p.name.slice(0,6))}`];
+  }
+  return images;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!SG.auth.requireDealer()) return;
+  dealerSession = SG.auth.current();
+
+  const initials = dealerSession.avatar || SG.str.initials(dealerSession.name);
+  { const el = document.getElementById('dl-avatar'); if (el) el.textContent = initials; }
+  { const el = document.getElementById('dl-name'); if (el) el.textContent = dealerSession.name; }
+  document.getElementById('topbar-avatar').textContent = initials;
+
+  const productId = SG.params.get('id');
+  if (!productId) { document.getElementById('product-page').innerHTML = '<div class="empty-state empty-state-spaced"><div class="empty-state-icon">?</div><h3>Product not found</h3><a href="product-list.html" class="btn btn-primary mt-4">Back to Catalogue</a></div>'; return; }
+
+  // Security check: is dealer permitted?
+  const permProducts = SG.auth.permittedProducts(dealerSession.id);
+  product = permProducts.find(p => p.id === productId);
+
+  if (!product) {
+    document.getElementById('product-page').innerHTML = '<div class="empty-state empty-state-spaced"><div class="empty-state-icon">❌</div><h3>Access Denied</h3><p>You do not have permission to view this product.</p><a href="collections.html" class="btn btn-primary mt-4">Browse Collections</a></div>';
+    return;
+  }
+
+  // Detect and overwrite images sequentially
+  product.images = await detectProductImages(product);
+
+  document.getElementById('topbar-product-code').textContent = product.code;
+  renderProduct();
+  updateCartBadge();
+
+  // Bind token request form
+  const form = document.getElementById('token-request-form');
+  if (form) {
+    form.addEventListener('submit', submitTokenRequest);
+  }
+
+  // Audit
+  SG.audit('PRODUCT_VIEWED', product.id, `${product.code} — ${product.name}`);
+
+  // Apply watermarks
+  setTimeout(() => {
+    SG.watermark.applyAll(document, dealerSession.name, dealerSession.id);
+  }, 500);
+});
+
+function hasTokenAccess() {
+  const tokenRequests = SG.store.get('token_requests') || [];
+  const now = new Date();
+  
+  const collections = SG.dal.safeGet('collections') || [];
+  const col = collections.find(c => c.id === product.collectionId);
+  const colCategory = col ? col.category : '';
+
+  return tokenRequests.some(r => {
+    if (r.userId !== dealerSession.id || r.status !== 'approved') return false;
+    if (new Date(r.expiresAt) < now) return false;
+    
+    if (r.type === 'product') {
+      const targetIds = r.targetId ? String(r.targetId).toLowerCase().split(',').map(s => s.trim()) : [];
+      const targetNames = r.targetName ? String(r.targetName).toLowerCase().split(',').map(s => s.trim()) : [];
+      return targetIds.includes(product.id.toLowerCase()) || 
+             targetNames.includes(product.code.toLowerCase()) || 
+             targetNames.includes(product.name.toLowerCase());
+    } else if (r.type === 'category') {
+      const targetIds = r.targetId ? String(r.targetId).toLowerCase().split(',').map(s => s.trim()) : [];
+      const targetNames = r.targetName ? String(r.targetName).toLowerCase().split(',').map(s => s.trim()) : [];
+      const allTargets = [...targetIds, ...targetNames];
+      return allTargets.includes('unlimited') ||
+             allTargets.includes(colCategory.toLowerCase()) ||
+             (product.category && allTargets.includes(product.category.toLowerCase()));
+    }
+    return false;
+  });
+}
+
+function getTokenRequestState() {
+  const tokenRequests = SG.store.get('token_requests') || [];
+  const now = new Date();
+  
+  const collections = SG.dal.safeGet('collections') || [];
+  const col = collections.find(c => c.id === product.collectionId);
+  const colCategory = col ? col.category : '';
+
+  let activeRequest = null;
+
+  for (const r of tokenRequests) {
+    if (r.userId !== dealerSession.id) continue;
+    
+    let matchesProduct = false;
+    let matchesCategory = false;
+    
+    if (r.type === 'product') {
+      const targetIds = r.targetId ? String(r.targetId).toLowerCase().split(',').map(s => s.trim()) : [];
+      const targetNames = r.targetName ? String(r.targetName).toLowerCase().split(',').map(s => s.trim()) : [];
+      matchesProduct = targetIds.includes(product.id.toLowerCase()) || 
+                       targetNames.includes(product.code.toLowerCase());
+    } else if (r.type === 'category') {
+      const targetIds = r.targetId ? String(r.targetId).toLowerCase().split(',').map(s => s.trim()) : [];
+      const targetNames = r.targetName ? String(r.targetName).toLowerCase().split(',').map(s => s.trim()) : [];
+      const allTargets = [...targetIds, ...targetNames];
+      matchesCategory = allTargets.includes('unlimited') ||
+                        allTargets.includes(colCategory.toLowerCase()) ||
+                        (product.category && allTargets.includes(product.category.toLowerCase()));
+    }
+    
+    if (matchesProduct || matchesCategory) {
+      if (r.status === 'approved') {
+        if (new Date(r.expiresAt) > now) {
+          return { status: 'approved', request: r };
+        } else {
+          if (!activeRequest || activeRequest.status !== 'pending') {
+            activeRequest = r;
+          }
+        }
+      } else if (r.status === 'pending') {
+        return { status: 'pending', request: r };
+      } else {
+        if (!activeRequest) activeRequest = r;
+      }
+    }
+  }
+  return activeRequest ? { status: activeRequest.status, request: activeRequest } : { status: 'none', request: null };
+}
+
+function renderProduct() {
+  const inWishlist = SG.booking.wishlist.has(dealerSession.id, product.id);
+  const inCart = (SG.booking.cart.get(dealerSession.id).items || []).some(i => i.productId === product.id);
+  const crossSell  = (product.crossSell || []).map(id => {
+    const all = SG.dal.safeGet('products') || [];
+    return all.find(p => p.id === id);
+  }).filter(Boolean);
+
+  const permProducts = SG.auth.permittedProducts(dealerSession.id);
+  const collectionProducts = permProducts.filter(p => p.collectionId === product.collectionId);
+  const currentIndex = collectionProducts.findIndex(p => p.id === product.id);
+  const prevProduct = currentIndex > 0 ? collectionProducts[currentIndex - 1] : null;
+  const nextProduct = currentIndex < collectionProducts.length - 1 ? collectionProducts[currentIndex + 1] : null;
+
+  const images = product.images || [`https://placehold.co/800x800/1a1a2a/d4af37?text=${encodeURIComponent(product.name.slice(0,6))}`];
+  const hasAccess = hasTokenAccess();
+  const tokenState = getTokenRequestState();
+  const isImageGated = currentImg >= 2 && !hasAccess;
+
+  const specRows = [
+    ['Product Code',    product.code],
+    ['Material',        product.material],
+    ['Purity',         product.purity],
+    ['Weight',         product.weight],
+    ['BIS Hallmark No',product.bisHallmarkNo],
+    ['BIS Grade',      product.bisGrade],
+    ['BIS Cert Date',  SG.time.format(product.bisCertDate)],
+    ['Collection',     product.collectionName],
+    ['Style',          product.style],
+    ['Occasions',      (product.occasions || []).join(', ')],
+    ['Style Notes',    product.styleNotes],
+    ['AI Verified',    product.aiMetadataStatus === 'verified' ? '? Verified' : '? Pending'],
+  ];
+
+  let lockOverlayHtml = '';
+  if (isImageGated) {
+    let btnText = 'Request Category Token';
+    let btnDisabledAttr = '';
+    let statusMsg = 'This premium design image is locked under B2B security protocols.';
+    
+    if (tokenState.status === 'pending') {
+      btnText = 'Request Pending';
+      btnDisabledAttr = 'disabled class="btn-gated-pending"';
+      statusMsg = 'Your token request is currently under review by our catalogue managers.';
+    } else if (tokenState.status === 'rejected') {
+      btnText = 'Request Again';
+      statusMsg = `Previous request rejected. Reason: ${tokenState.request.rejectReason || 'None provided'}`;
+    } else if (tokenState.status === 'expired') {
+      btnText = 'Renew Access Token';
+      statusMsg = 'Your time-limited access token for this category has expired.';
+    }
+
+    lockOverlayHtml = `
+      <div class="lock-overlay">
+        <div class="lock-icon">🔒</div>
+        <div class="lock-title">Category-Wide Access Token Required</div>
+        <div class="lock-subtitle">${statusMsg}</div>
+        <button class="lock-btn" onclick="openRequestModal()" ${btnDisabledAttr}>${btnText}</button>
+      </div>
+    `;
+  }
+
+  // Calculate dynamic B2B wholesale price estimate
+  const weightVal = parseFloat(product.weight) || 0;
+  let rate = 7200; // default rate per gram for 22K gold
+  const purityLower = (product.purity || '').toLowerCase();
+  if (purityLower.includes('18k')) rate = 5900;
+  else if (purityLower.includes('14k')) rate = 4600;
+  else if (purityLower.includes('plat')) rate = 5500;
+  else if (purityLower.includes('sil')) rate = 100;
+  
+  const estimatedPrice = (weightVal * rate * 1.12); // Base + 12% making
+  const priceHtml = estimatedPrice > 0 ? `<span class="product-detail-price">?${SG.str.currency(estimatedPrice)}*</span>` : '';
+
+  document.getElementById('product-page').innerHTML = `
+    <!-- Breadcrumb & Sequential Navigation -->
+    <div class="flex justify-between items-center mb-5 flex-wrap gap-3 breadcrumb-nav-header">
+      <div class="flex gap-2 text-sm text-muted items-center">
+        <a href="collections.html" class="text-muted">Collections</a>
+        <span>›</span>
+        <a href="product-list.html?col=${product.collectionId}" class="text-muted">${product.collectionName}</a>
+        <span>›</span>
+        <span class="text-gold">${product.name}</span>
+      </div>
+      <div class="flex gap-2">
+        ${prevProduct ? `<a href="product-detail.html?id=${prevProduct.id}" class="btn btn-secondary btn-sm btn-nav-nav">← Previous</a>` : `<button class="btn btn-secondary btn-sm btn-nav-nav" disabled>← Previous</button>`}
+        ${nextProduct ? `<a href="product-detail.html?id=${nextProduct.id}" class="btn btn-secondary btn-sm btn-nav-nav">Next ?</a>` : `<button class="btn btn-secondary btn-sm btn-nav-nav" disabled>Next ?</button>`}
+      </div>
+    </div>
+
+    <div class="product-detail-layout">
+
+      <!-- Gallery -->
+      <div class="product-gallery">
+        <div class="product-main-image watermarked-image-wrap cursor-zoom-in" id="main-image-wrap">
+          <img id="main-img" class="${isImageGated ? 'image-blur' : ''}" src="${images[currentImg]}" alt="${product.name}" onclick="openLightbox(${currentImg})" onerror="this.src='https://placehold.co/800x800/1a1a2a/d4af37?text=??'">
+          ${lockOverlayHtml}
+        </div>
+        ${images.length > 1 ? `
+        <div class="product-thumbnails">
+          ${images.map((img, i) => {
+            const isGated = i >= 2 && !hasAccess;
+            return `
+            <div class="product-thumbnail ${i === currentImg ? 'active' : ''} ${isGated ? 'gated-thumb-wrap' : ''}" id="thumb-${i}" onclick="selectImage(${i})">
+              <img src="${img}" alt="View ${i+1}" class="${isGated ? 'blur-thumb' : ''}" onerror="this.src='https://placehold.co/72x72/1a1a2a/d4af37?text=??'">
+              ${isGated ? '<div class="gated-thumb-lock">🔒</div>' : ''}
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+      </div>
+
+      <!-- Info -->
+      <div class="product-info-section">
+        <div>
+          <div class="product-code text-xs">${product.code}</div>
+          <h1 class="product-info-title product-title-row">
+            <span>${product.name}</span>
+            ${priceHtml}
+          </h1>
+          ${estimatedPrice > 0 ? `<div class="showcase-price-disclaimer">*Estimated Wholesale Price (Incl. 12% making)</div>` : ''}
+          <div class="flex gap-2 mt-2 flex-wrap">
+            ${(product.occasions || []).map(o => `<span class="product-tag">${o}</span>`).join('')}
+          </div>
+        </div>
+
+        <!-- Action Bar (Moved above Specifications and Description) -->
+        <div class="product-action-bar mb-2">
+          ${inCart ? `
+            <button class="btn btn-outline-gold w-full btn-gated-pending" disabled id="add-cart-btn">
+              ? In Booking Cart
+            </button>
+          ` : `
+            <button class="btn btn-filled-gold w-full btn-add-cart-primary" onclick="addToCart()" id="add-cart-btn">
+              🛒 Add to Booking Cart
+            </button>
+          `}
+          <button class="btn btn-secondary w-full" onclick="toggleWishlist()" id="wishlist-btn">
+            ${inWishlist ? '⭐ Remove from Selections' : '⭐ Save to My Selections'}
+          </button>
+          <div class="flex gap-3">
+            <button class="btn btn-ghost btn-sm flex-1" onclick="window.location.href='price-enquiry.html?id=${product.id}'">
+              💬 Price Enquiry
+            </button>
+            <button class="btn btn-ghost btn-sm flex-1" onclick="window.location.href='sample-requests.html?id=${product.id}'">
+              🧪 Request Sample
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Description -->
+        <div class="card ai-analysis-card">
+          <div class="flex gap-3 mb-3"><span>🤖</span><div class="ai-analysis-header">AI Product Analysis</div></div>
+          <p class="ai-analysis-text">${product.aiDescription || product.description}</p>
+        </div>
+
+        <!-- Specifications -->
+        <div class="card">
+          <div class="product-specs-card-title">Product Specifications</div>
+          <div class="product-spec-table">
+            ${specRows.map(([k, v]) => `
+            <div class="product-spec-row">
+              <div class="product-spec-key">${k}</div>
+              <div class="product-spec-value">${v || '—'}</div>
+            </div>`).join('')}
+          </div>
+        </div>
+
+        <!-- NDA Reminder -->
+        <div class="alert alert-warning text-xs">
+          <span>⭐</span>
+          <span>This product image is watermarked with your dealer ID and timestamp. Sharing is a breach of your signed NDA.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cross-sell -->
+    ${crossSell.length ? `
+    <div class="mt-10">
+      <div class="flex justify-between items-center mb-5">
+        <div class="section-title">You May Also Like</div>
+        <a href="product-list.html?col=${product.collectionId}" class="btn btn-sm btn-ghost">View Collection ?</a>
+      </div>
+      <div class="product-grid grid-cols-2-340">
+        ${crossSell.map(cs => `
+        <div class="product-card" onclick="window.location.href='product-detail.html?id=${cs.id}'">
+          <div class="product-card-image">
+            <img src="${cs.images[0]}" alt="${cs.name}" onerror="this.src='https://placehold.co/400x400/1a1a2a/d4af37?text=??'">
+          </div>
+          <div class="product-card-info">
+            <div class="product-code">${cs.code}</div>
+            <div class="product-name">${cs.name}</div>
+            <div class="product-meta">${cs.material} · ${cs.weight}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+  `;
+
+  // Apply watermarks after render
+  setTimeout(() => SG.watermark.applyAll(document, dealerSession.name, dealerSession.id), 300);
+}
+
+function selectImage(idx) {
+  currentImg = idx;
+  updateGallery();
+}
+
+function updateGallery() {
+  const hasAccess = hasTokenAccess();
+  const tokenState = getTokenRequestState();
+  const images = product.images || [];
+  const isImageGated = currentImg >= 2 && !hasAccess;
+
+  const mainImg = document.getElementById('main-img');
+  const mainImageWrap = document.getElementById('main-image-wrap');
+  
+  if (mainImg) {
+    mainImg.src = images[currentImg];
+    mainImg.onclick = () => openLightbox(currentImg);
+    if (isImageGated) {
+      mainImg.classList.add('image-blur');
+    } else {
+      mainImg.classList.remove('image-blur');
+    }
+  }
+
+  const oldOverlay = mainImageWrap.querySelector('.lock-overlay');
+  if (oldOverlay) oldOverlay.remove();
+
+  if (isImageGated) {
+    let btnText = 'Request Token';
+    let btnDisabledAttr = '';
+    let statusMsg = 'This premium design image is locked under B2B security protocols.';
+    
+    if (tokenState.status === 'pending') {
+      btnText = 'Request Pending';
+      btnDisabledAttr = 'disabled class="btn-gated-pending"';
+      statusMsg = 'Your token request is currently under review by our catalogue managers.';
+    } else if (tokenState.status === 'rejected') {
+      btnText = 'Request Again';
+      statusMsg = `Previous request rejected. Reason: ${tokenState.request.rejectReason || 'None provided'}`;
+    } else if (tokenState.status === 'expired') {
+      btnText = 'Renew Access Token';
+      statusMsg = 'Your time-limited access token for this design has expired.';
+    }
+
+    const overlayDiv = document.createElement('div');
+    overlayDiv.className = 'lock-overlay';
+    overlayDiv.innerHTML = `
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Time-Limited Access Token Required</div>
+      <div class="lock-subtitle">${statusMsg}</div>
+      <button class="lock-btn" onclick="openRequestModal()" ${btnDisabledAttr}>${btnText}</button>
+    `;
+    mainImageWrap.appendChild(overlayDiv);
+  }
+
+  document.querySelectorAll('.product-thumbnail').forEach((el, i) => {
+    el.classList.toggle('active', i === currentImg);
+  });
+
+  setTimeout(() => {
+    SG.watermark.applyAll(document, dealerSession.name, dealerSession.id);
+  }, 100);
+}
+
+function openLightbox(idx) {
+  if (idx >= 2 && !hasTokenAccess()) {
+    SG.toast.error('Access Gated', 'Please request a content access token to view this design image.');
+    return;
+  }
+  currentImg = idx;
+  document.getElementById('lightbox-img').src = product.images[idx];
+  document.getElementById('lightbox').classList.add('active');
+}
+
+function closeLightbox() { document.getElementById('lightbox').classList.remove('active'); }
+
+function lightboxNav(dir) {
+  const images = product.images || [];
+  const hasAccess = hasTokenAccess();
+  
+  let nextIdx = (currentImg + dir + images.length) % images.length;
+  // If next is gated, loop until we find a visible one (or fallback to current)
+  let initial = nextIdx;
+  while (nextIdx >= 2 && !hasAccess) {
+    nextIdx = (nextIdx + dir + images.length) % images.length;
+    if (nextIdx === initial) {
+      // All other images are gated
+      nextIdx = 0; // fallback to index 0 which is always open
+      break;
+    }
+  }
+  currentImg = nextIdx;
+  document.getElementById('lightbox-img').src = images[currentImg];
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+function addToCart() {
+  SG.booking.cart.add(dealerSession.id, product);
+  updateCartBadge();
+  const btn = document.getElementById('add-cart-btn');
+  btn.textContent = '? In Booking Cart';
+  btn.className = 'btn btn-outline-gold w-full';
+  btn.disabled = true;
+}
+
+function toggleWishlist() {
+  const has = SG.booking.wishlist.has(dealerSession.id, product.id);
+  if (has) SG.booking.wishlist.remove(dealerSession.id, product.id);
+  else SG.booking.wishlist.add(dealerSession.id, product);
+  document.getElementById('wishlist-btn').textContent = (!has) ? '⭐ Remove from Selections' : '⭐ Save to My Selections';
+}
+
+function updateCartBadge() {
+  const count = SG.booking.cart.count(dealerSession.id);
+  const badge = document.getElementById('cart-badge');
+  const dot   = document.getElementById('cart-dot');
+  if (badge) {
+    badge.textContent = count;
+    badge.classList.toggle('hidden', count <= 0);
+  }
+  if (dot) {
+    dot.classList.toggle('hidden', count <= 0);
+  }
+}
+
+function openRequestModal() {
+  const collections = SG.dal.safeGet('collections') || [];
+  const col = collections.find(c => c.id === product.collectionId);
+  const colCategory = col ? col.category : '';
+  const colName = col ? col.name : 'Unknown Collection';
+
+  document.getElementById('req-category-display').value = `${colName} (${colCategory.toUpperCase()})`;
+  document.getElementById('req-category').value = colCategory;
+
+  SG.modal.open('request-token-modal');
+}
+
+function closeRequestModal() {
+  SG.modal.close('request-token-modal');
+}
+
+function submitTokenRequest(e) {
+  e.preventDefault();
+  const reason = document.getElementById('req-reason').value.trim();
+  const colCategory = document.getElementById('req-category').value;
+  
+  const allReqs = SG.store.get('token_requests') || [];
+  const newReq = {
+    id: 'req-' + SG.uid.short(),
+    userId: dealerSession.id,
+    userName: dealerSession.name,
+    businessName: dealerSession.businessName,
+    type: 'category',
+    targetId: '',
+    targetName: colCategory,
+    reason,
+    status: 'pending',
+    submittedAt: SG.time.now(),
+    approvedAt: null,
+    expiresAt: null,
+    rejectReason: null
+  };
+
+  allReqs.unshift(newReq);
+  SG.store.set('token_requests', allReqs);
+  
+  const users = SG.dal.safeGet('users') || [];
+  const admins = users.filter(u => u.role === 'dealer_manager' || u.role === 'super_admin');
+  admins.forEach(a => {
+    SG.notify(a.id, 'token_request', 'New Token Request', `Dealer ${dealerSession.name} requested access to category ${colCategory.toUpperCase()}.`, `admin/token-requests.html`);
+  });
+
+  SG.notify(dealerSession.id, 'token_submitted', 'Token Request Submitted', `Your request for ${colCategory.toUpperCase()} category access has been sent to review.`, `dealer/token-requests.html`);
+  SG.audit('TOKEN_REQUEST_SUBMITTED', newReq.id, `Scope: category - ${colCategory}`);
+
+  closeRequestModal();
+  document.getElementById('token-request-form').reset();
+  
+  SG.toast.success('Submitted', 'Token request submitted successfully.');
+  renderProduct();
+}
+</script>
+
+<!-- AI Chat Assistant Floating Widget -->
+<iframe src="../ai/chat/chat-assistant.html" class="chat-assistant-iframe" title="AI Chat Assistant"></iframe>
+<script>
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'resize-chat') {
+    const iframe = document.querySelector('.chat-assistant-iframe');
+    if (iframe) {
+      iframe.classList.toggle('active', !!e.data.active);
+    }
+  }
+});
+</script>
+</body>
+</html>
+

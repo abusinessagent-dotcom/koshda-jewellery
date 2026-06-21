@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dashboard — Koshda Dealer Portal</title>
+  <link rel="stylesheet" href="../public/assets/css/style.css">
+  <link rel="stylesheet" href="../public/assets/css/components.css">
+  <link rel="stylesheet" href="../public/assets/css/dealer.css">
+  <link rel="stylesheet" href="../public/assets/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="dealer-layout">
+
+  <!-- Sidebar -->
+  <aside class="dealer-sidebar" data-component="sidebar-dealer"></aside>
+
+  <!-- Main -->
+  <main class="dealer-main">
+
+    <!-- Topbar -->
+    <header class="dealer-topbar">
+      <div>
+        <div class="dealer-title-lg" id="topbar-greeting">Good morning</div>
+      </div>
+      <div class="topbar-search">
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input type="text" class="form-input search-input" placeholder="Search jewellery… (try: 'bridal necklace 22K' or 'temple')" id="quick-search" oninput="handleSearch(this.value)" onfocus="openSearch()">
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='wishlist.html'">
+          ⭐<span class="notif-dot hidden" id="wishlist-dot"></span>
+        </div>
+        <div class="icon-btn relative" onclick="window.location.href='cart.html'">
+          🛒<span class="notif-dot hidden notif-dot-gold" id="cart-dot"></span>
+        </div>
+        <div class="icon-btn relative" onclick="window.location.href='messages.html'">
+          💬
+        </div>
+        <div class="avatar cursor-pointer" id="topbar-avatar-dealer" onclick="window.location.href='account.html'">RK</div>
+      </div>
+    </header>
+
+    <!-- Content -->
+    <div class="dealer-content">
+
+      <!-- Access Banner -->
+      <div id="access-banner"></div>
+
+      <!-- Quick Search Results Dropdown -->
+      <div id="search-results-drop" class="hidden search-results-dropdown"></div>
+
+      <!-- Dashboard Grid -->
+      <div class="grid grid-4 gap-5 mb-6" id="stats-row">
+        <!-- Filled by JS -->
+      </div>
+
+      <!-- Main Content -->
+      <div class="grid gap-6 grid-cols-2-320-align-start">
+
+        <!-- Left: Collections + Recent Bookings -->
+        <div class="flex-col-gap-6">
+
+          <!-- My Collections -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">My Collections</div>
+              <a href="collections.html" class="btn btn-sm btn-ghost">Browse All ?</a>
+            </div>
+            <div class="collection-grid collection-grid-dashboard" id="collections-grid">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+
+          <!-- Recent Bookings -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">Recent Bookings</div>
+              <a href="booking-history.html" class="btn btn-sm btn-ghost">All History ?</a>
+            </div>
+            <div id="recent-bookings">
+              <div class="loading-wrapper">Loading...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="flex-col-gap-5">
+
+          <!-- Access Card -->
+          <div class="card" id="access-card">
+            <div class="access-card-header">🔒 Access Status</div>
+            <div id="token-info"><!-- JS --></div>
+          </div>
+
+          <!-- Wishlist Quick View -->
+          <div class="table-card">
+            <div class="table-card-header">
+              <div class="section-title">⭐ Wishlist</div>
+              <a href="wishlist.html" class="btn btn-sm btn-ghost">View All ?</a>
+            </div>
+            <div id="wishlist-preview">
+              <div class="loading-wrapper-sm">Loading...</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="card">
+            <div class="quick-actions-title">Quick Actions</div>
+            <div class="flex-col-gap-8px">
+              <button onclick="window.location.href='search.html'" class="btn btn-primary btn-action-start">
+                🔍 Search Catalogue
+              </button>
+              <button onclick="window.location.href='cart.html'" class="btn btn-secondary btn-action-start">
+                🛒 View Booking Cart
+              </button>
+              <button onclick="window.location.href='sample-requests.html'" class="btn btn-secondary btn-action-start">
+                🧪 Request Sample
+              </button>
+              <button onclick="window.location.href='price-enquiry.html'" class="btn btn-secondary btn-action-start">
+                💬 Price Enquiry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="../public/assets/js/app.js" defer></script>
+<script src="../public/assets/js/utils.js" defer></script>
+<script src="../public/assets/js/dal.js" defer></script>
+<script src="../public/assets/js/auth.js" defer></script>
+<script src="../public/assets/js/token-manager.js" defer></script>
+<script src="../public/assets/js/booking.js" defer></script>
+<script>
+let dealerSession, dealerUser;
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireDealer()) return;
+
+  dealerSession = SG.auth.current();
+  dealerUser    = SG.auth.getUser(dealerSession.id);
+
+  // Set UI identity
+  const initials = dealerSession.avatar || SG.str.initials(dealerSession.name);
+  { const el = document.getElementById('dealer-avatar'); if (el) el.textContent = initials; }
+  document.getElementById('topbar-avatar-dealer').textContent   = initials;
+  { const el = document.getElementById('dealer-name'); if (el) el.textContent = dealerSession.name; }
+  { const el = document.getElementById('dealer-tier'); if (el) el.textContent = SG.str.capitalize(dealerSession.tier || 'standard') + ' Dealer'; }
+
+  // Greeting
+  const hour = new Date().getHours();
+  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('topbar-greeting').textContent = `${greet}, ${dealerSession.name.split(' ')[0]} 👋`;
+
+  // Render everything
+  renderAccessBanner();
+  renderStats();
+  renderCollections();
+  renderRecentBookings();
+  renderWishlistPreview();
+  renderTokenInfo();
+  updateBadges();
+});
+
+function renderAccessBanner() {
+  const token   = SG.tokenMgr.forDealer(dealerSession.id);
+  const status  = SG.tokenMgr.getStatus(token);
+  const days    = SG.tokenMgr.daysLeft(token);
+  const banner  = document.getElementById('access-banner');
+  if (status === 'expiring') {
+    banner.innerHTML = `<div class="access-banner expiring"><span class="access-banner-icon">?</span><div class="access-banner-content"><div class="access-banner-title">Access Expiring Soon</div><div class="access-banner-sub">Your catalogue access expires in ${days} days. Contact Koshda Jewellery House to renew.</div></div><div class="access-expiry-countdown">${days}d</div></div>`;
+  } else if (status === 'expired') {
+    banner.innerHTML = `<div class="access-banner expired"><span class="access-banner-icon">⚠️</span><div class="access-banner-content"><div class="access-banner-title">Access Expired</div><div class="access-banner-sub">Your catalogue access has expired. Please contact Koshda Jewellery House to renew.</div></div></div>`;
+  }
+}
+
+function renderStats() {
+  const token   = SG.tokenMgr.forDealer(dealerSession.id);
+  const days    = SG.tokenMgr.daysLeft(token);
+  const permsColIds = SG.auth.permittedCollections(dealerSession.id);
+  const myBookings  = SG.booking.cart.count(dealerSession.id);
+  const openBk      = SG.booking.openBookingsCount(dealerSession.id);
+  const wishCount   = SG.booking.wishlist.get(dealerSession.id).length;
+
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card-admin cursor-pointer" onclick="window.location.href='collections.html'">
+      <div class="stat-icon-admin stat-icon-gold mb-2"><div class="font-size-18">💎</div></div>
+      <div class="stat-num">${permsColIds.length}</div>
+      <div class="stat-lbl">Collections Access</div>
+    </div>
+    <div class="stat-card-admin cursor-pointer" onclick="window.location.href='booking-history.html'">
+      <div class="stat-icon-admin stat-icon-blue mb-2"><div class="font-size-18">📅</div></div>
+      <div class="stat-num">${openBk}</div>
+      <div class="stat-lbl">Open Bookings</div>
+    </div>
+    <div class="stat-card-admin cursor-pointer" onclick="window.location.href='wishlist.html'">
+      <div class="stat-icon-admin stat-icon-red mb-2"><div class="font-size-18">⭐</div></div>
+      <div class="stat-num">${wishCount}</div>
+      <div class="stat-lbl">Wishlist Items</div>
+    </div>
+    <div class="stat-card-admin cursor-pointer" onclick="window.location.href='account.html'">
+      <div class="stat-icon-admin stat-icon-green mb-2"><div class="font-size-18">⏳</div></div>
+      <div class="stat-num">${days}</div>
+      <div class="stat-lbl">Days Access Left</div>
+    </div>
+  `;
+}
+
+function renderCollections() {
+  const permColIds  = SG.auth.permittedCollections(dealerSession.id);
+  const collections = (SG.dal.safeGet('collections') || []).filter(c => permColIds.includes(c.id));
+  const products    = SG.dal.safeGet('products') || [];
+  const grid        = document.getElementById('collections-grid');
+
+  if (!collections.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔒</div><h3>No Collections Assigned</h3><p>Contact Koshda Jewellery House to get access to collections.</p></div>';
+    return;
+  }
+
+  grid.innerHTML = collections.map(col => {
+    const count = products.filter(p => p.collectionId === col.id && p.status === 'active').length;
+    return `
+    <div class="collection-card" onclick="window.location.href='product-list.html?col=${col.id}'">
+      <div class="collection-card-image" style="background:linear-gradient(135deg, ${col.coverColor || '#1a1a2a'}, #0a0a15);">
+        <span>${col.coverEmoji || '💎'}</span>
+        ${col.isNew ? '<span class="product-new-badge new-badge-pos">NEW</span>' : ''}
+      </div>
+      <div class="collection-card-info">
+        <div class="collection-card-name">${col.name}</div>
+        <div class="collection-card-meta">
+          <span class="collection-card-count">${count} products</span>
+          <span>${col.material}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRecentBookings() {
+  const bookings = SG.booking.forDealer(dealerSession.id).slice(0, 4);
+  const el = document.getElementById('recent-bookings');
+  if (!bookings.length) {
+    el.innerHTML = '<div class="empty-state empty-state-padding"><div class="empty-state-icon empty-state-icon-large">⭐</div><h3>No bookings yet</h3><p>Browse collections and add products to your cart.</p></div>';
+    return;
+  }
+  el.innerHTML = bookings.map(b => `
+    <div class="booking-card recent-booking-card-item" onclick="window.location.href='booking-detail.html?id=${b.id}'">
+      <div class="booking-card-icon booking-card-icon-gold-bg">${SG.booking.statusIcon(b.status)}</div>
+      <div class="booking-card-info">
+        <div class="booking-card-ref">${b.ref}</div>
+        <div class="booking-card-name">${b.items.length} item${b.items.length > 1 ? 's' : ''}</div>
+        <div class="booking-card-meta"><span>${SG.time.relative(b.submittedAt)}</span></div>
+      </div>
+      <div class="booking-card-right">${SG.statusBadge(b.status)}</div>
+    </div>`).join('');
+}
+
+function renderWishlistPreview() {
+  const wishlist = SG.booking.wishlist.get(dealerSession.id).slice(0, 3);
+  const products = SG.dal.safeGet('products') || [];
+  const el       = document.getElementById('wishlist-preview');
+  if (!wishlist.length) {
+    el.innerHTML = '<div class="loading-wrapper-sm">Your wishlist is empty</div>';
+    return;
+  }
+  el.innerHTML = wishlist.map(w => {
+    const product = products.find(p => p.id === w.productId);
+    if (!product) return '';
+    return `
+    <div class="activity-item cursor-pointer" onclick="window.location.href='product-detail.html?id=${product.id}'">
+      <img src="${product.images[0]}" class="wishlist-thumb-sm" onerror="this.src='https://placehold.co/40x40/1a1a2a/d4af37?text=??'">
+      <div class="activity-item-content">
+        <div class="activity-item-title font-size-12">${product.name}</div>
+        <div class="activity-item-meta">${product.code}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderTokenInfo() {
+  const token = SG.tokenMgr.forDealer(dealerSession.id);
+  const el    = document.getElementById('token-info');
+  if (!token) { el.innerHTML = '<p class="token-error-text">No active token</p>'; return; }
+
+  // Fetch approved active category tokens
+  const tokenRequests = SG.store.get('token_requests') || [];
+  const now = new Date();
+  const activeCategoryTokens = tokenRequests.filter(r => 
+    r.userId === dealerSession.id && 
+    r.status === 'approved' && 
+    r.type === 'category' && 
+    new Date(r.expiresAt) > now
+  );
+
+  let categoryHtml = '';
+  if (activeCategoryTokens.length > 0) {
+    categoryHtml = `
+      <div class="token-categories-divider">
+        <div class="token-categories-lbl">Approved Categories</div>
+        <div class="flex-col-gap-8px">
+          ${activeCategoryTokens.map(t => `
+            <div class="token-category-row">
+              <span class="token-category-name">🎫 ${t.targetName}</span>
+              <span class="token-category-expiry">Exp: ${SG.time.format(t.expiresAt)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else {
+    categoryHtml = `
+      <div class="token-category-empty">
+        No active category-wide tokens.
+      </div>
+    `;
+  }
+
+  el.innerHTML = `
+    <div class="token-info-header">
+      <div class="token-tier-text">Tier: ${SG.statusBadge(dealerUser?.tier || 'standard')}</div>
+      ${SG.statusBadge(SG.tokenMgr.getStatus(token))}
+    </div>
+    ${SG.tokenMgr.expiryBarHtml(token)}
+    ${categoryHtml}
+  `;
+}
+
+function updateBadges() {
+  const cartCount = SG.booking.cart.count(dealerSession.id);
+  const wishCount = SG.booking.wishlist.get(dealerSession.id).length;
+  const cartBadge = document.getElementById('cart-badge');
+  const wishBadge = document.getElementById('wishlist-badge');
+  const cartDot   = document.getElementById('cart-dot');
+  const wishDot   = document.getElementById('wishlist-dot');
+  
+  if (cartBadge) {
+    cartBadge.textContent = cartCount;
+    cartBadge.classList.toggle('hidden', cartCount === 0);
+  }
+  if (wishBadge) {
+    wishBadge.textContent = wishCount;
+    wishBadge.classList.toggle('hidden', wishCount === 0);
+  }
+  if (cartDot) {
+    cartDot.classList.toggle('hidden', cartCount === 0);
+  }
+  if (wishDot) {
+    wishDot.classList.toggle('hidden', wishCount === 0);
+  }
+}
+
+function handleSearch(val) {
+  const drop = document.getElementById('search-results-drop');
+  if (!val.trim()) { drop.classList.add('hidden'); return; }
+  const products = SG.auth.permittedProducts(dealerSession.id);
+  const results  = SG.filterItems(products, val, ['name', 'code', 'description', 'searchKeywords', 'category', 'material', 'style']);
+  drop.classList.remove('hidden');
+  if (!results.length) { drop.innerHTML = '<div class="loading-wrapper-sm">No matching products found</div>'; return; }
+  drop.innerHTML = results.slice(0, 8).map(p => `
+    <div onclick="window.location.href='product-detail.html?id=${p.id}'" class="search-result-item search-result-item-flat">
+      <img src="${p.images[0]}" class="search-result-thumb-sm" onerror="this.src='https://placehold.co/44x44/1a1a2a/d4af37?text=??'">
+      <div class="search-result-info">
+        <div class="search-result-name">${p.name}</div>
+        <div class="search-result-code">${p.code}</div>
+      </div>
+      <button class="btn btn-sm btn-secondary" onclick="event.stopPropagation();addToCart('${p.id}')">Add to Cart</button>
+    </div>`).join('');
+}
+
+function openSearch() {
+  const val = document.getElementById('quick-search').value;
+  if (val) handleSearch(val);
+}
+
+function addToCart(productId) {
+  const products = SG.dal.safeGet('products') || [];
+  const product  = products.find(p => p.id === productId);
+  if (product) { SG.booking.cart.add(dealerSession.id, product); updateBadges(); }
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#search-results-drop') && !e.target.closest('#quick-search')) {
+    document.getElementById('search-results-drop').classList.add('hidden');
+  }
+});
+</script>
+
+
+<script>
+window.addEventListener('message', e => {
+  if (e.data && e.data.type === 'resize-chat') {
+    const iframe = document.querySelector('.chat-assistant-iframe');
+    if (iframe) {
+      if (e.data.active) {
+        iframe.style.width = '380px';
+        iframe.style.height = '480px';
+      } else {
+        iframe.style.width = '100px';
+        iframe.style.height = '100px';
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
+

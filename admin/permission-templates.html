@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Access Permission Templates — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Permissions Configuration</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">Permission Templates</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Role Permission Templates</h1>
+          <p class="page-subtitle">Configure collection visibility matrixes by subscription tier. Newly approved dealers inherit these defaults.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm" onclick="openCreateModal()">
+            ? Create Template
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='permissions.html'">
+            🔐 Direct Permission Manager
+          </button>
+        </div>
+      </div>
+
+      <!-- Templates Grid -->
+      <div class="grid gap-6" style="grid-template-columns: 1fr;" id="templates-container">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Create/Edit Template Modal -->
+<div class="modal-overlay" id="template-modal">
+  <div class="modal" style="max-width: 600px;">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modal-title-text">Create Access Template</h3>
+      <button class="modal-close" onclick="closeTemplateModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <form id="template-form">
+        <input type="hidden" id="template-id">
+        <div class="form-group">
+          <label class="form-label" for="template-name">Template Name</label>
+          <input type="text" id="template-name" class="form-input" placeholder="e.g. Standard Subscription Access" required>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label" for="template-desc">Description</label>
+          <input type="text" id="template-desc" class="form-input" placeholder="e.g. Grants access to everyday lines only" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Permitted Collections</label>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;" id="collections-checkbox-list">
+            <!-- Rendered via JS -->
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeTemplateModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/admin.js" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  if (!SG.auth.requireRole('super_admin', 'dealer_manager')) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Initialize permission templates if empty
+  if (!SG.store.get('permission_templates')) {
+    const defaultTemplates = [
+      { id: 'standard', name: 'Standard Dealer Access', desc: 'Allows access to Everyday and Bridal lines.', collections: ['col-001', 'col-002'] },
+      { id: 'premium', name: 'Premium Dealer Access', desc: 'Allows access to standard, bridal, and South Indian temple lines.', collections: ['col-001', 'col-002', 'col-003'] },
+      { id: 'exclusive', name: 'Exclusive Partner Access', desc: 'Allows complete access to all catalogue lines, including pre-launches.', collections: ['col-001', 'col-002', 'col-003', 'col-004'] }
+    ];
+    SG.store.set('permission_templates', defaultTemplates);
+  }
+
+  // Populate checkbox collections list in modal
+  const collections = SG.dal.safeGet('collections') || [];
+  const listEl = document.getElementById('collections-checkbox-list');
+  listEl.innerHTML = collections.map(col => `
+    <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+      <input type="checkbox" name="col-checkbox" value="${col.id}">
+      <span><strong>${col.name}</strong> (${col.material} · ${col.category.toUpperCase()})</span>
+    </label>
+  `).join('');
+
+  loadTemplates();
+});
+
+function loadTemplates() {
+  const templates = SG.store.get('permission_templates') || [];
+  const collections = SG.dal.safeGet('collections') || [];
+  const container = document.getElementById('templates-container');
+
+  container.innerHTML = templates.map(t => {
+    const permittedCols = collections.filter(c => t.collections.includes(c.id));
+    const listHtml = permittedCols.map(c => `<li>💍 <strong>${c.name}</strong> (${c.code})</li>`).join('');
+
+    return `
+      <div class="card">
+        <div style="display:flex;justify-content:between;align-items:start;">
+          <div>
+            <h3 class="section-title" style="margin-bottom:4px;">${t.name}</h3>
+            <p style="color:var(--text-muted);font-size:12px;">${t.desc}</p>
+          </div>
+          <div style="display:flex;gap:8px;margin-left:auto;">
+            <button class="btn btn-secondary btn-sm" onclick="openEditModal('${t.id}')">Edit Matrix</button>
+          </div>
+        </div>
+        
+        <div style="margin-top:16px;border-top:1px solid var(--border-subtle);padding-top:12px;">
+          <strong style="font-size:11px;text-transform:uppercase;color:var(--text-disabled);display:block;margin-bottom:8px;">Access Grids</strong>
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:16px;font-size:13px;color:var(--text-secondary);">
+            ${listHtml || '<li><em style="color:var(--text-muted)">No collections permitted</em></li>'}
+          </ul>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function openCreateModal() {
+  document.getElementById('modal-title-text').textContent = 'Create Access Template';
+  document.getElementById('template-id').value = '';
+  document.getElementById('template-form').reset();
+  
+  // Clear checkboxes
+  document.querySelectorAll('input[name="col-checkbox"]').forEach(cb => cb.checked = false);
+
+  SG.modal.open('template-modal');
+}
+
+function openEditModal(id) {
+  const templates = SG.store.get('permission_templates') || [];
+  const t = templates.find(temp => temp.id === id);
+  if (!t) return;
+
+  document.getElementById('modal-title-text').textContent = 'Edit Access Matrix';
+  document.getElementById('template-id').value = t.id;
+  document.getElementById('template-name').value = t.name;
+  document.getElementById('template-desc').value = t.desc;
+
+  // Set checkboxes
+  document.querySelectorAll('input[name="col-checkbox"]').forEach(cb => {
+    cb.checked = t.collections.includes(cb.value);
+  });
+
+  SG.modal.open('template-modal');
+}
+
+function closeTemplateModal() {
+  SG.modal.close('template-modal');
+}
+
+function saveTemplate() {
+  const id = document.getElementById('template-id').value;
+  const name = document.getElementById('template-name').value.trim();
+  const desc = document.getElementById('template-desc').value.trim();
+
+  if (!name || !desc) {
+    SG.toast.error('Fields Required', 'Please complete the title and description fields.');
+    return;
+  }
+
+  // Get selected checkboxes
+  const selectedCols = Array.from(document.querySelectorAll('input[name="col-checkbox"]:checked')).map(cb => cb.value);
+
+  const templates = SG.store.get('permission_templates') || [];
+
+  if (id) {
+    // Edit Mode
+    const idx = templates.findIndex(t => t.id === id);
+    if (idx >= 0) {
+      templates[idx].name = name;
+      templates[idx].desc = desc;
+      templates[idx].collections = selectedCols;
+      SG.toast.success('Matrix Saved', `"${name}" permissions were successfully saved.`);
+    }
+  } else {
+    // Create Mode
+    const newId = 'temp-' + SG.uid.short();
+    templates.push({
+      id: newId,
+      name,
+      desc,
+      collections: selectedCols
+    });
+    SG.toast.success('Template Created', `New template "${name}" was initialized.`);
+  }
+
+  SG.store.set('permission_templates', templates);
+  SG.audit('PERMISSION_TEMPLATES_UPDATED', id || 'new', name);
+  closeTemplateModal();
+  loadTemplates();
+}
+</script>
+</body>
+</html>
+

@@ -1,0 +1,42 @@
+[
+  {
+    "code": "RG-DM-P2-001",
+    "name": "Classic Diamond Solitaire Ring",
+    "price": 32000,
+    "weight": "3.5g",
+    "description": "Elegant solitaire ring set with a brilliant round cut diamond.",
+    "collectionId": "col-002"
+  },
+  {
+    "code": "RG-DM-P2-002",
+    "name": "Diamond Eternity Halo Ring",
+    "price": 45000,
+    "weight": "4.2g",
+    "description": "Stunning halo engagement ring with pavé diamond band.",
+    "collectionId": "col-002"
+  },
+  {
+    "code": "NK-GD-P3-001",
+    "name": "Classic Gold Link Chain",
+    "price": 75000,
+    "weight": "15.4g",
+    "description": "Solid gold cuban link chain for daily elegance.",
+    "collectionId": "col-002"
+  },
+  {
+    "code": "ER-KD-P1-001",
+    "name": "Traditional Kundan Studs",
+    "price": 18000,
+    "weight": "6.8g",
+    "description": "Beautiful traditional Kundan stud earrings with gemstone details.",
+    "collectionId": "col-003"
+  },
+  {
+    "code": "BR-PK-P4-001",
+    "name": "Grand Polki Royal Choker",
+    "price": 250000,
+    "weight": "85.2g",
+    "description": "An opulent Polki diamond choker set with emerald drop pendants.",
+    "collectionId": "col-001"
+  }
+]

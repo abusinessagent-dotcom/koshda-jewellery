@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="/js/admin-gate.js"></script>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https://placehold.co; connect-src 'self'; frame-ancestors 'none'; form-action 'self'; base-uri 'self'; object-src 'none';">
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Catalogue Manager — Koshda Jewellery House</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/utilities.css">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>">
+</head>
+<body>
+<div id="toast-container"></div>
+
+<div class="admin-layout">
+  <!-- Dynamic Sidebar -->
+  <aside class="admin-sidebar" data-component="sidebar-admin"></aside>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+    <!-- Topbar -->
+    <header class="admin-topbar">
+      <div>
+        <div class="topbar-title">Catalogue Manager</div>
+        <div class="topbar-breadcrumb">
+          <span>Admin</span><span>›</span><span class="current">All Products</span>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <div class="icon-btn relative" onclick="window.location.href='notifications.html'">
+          🔔<span class="notif-dot notif-count" style="display:none;"></span>
+        </div>
+        <div class="avatar" id="topbar-avatar">AM</div>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="admin-content">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Design Catalogue</h1>
+          <p class="page-subtitle">Manage high-jewelry specifications, view uploaded CAD renders, and control collection visibility.</p>
+        </div>
+        <div class="page-actions">
+          <button class="btn btn-primary btn-sm" onclick="window.location.href='product-upload.html'">
+            ? Add Design
+          </button>
+          <button class="btn btn-secondary btn-sm" onclick="window.location.href='product-bulk-upload.html'">
+            📤 Bulk Upload (CSV)
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="card" style="margin-bottom:var(--space-6);">
+        <div class="grid gap-4" style="grid-template-columns: 2fr 1fr 1fr 1fr; align-items: end;">
+          <div>
+            <label class="form-label">Search Designs</label>
+            <input type="text" id="search-input" class="form-input" placeholder="Search by name, code, keywords...">
+          </div>
+          <div>
+            <label class="form-label">Collection</label>
+            <select id="collection-filter" class="form-select" title="Filter by collection">
+              <option value="all">All Collections</option>
+              <!-- Filled via JS -->
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Category</label>
+            <select id="category-filter" class="form-select" title="Filter by category">
+              <option value="all">All Categories</option>
+              <option value="NECK">Necklace</option>
+              <option value="EARR">Earrings</option>
+              <option value="BANG">Bangles</option>
+              <option value="RING">Rings</option>
+              <option value="PEND">Pendant</option>
+              <option value="MAAG">Maang Tikka</option>
+              <option value="ANKL">Anklets</option>
+              <option value="NOSE">Nose Ring</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Purity</label>
+            <select id="purity-filter" class="form-select" title="Filter by purity">
+              <option value="all">All Purities</option>
+              <option value="22 Karat">22 Karat (916)</option>
+              <option value="18 Karat">18 Karat (750)</option>
+              <option value="14 Karat">14 Karat (585)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product List / Table -->
+      <div class="table-card">
+        <div class="table-card-header">
+          <div class="section-title">Catalogue Designs (<span id="total-count">0</span> items)</div>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Code</th>
+                <th>Design Name</th>
+                <th>Collection</th>
+                <th>Specs (Material · Weight · Purity)</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="catalogue-tbody">
+              <!-- Rendered by JS -->
+            </tbody>
+          </table>
+        </div>
+        <div class="table-card-footer" id="pagination-container" style="padding:16px; display:flex; justify-content:center;">
+          <!-- Pagination -->
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/app.js" defer></script>
+<script src="/js/utils.js" defer></script>
+<script src="/js/auth.js" defer></script>
+<script src="/js/dal.js" defer></script>
+<script src="/js/dynamic-loader.js" defer></script>
+<script>
+let currentPage = 1;
+const itemsPerPage = 8;
+let filteredProductsList = [];
+let allProductsList = [];
+
+document.addEventListener('DOMContentLoaded', async () => {
+  if (!SG.auth.requireAdmin()) return;
+
+  const session = SG.auth.current();
+  document.getElementById('topbar-avatar').textContent = session.avatar || SG.str.initials(session.name);
+
+  // Populate Collections Dropdown
+  const collections = SG.dal.safeGet('collections') || [];
+  const colDropdown = document.getElementById('collection-filter');
+  collections.forEach(col => {
+    const opt = document.createElement('option');
+    opt.value = col.id;
+    opt.textContent = col.name;
+    colDropdown.appendChild(opt);
+  });
+
+  // Load Initial Product List
+  await loadProducts();
+
+  // Filters Event Listeners
+  document.getElementById('search-input').addEventListener('input', () => { currentPage = 1; filterProducts(); });
+  document.getElementById('collection-filter').addEventListener('change', () => { currentPage = 1; filterProducts(); });
+  document.getElementById('category-filter').addEventListener('change', () => { currentPage = 1; filterProducts(); });
+  document.getElementById('purity-filter').addEventListener('change', () => { currentPage = 1; filterProducts(); });
+});
+
+async function loadProducts() {
+  SG.dal._allowRawAccess = true;
+  try {
+    allProductsList = SG.dal.safeGet('products') || [];
+  } catch(e) {
+    console.error(e);
+    allProductsList = [];
+  } finally {
+    SG.dal._allowRawAccess = false;
+  }
+  await filterProducts();
+}
+
+async function filterProducts() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  const colId = document.getElementById('collection-filter').value;
+  const category = document.getElementById('category-filter').value;
+  const purity = document.getElementById('purity-filter').value;
+
+  let categoryFilterParam = category === 'all' ? '' : category;
+  let queryOptions = {};
+  if (categoryFilterParam) {
+    queryOptions.category = categoryFilterParam;
+  }
+
+  let queriedProducts = allProductsList;
+
+  filteredProductsList = queriedProducts.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(query) || 
+                          p.code.toLowerCase().includes(query) || 
+                          (p.searchKeywords || []).some(k => k.toLowerCase().includes(query));
+    const matchesCol = colId === 'all' || p.collectionId === colId;
+    const matchesCat = category === 'all' || p.category === category;
+    
+    let matchesPurity = purity === 'all';
+    if (!matchesPurity) {
+      matchesPurity = p.purity === purity || p.material === purity || (p.code && p.code.startsWith(purity === '22 Karat' ? '22K' : purity === '18 Karat' ? '18K' : '14K'));
+    }
+
+    return matchesSearch && matchesCol && matchesCat && matchesPurity && p.status === 'active';
+  });
+
+  document.getElementById('total-count').textContent = filteredProductsList.length;
+  renderGrid();
+}
+
+function renderGrid() {
+  const tbody = document.getElementById('catalogue-tbody');
+  const paginated = SG.paginate(filteredProductsList, currentPage, itemsPerPage);
+  
+  if (!paginated.data.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-muted)">No active designs found</td></tr>';
+    document.getElementById('pagination-container').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = paginated.data.map(p => {
+    const imgUrl = p.images?.[0] || 'https://placehold.co/100x100/1a1a2a/d4af37?text=??';
+    return `
+      <tr>
+        <td>
+          <img src="${imgUrl}" alt="${p.name}" style="width:50px;height:50px;object-fit:cover;border-radius:4px;border:1px solid var(--border-subtle)">
+        </td>
+        <td><span class="code">${p.code}</span></td>
+        <td><strong>${p.name}</strong><br><small style="color:var(--text-muted)">${p.styleNotes || 'Regular Design'}</small></td>
+        <td>${p.collectionName}</td>
+        <td>${p.material} · ${p.weight} · ${p.purity || ''}</td>
+        <td><span class="badge badge-green">Active</span></td>
+        <td>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-secondary btn-xs" onclick="window.location.href='product-edit.html?id=${p.id}'">✏️ Edit</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteDesign('${p.id}', '${p.name}')">🗑️ Delete</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  SG.renderPagination('pagination-container', currentPage, paginated.pages, (page) => {
+    currentPage = page;
+    renderGrid();
+  });
+}
+
+function deleteDesign(productId, name) {
+  SG.modal.confirm('Confirm Deletion', `Are you sure you want to delete "${name}" from the catalogue?`, () => {
+    SG.dal._allowRawAccess = true;
+    try {
+      const allProducts = SG.dal.safeGet('products') || [];
+      const index = allProducts.findIndex(p => p.id === productId);
+      if (index >= 0) {
+        allProducts[index].status = 'deleted'; // Soft delete
+        SG.store.set('products', allProducts);
+        SG.toast.success('Deleted', `"${name}" was successfully removed.`);
+        SG.audit('PRODUCT_DELETED', productId, name);
+        loadProducts();
+      } else {
+        SG.toast.error('Error', 'Product not found.');
+      }
+    } catch(e) {
+      SG.toast.error('Action Failed', e.message);
+    } finally {
+      SG.dal._allowRawAccess = false;
+    }
+  }, true);
+}
+</script>
+</body>
+</html>
+
